@@ -51,7 +51,7 @@ def build_Jupyter():
 
 
 def run_bokeh(ip='', port=5006):
-    os.system('panel serve holoviz.ipynb')
+    os.system('panel serve parameterized.ipynb')
 
 
 def run_jupyter():
@@ -107,6 +107,6 @@ elif args.MU:
     update(Mamba=True)
 else:
     print("No arguments given, defaulting to launching panel server")
-    install(Mamba=True)
+    install(Mamba=False)
     build_Jupyter()
     run_bokeh()
