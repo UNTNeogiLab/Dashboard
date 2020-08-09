@@ -1,0 +1,9 @@
+.3dnc filter=lfs diff=lfs merge=lfs -text
+.3nc filter=lfs diff=lfs merge=lfs -text
+.5nc filter=lfs diff=lfs merge=lfs -text
+.wdf filter=lfs diff=lfs merge=lfs -text
+.hspy filter=lfs diff=lfs merge=lfs -text
+*.3nc filter=lfs diff=lfs merge=lfs -text
+*.5nc filter=lfs diff=lfs merge=lfs -text
+*.wdf filter=lfs diff=lfs merge=lfs -text
+*.hspy filter=lfs diff=lfs merge=lfs -text
