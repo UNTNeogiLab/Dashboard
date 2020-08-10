@@ -42,3 +42,4 @@ dependencies:
       - PyQt5
       - sklearn_xarray
       - sklearn-xarray
+      - numdifftools

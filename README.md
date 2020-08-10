@@ -20,4 +20,3 @@ Requires environment with all files
 ## Examples
 ![example](examples/Parameterized.png)
 
-
