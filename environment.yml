@@ -1,3 +1,4 @@
+prefix: 5Dvisualizer
 channels:
   - conda-forge
   - defaults
@@ -16,8 +17,8 @@ dependencies:
   - selenium
   - geckodriver
   - firefox
+  - pylint
   - numba
-  - lmfit
   - ipympl
   - ipykernel
   - ipywidgets
@@ -30,16 +31,10 @@ dependencies:
   - hvplot
   - bokeh
   - dask
-  - datashader
   - colorcet
   - netCDF4
   - bottleneck
   - plotly
   - jupyter_bokeh
-  - elm
   - pip:
       - renishawWiRE
-      - PyQt5
-      - sklearn_xarray
-      - sklearn-xarray
-      - numdifftools

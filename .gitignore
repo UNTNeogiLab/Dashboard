@@ -162,3 +162,5 @@ OldData/
 /venv2/
 dask-jupyter.py
 /archived/
+dask-worker-space/
+holoviz.ipynb

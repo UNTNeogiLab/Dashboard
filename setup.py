@@ -5,39 +5,37 @@ import argparse
 def install(Mamba=False):
     if (Mamba):
         os.system('conda install mamba -c conda-forge')
-        if (os.environ['CONDA_DEFAULT_ENV'] != "python"):
+        if (os.environ['CONDA_DEFAULT_ENV'] != "5Dvisualizer"):
             print("Activating environment")
-            os.system('conda activate python')
-            if (os.environ['CONDA_DEFAULT_ENV'] != "python"):
+            os.system('conda activate 5Dvisualizer')
+            if (os.environ['CONDA_DEFAULT_ENV'] != "5Dvisualizer"):
                 print("Failed: Environment doesn't exist")
                 print("Creating environment: this will take a while")
-                os.chdir("config")
                 os.system('mamba env create')
-                os.system('conda activate python')
+                os.system('conda activate 5Dvisualizer')
             else:
                 print("environment exists")
-                os.chdir("config")
                 os.system('mamba env update')
         else:
             print("Updating environment")
-            os.chdir("config")
             os.system('mamba env update')
-        os.chdir("..")
     else:
-        if (os.environ['CONDA_DEFAULT_ENV'] != "python"):
+        if (os.environ['CONDA_DEFAULT_ENV'] != "5Dvisualizer"):
             print("Activating environment")
-            os.system('conda activate python')
-            if (os.environ['CONDA_DEFAULT_ENV'] != "python"):
+            os.system('conda activate 5Dvisualizer')
+            if (os.environ['CONDA_DEFAULT_ENV'] != "5Dvisualizer"):
                 print("Failed: Environment doesn't exist")
                 print("Creating environment: this will take a while")
-                os.system('conda env create -f config/environment.yml')
-                os.system('conda activate python')
+                os.system('conda env create -f environment.yml')
+                os.system('conda activate 5Dvisualizer')
             else:
                 print("environment exists")
-                os.system('conda env update --name python --file config/environment.yml')
+                os.system(
+                    'conda env update --name 5Dvisualizer --file environment.yml')
         else:
             print("Updating environment")
-            os.system('conda env update --name python --file config/environment.yml')
+            os.system(
+                'conda env update --name 5Dvisualizer --file environment.yml')
 
 
 def build_Jupyter():
@@ -45,7 +43,8 @@ def build_Jupyter():
     os.system('jupyter lab workspaces import config/lab.json')
     os.system('jupyter labextension install @pyviz/jupyterlab_pyviz --no-build')
     os.system('jupyter labextension install @bokeh/jupyter_bokeh --no-build')
-    os.system('jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build')
+    os.system(
+        'jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build')
     os.system('jupyter labextension install dask-labextension --no-build')
     os.system('jupyter lab build')
 
@@ -63,7 +62,7 @@ def update(Mamba=False):
         os.chdir("config")
         os.system('mamba env update')
     else:
-        os.system('conda env update --name python --file config/environment.yml')
+        os.system('conda env update --name 5Dvisualizer --file environment.yml')
 
 
 parser = argparse.ArgumentParser(prog='setup',
