@@ -17,6 +17,10 @@ Requires environment with all files
 1. `panel serve parameterized.ipynb --address 0.0.0.0` on server  
 1. `ssh -L 5006:localhost:5006 user@server` on local  
 1. open localhost:5006 on local browser
-## Examples
 ![example](examples/Parameterized.png)
+##Dev deployment
+`panel serve scripted/launcher.py --dev scripted/*.py`   
+expiremental panel server deployment with autoreload
+## Examples
+
 
