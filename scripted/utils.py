@@ -5,15 +5,38 @@ from numba import njit, jit
 import time
 import os
 from itertools import chain
+from pathlib import Path
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 
 
-def getDir(dirs, extensions):
+def getDir(extensions):
     # parses directories for valid files
-    return list(chain.from_iterable(
-        [[folder + "/" + file for file in os.listdir(folder) if file.split('.')[1] in extensions] for folder in dirs]))
+    return list(chain.from_iterable(Path(".").rglob("*." + extension) for extension in extensions))
+
+
+def find_best_file(files, smallest=True):
+    pass
+
+
+def extension(file):
+    return os.path.splitext(file)[1][1:]
+
+
+def get_file_val(file):
+    extension = os.path.splitext(file)[1]
+    # priorities are in order of highest to lowest
+    if extension == "5nc":
+        return 5
+    elif extension == "5nce":
+        return 6
+    elif extension == "5ncu":
+        return 4
+    elif extension == "3nc":
+        return 100000
+    if (extension == "5nca"):
+        xr.open_dataset(file, )
 
 
 @njit(cache=True)

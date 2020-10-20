@@ -12,8 +12,16 @@ import colorcet as cc
 import param
 import pandas as pd
 from dask.distributed import Client, LocalCluster
-from fiveD import grapher
-from grapher3D import grapher3D as grapher3D
+import posixpath
+
+if not "scripted" in os.listdir():
+    from utils import *
+    from fiveD import grapher
+    from grapher3D import grapher3D as grapher3D
+else:
+    from scripted.utils import *
+    from scripted.fiveD import grapher
+    from scripted.grapher3D import grapher3D as grapher3D
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -23,20 +31,19 @@ import time
 from dask.diagnostics import ProgressBar
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-from utils import *
+
 pbar = ProgressBar()
 pbar.register()
 client = None
 
 
 class viewer(param.Parameterized):
-    dirs = ["converted"]
-    extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher,"5nca":grapher}
-    files = getDir(dirs,extensions)
-    if "converted/truncated_1.5ncu" in files:
-        default = "converted/truncated_1.5ncu"
+    extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher, "5nca": grapher}
+    files = getDir(extensions)
+    if posixpath.exists("converted/truncated_1.5ncu"):
+        default = Path("converted/truncated_1.5ncu")
     else:
-        default = "converted/truncated_1.5nc"
+        default = Path("converted/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
 
     def __init__(self):
@@ -49,9 +56,14 @@ class viewer(param.Parameterized):
             self.client = client
         self.load()
 
+    def reload_files(self):
+        extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher, "5nca": grapher}
+        self.param["filename"].objects = getDir(extensions)
+
     @param.depends('filename', watch=True)
     def load(self):
-        self.grapher = self.extensions[self.filename.split(".")[1]](self.filename)
+        self.reload_files()  # temp solution
+        self.grapher = self.extensions[extension(self.filename)](self.filename, self.client)
 
     @param.depends('filename')
     def widgets(self):

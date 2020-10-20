@@ -1,3 +1,4 @@
+wheel
 xarray
 numpy
 pandas
@@ -9,7 +10,6 @@ panel
 holoviews
 colorcet
 dask
-yaml
 pyyaml
 netcdf4
 setuptools

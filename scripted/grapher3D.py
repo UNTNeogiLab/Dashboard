@@ -2,7 +2,7 @@ import param
 
 
 class grapher3D(param.Parameterized):
-    def __init__(self, filename):
+    def __init__(self, filename, client):
         super().__init__()
 
     def view(self):

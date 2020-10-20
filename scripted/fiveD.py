@@ -4,16 +4,20 @@ import param
 import plotly.express as px
 from dask.distributed import Client
 from scipy.optimize import curve_fit
-from utils import *
-import xarray as xr
 
+import xarray as xr
+import holoviews as hv
+import panel as pn
+import numpy as np
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 from numba import njit
-
+import posixpath
 client = None
-
-
+if not "scripted" in os.listdir():
+    from utils import *
+else:
+    from scripted.utils import *
 class grapher(param.Parameterized):
     fileChoosing = True
     Orientation = param.Integer(default=0, bounds=(0, 1))
@@ -24,24 +28,22 @@ class grapher(param.Parameterized):
     y1 = param.Number(default=1)
     fitted = param.Boolean(default=False)
     selected = param.Boolean(default=False)
-    dirs = ["converted"]
     extensions = ["5nc", "5nce", "5ncu", "5nca"]
-    files = []
-    for folder in dirs:
-        for file in os.listdir(folder):
-            if file.split(".")[1] in extensions:
-                files += [folder + "/" + file]
-    if "converted/truncated_1.5ncu" in files:
-        filename = param.ObjectSelector(default="converted/truncated_1.5ncu", objects=files)
+    files = getDir(extensions)
+    if posixpath.exists("converted/truncated_1.5ncu"):
+        default = Path("converted/truncated_1.5ncu")
     else:
-        filename = param.ObjectSelector(default="converted/truncated_1.5nc", objects=files)
+        default = Path("converted/truncated_1.5nc")
+    filename = param.ObjectSelector(default=default, objects=files)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     fitData = param.Boolean(default=False)
     fitAll = param.Boolean(default=False)
     button = pn.widgets.Button(name='Fit All Blocks', button_type='primary')
     button2 = pn.widgets.Button(name='Upgrade file', button_type='primary')
     button3 = pn.widgets.Button(name='Update file', button_type='primary')
-
+    def Compare(self):
+        self.attrs = attrs = {"fitted": self.fitted, "averaged": self.averaged, "logged": self.logged}
+        #Compares against immediate relative
     def Update(self, event=None):
         attrs = {"fitted": self.fitted, "averaged": True, "logged": self.logged}  # will force the average of everything
         if self.logged:
@@ -52,18 +54,16 @@ class grapher(param.Parameterized):
         else:
             data = {"ds1": self.ds1, "ds2": self.ds2, "ds3": self.ds3}
         ds = xr.Dataset(coords=self.coords, data_vars=data, attrs=attrs)
-        print(self.filename)
         filename = str(self.filename).split(".")[
                        0] + ".5nca"  # We're using the 5nca file extension for all files from now on
         ds.to_netcdf(filename, engine="h5netcdf", invalid_netcdf=True)
-        self.filename = filename  # load the new file one its written
+        #self.filename = filename  # load the new file one its written
+        #Actually a bad idea, causes too many issues
 
     def Upgrade(self, event=None):
         if not (self.fitted):
             self.fitBlocks()
-        ds = xr.Dataset({"ds1": self.ds1, "ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf})
-        ds.to_netcdf((str(self.filename) + "u"), engine="h5netcdf")
-        self.button2.disabled = True
+        self.Update()
 
     def fitBlocks(self, event=None):
         if not (self.fitted):
@@ -162,16 +162,18 @@ class grapher(param.Parameterized):
                              bounds=[[0, 0, 0, 0, 0], [np.pi, np.inf, np.inf, np.pi, np.inf]])
         return pf
 
-    def __init__(self, filename=False):
+    def __init__(self, filename=False, client_input = None):
         super().__init__()
         global client
-        if client == None:
+        if client is None:
             self.client = Client()
             client = self.client
+        if not client_input is None:
+            self.client = client_input
         else:
             self.client = client  # Has to execute so the class knows the client before the filename checks happen
-        if not filename == False:
-            self.filename = filename
+        if not False == filename:
+            self.filename = Path(filename)
             self.fileChoosing = False
 
         self._update_dataset()
