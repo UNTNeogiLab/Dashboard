@@ -144,7 +144,7 @@ class grapher(param.Parameterized):
                   "y": "micrometers"}
         self.attrs['Polarization'] = "radians"
         self.attrs['wavelength'] = "nm"
-        self.fname = str(self.filename).split('/')[1].split('.')[0]
+        self.fname = fname(self.filename)
         self.x = hv.Dimension('x', unit=self.attrs['x'])
         self.y = hv.Dimension('y', unit=self.attrs['y'])
         self.param['wavelength'].objects = self.ds1.coords['wavelength'].values.tolist()

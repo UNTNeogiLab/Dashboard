@@ -38,7 +38,9 @@ def get_file_val(file):
     if (extension == "5nca"):
         xr.open_dataset(file, )
 
-
+def fname(file):
+    fname = os.path.basename(file)
+    return fname.replace(extension(fname),'')
 @njit(cache=True)
 def function(phi, delta, A, B, theta, C):
     return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
