@@ -18,10 +18,12 @@ if not "scripted" in os.listdir():
     from utils import *
     from fiveD import grapher
     from grapher3D import grapher3D as grapher3D
+    from fourD import grapher as grapher4d
 else:
     from scripted.utils import *
     from scripted.fiveD import grapher
     from scripted.grapher3D import grapher3D as grapher3D
+    from scripted.fourD import grapher as grapher4d
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -57,7 +59,7 @@ class viewer(param.Parameterized):
         self.load()
 
     def reload_files(self):
-        extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher, "5nca": grapher}
+        extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher, "5nca": grapher,"4nc",grapher4d}
         self.param["filename"].objects = getDir(extensions)
 
     @param.depends('filename', watch=True)

@@ -76,12 +76,9 @@ class grapher(param.Parameterized):
             template = xr.DataArray(np.zeros((dims, O.size, w.size)), dims=["C", "Orientation", "wavelength"],
                                     coords=[C, O, w],
                                     name="fitted").chunk({"wavelength": 1, "Orientation": 1})
-
-            @njit(cache=True)
             def fitx_blocks(data):
                 ydata = data.values.flatten(order="C")
-                pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9,
-                                     p0=[2, 20, 5, 2, 400])
+                pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9)
                 return xr.DataArray(pf.reshape((dims, 1, 1)), dims=["C", "Orientation", "wavelength"],
                                     coords={"C": C, "Orientation": data.coords["Orientation"],
                                             "wavelength": data.coords["wavelength"]})
@@ -96,7 +93,7 @@ class grapher(param.Parameterized):
         if extension == '5nc':
 
             self.ds = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1,
-                                                                       'wavelength': 1}))  # chunked for heatmap selected
+                                                                       'wavelength': 20}))  # chunked for heatmap selected
             self.ds1 = self.ds
             self.ds2 = self.ds1.mean(dim='Polarization')  # chunked for navigation
             self.ds3 = self.ds1.mean(dim=['x', 'y'])  # chunked for heatmap all
@@ -158,18 +155,17 @@ class grapher(param.Parameterized):
         xcoords = self.coords['Polarization'].values
         xdata = np.tile(xcoords, int(output.coords['x'].size * output.coords['y'].size))
         ydata = output.values.flatten(order="C")
-        pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9, p0=[2, 20, 5, 2, 400],
-                             bounds=[[0, 0, 0, 0, 0], [np.pi, np.inf, np.inf, np.pi, np.inf]])
+        pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9)
         return pf
 
     def __init__(self, filename=False, client_input = None):
         super().__init__()
         global client
-        if client is None:
+        if not client_input is None: #use the global client
+            self.client = client_input
+        elif client is None: #create its own client
             self.client = Client()
             client = self.client
-        if not client_input is None:
-            self.client = client_input
         else:
             self.client = client  # Has to execute so the class knows the client before the filename checks happen
         if not False == filename:
