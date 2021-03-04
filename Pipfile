@@ -1,0 +1,38 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+jupyter = "*"
+mamba = "*"
+hyperspy = "*"
+pandas = "*"
+numpy = "*"
+matplotlib = "*"
+dask-jobqueue = "*"
+nodejs = "*"
+selenium = "*"
+pylint = "*"
+ipympl = "*"
+ipykernel = "*"
+ipywidgets = "*"
+dask-labextension = "*"
+mpi4py = "*"
+h5netcdf = "*"
+panel = "*"
+bokeh = "*"
+xarray = "*"
+hvplot = "*"
+dask = "*"
+colorcet = "*"
+plotly = "*"
+jupyter-bokeh = "*"
+Bottleneck = "*"
+renishawWiRE = "*"
+netcdf4 = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7.9"
