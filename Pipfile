@@ -35,6 +35,4 @@ typing-extensions = "*"
 cffi = "*"
 
 [dev-packages]
-
-[requires]
-python_version = "3.9"
+bpytop = "*"

@@ -9,14 +9,18 @@ import xarray as xr
 import holoviews as hv
 import panel as pn
 import numpy as np
+
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 import posixpath
+
 client = None
 if not "visualizer" in os.listdir():
     from utils import *
 else:
     from visualizer.utils import *
+
+
 class grapher(param.Parameterized):
     fileChoosing = True
     Orientation = param.Integer(default=0, bounds=(0, 1))
@@ -40,9 +44,11 @@ class grapher(param.Parameterized):
     button = pn.widgets.Button(name='Fit All Blocks', button_type='primary')
     button2 = pn.widgets.Button(name='Upgrade file', button_type='primary')
     button3 = pn.widgets.Button(name='Update file', button_type='primary')
+
     def Compare(self):
         self.attrs = attrs = {"fitted": self.fitted, "averaged": self.averaged, "logged": self.logged}
-        #Compares against immediate relative
+        # Compares against immediate relative
+
     def Update(self, event=None):
         attrs = {"fitted": self.fitted, "averaged": True, "logged": self.logged}  # will force the average of everything
         if self.logged:
@@ -56,8 +62,8 @@ class grapher(param.Parameterized):
         filename = str(self.filename).split(".")[
                        0] + ".5nca"  # We're using the 5nca file extension for all files from now on
         ds.to_netcdf(filename, engine="h5netcdf", invalid_netcdf=True)
-        #self.filename = filename  # load the new file one its written
-        #Actually a bad idea, causes too many issues
+        # self.filename = filename  # load the new file one its written
+        # Actually a bad idea, causes too many issues
 
     def Upgrade(self, event=None):
         if not (self.fitted):
@@ -75,6 +81,7 @@ class grapher(param.Parameterized):
             template = xr.DataArray(np.zeros((dims, O.size, w.size)), dims=["C", "Orientation", "wavelength"],
                                     coords=[C, O, w],
                                     name="fitted").chunk({"wavelength": 1, "Orientation": 1})
+
             def fitx_blocks(data):
                 ydata = data.values.flatten(order="C")
                 pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9)
@@ -92,7 +99,7 @@ class grapher(param.Parameterized):
         if extension == '5nc':
 
             self.ds = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1,
-                                                                       'wavelength': 20}))  # chunked for heatmap selected
+                                                                      'wavelength': 20}))  # chunked for heatmap selected
             self.ds1 = self.ds
             self.ds2 = self.ds1.mean(dim='Polarization')  # chunked for navigation
             self.ds3 = self.ds1.mean(dim=['x', 'y'])  # chunked for heatmap all
@@ -157,12 +164,12 @@ class grapher(param.Parameterized):
         pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9)
         return pf
 
-    def __init__(self, filename=False, client_input = None):
+    def __init__(self, filename=False, client_input=None):
         super().__init__()
         global client
-        if not client_input is None: #use the global client
+        if not client_input is None:  # use the global client
             self.client = client_input
-        elif client is None: #create its own client
+        elif client is None:  # create its own client
             self.client = Client()
             client = self.client
         else:
