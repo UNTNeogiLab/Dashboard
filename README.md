@@ -1,5 +1,11 @@
 # 5d spectral visualizer
 Originally the _holoviz_ branch of [2020SummerResearch](https://github.com/UNTNeogiLab/2020SummerResearch)
+## Submodule
+(expiremental)  
+Using a git submodule to reference files from the https://github.com/UNTNeogiLab/RASHG project  
+When cloning use --recurse-submodules or run  
+`git submodule init`  
+`git submodule update`
 ## Installing Dependencies 
 ### Using Pipfile (requires python)
 `pip install --user pipenv` (unpriviledged installation, use `pip install pipenv` or use package manager for global install)  
