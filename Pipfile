@@ -32,6 +32,9 @@ Bottleneck = "*"
 renishawWiRE = "*"
 netcdf4 = "*"
 numba = "*"
+typing-extensions = "*"
+cffi = "*"
+
 [dev-packages]
 
 [requires]
