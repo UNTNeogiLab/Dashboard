@@ -147,14 +147,12 @@ tests
 .vscode/*
 *.code-workspace
 .run/
-converted/20mW_Wavelength.5nc
 archived/cython scratches/test.pyx
-converted/cropped.5nc
 Untitled.ipynb
 data/cropped.hspy
 archived/ml.py
 data/
-converted/
+data/
 OldData/
 /archived/cython scratches/
 /jobs/

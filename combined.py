@@ -1,27 +1,9 @@
-import psutil
-import xarray as xr
-import panel as pn
-import os
-import colorcet as cc
-import holoviews as hv
-from panel.interact import fixed
-from scipy.optimize import curve_fit
-import plotly.express as px
-import numpy as np
-import colorcet as cc
 import param
-import pandas as pd
 from dask.distributed import Client, LocalCluster
 import posixpath
-
-if not "scripted" in os.listdir():
-    from utils import *
-    from fiveD import grapher
-    from grapher3D import grapher3D as grapher3D
-else:
-    from scripted.utils import *
-    from scripted.fiveD import grapher
-    from scripted.grapher3D import grapher3D as grapher3D
+from visualizer.utils import *
+from visualizer.fiveD import grapher
+from visualizer.grapher3D import grapher3D as grapher3D
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -40,10 +22,10 @@ client = None
 class viewer(param.Parameterized):
     extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher, "5nca": grapher}
     files = getDir(extensions)
-    if posixpath.exists("converted/truncated_1.5ncu"):
-        default = Path("converted/truncated_1.5ncu")
+    if posixpath.exists("data/truncated_1.5ncu"):
+        default = Path("data/truncated_1.5ncu")
     else:
-        default = Path("converted/truncated_1.5nc")
+        default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
 
     def __init__(self):

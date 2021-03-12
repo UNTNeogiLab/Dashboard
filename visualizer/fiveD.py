@@ -13,10 +13,10 @@ pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 import posixpath
 client = None
-if not "scripted" in os.listdir():
+if not "visualizer" in os.listdir():
     from utils import *
 else:
-    from scripted.utils import *
+    from visualizer.utils import *
 class grapher(param.Parameterized):
     fileChoosing = True
     Orientation = param.Integer(default=0, bounds=(0, 1))
@@ -29,10 +29,10 @@ class grapher(param.Parameterized):
     selected = param.Boolean(default=False)
     extensions = ["5nc", "5nce", "5ncu", "5nca"]
     files = getDir(extensions)
-    if posixpath.exists("converted/truncated_1.5ncu"):
-        default = Path("converted/truncated_1.5ncu")
+    if posixpath.exists("data/truncated_1.5ncu"):
+        default = Path("data/truncated_1.5ncu")
     else:
-        default = Path("converted/truncated_1.5nc")
+        default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     fitData = param.Boolean(default=False)
