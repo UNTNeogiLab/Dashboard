@@ -18,7 +18,7 @@ When cloning use --recurse-submodules or run
 Currently out of date for pipenv  
 Requires environment with all files
 ### UNT servers  
-1. `panel serve combined.py --address 0.0.0.0 --dev scripted/*.py` on compute node   
+1. `pipenv run python combined.py -server` on compute node   
 1. `ssh -L 5006:cX-X-X:5006 EUID@vis-01.acs.unt.edu` on local   
 1. open localhost:5006 on local browser
 ### Generally 

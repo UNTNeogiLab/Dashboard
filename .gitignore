@@ -163,3 +163,4 @@ dask-jupyter.py
 dask-worker-space/
 holoviz.ipynb
 .eric6project/*
+notebooks/

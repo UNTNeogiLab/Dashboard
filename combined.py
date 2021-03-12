@@ -4,7 +4,7 @@ import posixpath
 from visualizer.utils import *
 from visualizer.fiveD import grapher
 from visualizer.grapher3D import grapher3D as grapher3D
-
+import argparse
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 #from numba import jit, njit
@@ -16,7 +16,6 @@ import plotly.graph_objects as go
 
 pbar = ProgressBar()
 pbar.register()
-client = None
 
 
 class viewer(param.Parameterized):
@@ -30,12 +29,8 @@ class viewer(param.Parameterized):
 
     def __init__(self):
         super().__init__()
-        global client
-        if client == None:
-            self.client = Client()
-            client = self.client
-        else:
-            self.client = client
+        self.client = Client()
+        client = self.client
         self.load()
 
     def reload_files(self):
@@ -59,6 +54,21 @@ class viewer(param.Parameterized):
         return pn.Row(pn.Column(self.param, self.widgets), self.gView)
 
 
-if __name__ == '__main__':
+def local():
     view = viewer()
     view.view().show()
+def server(reload=False):
+    view = viewer()
+    view.view().show(port=5006,threaded=True)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='combined', description='Deploys and runs panel server')
+    parser.add_argument('-server', dest='server', help='Runs the panel server for multiple clients', action='store_const', const=True, default=False)
+    parser.add_argument('-local', dest='local', help='Runs the panel server for single clients', action='store_const', const=True, default=False)
+    args = parser.parse_args()
+    if args.server:
+        server()
+    elif args.local:
+        local()
+    else:
+        print ("Defaulting to local server")
+        local()
