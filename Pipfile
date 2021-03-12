@@ -31,8 +31,8 @@ jupyter-bokeh = "*"
 Bottleneck = "*"
 renishawWiRE = "*"
 netcdf4 = "*"
-
+numba = "*"
 [dev-packages]
 
 [requires]
-python_version = "3.7.9"
+python_version = "3.9"

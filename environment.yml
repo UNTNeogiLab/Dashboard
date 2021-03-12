@@ -16,8 +16,6 @@ dependencies:
   - nodejs
   - pip
   - selenium
-  - geckodriver
-  - firefox
   - pylint
   - numba
   - ipympl

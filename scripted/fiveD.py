@@ -11,7 +11,6 @@ import panel as pn
 import numpy as np
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-from numba import njit
 import posixpath
 client = None
 if not "scripted" in os.listdir():

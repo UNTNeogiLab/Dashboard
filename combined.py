@@ -25,7 +25,7 @@ else:
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-from numba import jit, njit
+#from numba import jit, njit
 import dask
 import time
 from dask.diagnostics import ProgressBar
