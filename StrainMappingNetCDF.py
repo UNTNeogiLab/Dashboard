@@ -8,7 +8,7 @@ import multiprocessing as mP
 from datetime import timedelta
 import os
 from scipy import optimize
-
+from numba import njit
 
 nCores = mP.cpu_count()
 
@@ -20,6 +20,7 @@ xyp[np.where(np.isnan(xyp))]=0
 
 phi=np.radians(2*np.linspace(0,xyp[0,0,:].size-1,xyp[0,0,:].size))
 # plt.polar(phi,xyp[120,60,:])
+@njit(cache=True) #speedup
 def strainfit(phi, a, b, delta, theta):
     return 0.25*(a * np.cos(3*phi- 3*delta) + b * np.cos(2 * theta + phi -
                  3*delta))**2
