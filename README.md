@@ -40,7 +40,7 @@ Requires environment with all files
 
 ### Generally
 
-1. `panel serve combined.py --address 0.0.0.0 --dev scripted/*.py` on server
+1. `pipenv run python combined.py -server` on server
 1. port forwarding depending on network configuration
 1. open address:5006 on local browser
 
@@ -77,3 +77,9 @@ Requires environment with all files
 1. `panel serve parameterized.ipynb --address 0.0.0.0` on server
 1. port forwarding depending on network configuration
 1. open address:5006 on local browser
+## Troubleshooting information
+Hangs on creating Virtual environment  
+`virtualenv pyenv --read-only-app-data`  
+then activate it and run  
+`pipenv sync`  
+ 
