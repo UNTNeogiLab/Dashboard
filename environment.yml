@@ -8,7 +8,6 @@ dependencies:
   - jupyterlab
   - jupyter
   - mamba
-  - hyperspy
   - pandas
   - numpy
   - matplotlib
@@ -32,8 +31,5 @@ dependencies:
   - dask
   - colorcet
   - netCDF4
-  - bottleneck
   - plotly
   - jupyter_bokeh
-  - pip:
-      - renishawWiRE

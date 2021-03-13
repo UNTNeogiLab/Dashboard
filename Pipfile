@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 jupyter = "*"
-hyperspy = "*"
 pandas = "*"
 numpy = "*"
 matplotlib = "*"
@@ -28,11 +27,10 @@ colorcet = "*"
 plotly = "*"
 jupyter-bokeh = "*"
 Bottleneck = "*"
-renishawWiRE = "*"
 netcdf4 = "*"
 numba = "*"
-typing-extensions = "*"
-cffi = "*"
-
+scipy = "*"
 [dev-packages]
-bpytop = "*"
+bpytop = "*" #monitoring program of my choice
+[requires]
+python_version = "3.7.4"

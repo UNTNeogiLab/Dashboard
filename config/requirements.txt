@@ -1,6 +1,4 @@
 jupyter
-mamba
-hyperspy
 pandas
 numpy
 matplotlib
