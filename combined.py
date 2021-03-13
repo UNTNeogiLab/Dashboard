@@ -62,7 +62,7 @@ def local():
 
 def server(reload=False):
     view = viewer()
-    view.view().show(port=5006, threaded=True)
+    view.view().show(port=5006,open=False,)
 
 
 if __name__ == '__main__':

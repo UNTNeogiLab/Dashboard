@@ -80,6 +80,7 @@ Requires environment with all files
 ## Troubleshooting information
 Hangs on creating Virtual environment  
 `virtualenv pyenv --read-only-app-data`  
-then activate it and run  
+then activate it (`source pyenv/bin/activate`) and run  
 `pipenv sync`  
- 
+followed by 
+`pipenv run` *whatever*
