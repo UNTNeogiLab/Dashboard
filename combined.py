@@ -5,11 +5,13 @@ from visualizer.utils import *
 from visualizer.fiveD import grapher
 from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
-#try import RASHG.instruments_RASHG
+
+# try import RASHG.instruments_RASHG
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 from dask.diagnostics import ProgressBar
 import RASHG
+
 pbar = ProgressBar()
 pbar.register()
 
@@ -23,10 +25,9 @@ class viewer(param.Parameterized):
         default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
 
-    def __init__(self):
+    def __init__(self, client):
         super().__init__()
-        self.client = Client()
-        client = self.client
+        self.client = client
         self.load()
 
     def reload_files(self):
@@ -40,24 +41,71 @@ class viewer(param.Parameterized):
 
     @param.depends('filename')
     def widgets(self):
-        return self.grapher.widgets()
+        return pn.Column(self.param, self.grapher.widgets())
 
     @param.depends('filename')
     def gView(self):
         return self.grapher.view()
 
     def view(self):
+        return pn.Row(self.widgets, self.gView)
+
+
+class instrumental(param.Parameterized):
+    instruments = []
+    if RASHG.random_enabled:
+        instruments.append("random")
+    else:
+        print("Random initialization falied, check your environment. This will almost certainly break the program")
+    if RASHG.RASHG_enabled:
+        instruments.append("RASHG")
+
+    def widgets(self):
+        return self.param
+
+    def gView(self):
+        pass
+
+
+# wrapper around viewer class to interface with instrumental class
+class combined(param.Parameterized):
+    applets = ["viewer", "instrumental"]
+    applets = param.ObjectSelector(default="viewer", objects=applets)
+
+    def __init__(self):
+        super().__init__()
+        self.client = Client()
+        client = self.client
+        self.load()
+
+    @param.depends('applets', watch=True)
+    def load(self):
+        if self.applets == "viewer":
+            self.applet = viewer(self.client)
+        elif self.applets == "instrumental":
+            self.applet = instrumental()
+
+    @param.depends('applets')
+    def widgets(self):
+        return self.applet.widgets()
+
+    @param.depends('applets')
+    def gView(self):
+        return self.applet.gView()
+
+    def view(self):
         return pn.Row(pn.Column(self.param, self.widgets), self.gView)
 
-#these two functions are basically identical for now
+
+# these two functions are basically identical for now
 def local():
-    view = viewer()
+    view = combined()
     view.view().show()
 
 
 def server(reload=False):
     view = viewer()
-    view.view().show(port=5006,open=False)
+    view.view().show(port=5006, open=False)
 
 
 if __name__ == '__main__':
