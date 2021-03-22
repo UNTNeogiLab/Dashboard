@@ -29,7 +29,14 @@ Bottleneck = "*"
 netcdf4 = "*"
 numba = "*"
 scipy = "*"
+instrumental = "*"
+nidaqmx = "*"
+pyvisa = "*"
+thorlabs-apt = "*"
+instrumental-lib = "*"
+
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
+
 [requires]
 python_version = "3.7.4"

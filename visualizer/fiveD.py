@@ -15,10 +15,14 @@ hv.extension('bokeh', 'plotly')
 import posixpath
 
 client = None
+from .utils  import *
+
+'''
 if not "visualizer" in os.listdir():
     from utils import *
 else:
     from visualizer.utils import *
+'''
 
 
 class grapher(param.Parameterized):

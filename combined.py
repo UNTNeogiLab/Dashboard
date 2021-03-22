@@ -1,20 +1,15 @@
 import param
-from dask.distributed import Client, LocalCluster
+from dask.distributed import Client
 import posixpath
 from visualizer.utils import *
 from visualizer.fiveD import grapher
 from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
-
+#try import RASHG.instruments_RASHG
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-# from numba import jit, njit
-import dask
-import time
 from dask.diagnostics import ProgressBar
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-
+import RASHG
 pbar = ProgressBar()
 pbar.register()
 
@@ -54,7 +49,7 @@ class viewer(param.Parameterized):
     def view(self):
         return pn.Row(pn.Column(self.param, self.widgets), self.gView)
 
-
+#these two functions are basically identical for now
 def local():
     view = viewer()
     view.view().show()
