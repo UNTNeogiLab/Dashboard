@@ -17,12 +17,9 @@ pbar.register()
 
 
 class viewer(param.Parameterized):
-    extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher, "5nca": grapher}
+    extensions = {'3nc': grapher3D, "5nc": grapher, "nc": grapher}
     files = getDir(extensions)
-    if posixpath.exists("data/truncated_1.5ncu"):
-        default = Path("data/truncated_1.5ncu")
-    else:
-        default = Path("data/truncated_1.5nc")
+    default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
 
     def __init__(self, client):
@@ -31,8 +28,7 @@ class viewer(param.Parameterized):
         self.load()
 
     def reload_files(self):
-        extensions = {'3nc': grapher3D, "5nc": grapher, "5ncu": grapher, "5nce": grapher, "5nca": grapher}
-        self.param["filename"].objects = getDir(extensions)
+        self.param["filename"].objects = getDir(self.extensions)
 
     @param.depends('filename', watch=True)
     def load(self):
@@ -80,16 +76,16 @@ class instrumental(param.Parameterized):
     @param.depends('instruments', 'confirmed')
     def widgets(self):
         self.button.on_click(self.initialize)
-        return pn.Column(self.param, self.instrument.param,self.gui.param, self.button,self.gui.widgets)
+        return pn.Column(self.param, self.instrument.param, self.gui.param, self.button, self.gui.widgets)
 
     def initialize(self, event=None):
         self.instrument.initialize()
-        self.gui.initialize(self.instrument) #initialize the GUI with the instruments
+        self.gui.initialize(self.instrument)  # initialize the GUI with the instruments
         self.button.disabled = True
         self.confirmed = True
-        self.gui.live_view() #start live view immediately
+        self.gui.live_view()  # start live view immediately
 
-    @param.depends('instruments','confirmed')
+    @param.depends('instruments', 'confirmed')
     def gView(self):
         # more complicated due to instruments and gui relationship
         if self.confirmed:

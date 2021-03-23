@@ -26,53 +26,25 @@ else:
 
 
 class grapher(param.Parameterized):
-    fileChoosing = True
     Orientation = param.Integer(default=0, bounds=(0, 1))
     wavelength = param.Selector(default=780)
-    x0 = param.Number(default=0)
-    x1 = param.Number(default=1)
-    y0 = param.Number(default=0)
-    y1 = param.Number(default=1)
-    fitted = param.Boolean(default=False)
-    selected = param.Boolean(default=False)
-    extensions = ["5nc", "5nce", "5ncu", "5nca"]
-    files = getDir(extensions)
-    if posixpath.exists("data/truncated_1.5ncu"):
-        default = Path("data/truncated_1.5ncu")
-    else:
-        default = Path("data/truncated_1.5nc")
-    filename = param.ObjectSelector(default=default, objects=files)
+    x0 = param.Number(default=0, precedence=-1)
+    x1 = param.Number(default=1, precedence=-1)
+    y0 = param.Number(default=0, precedence=-1)
+    y1 = param.Number(default=1, precedence=-1)
+    fitted = param.Boolean(default=False, precedence=-1)
+    selected = param.Boolean(default=False, precedence=-1)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
-    fitData = param.Boolean(default=False)
-    fitAll = param.Boolean(default=False)
-    button = pn.widgets.Button(name='Fit All Blocks', button_type='primary')
-    button2 = pn.widgets.Button(name='Upgrade file', button_type='primary')
-    button3 = pn.widgets.Button(name='Update file', button_type='primary')
-
-    def Compare(self):
-        self.attrs = attrs = {"fitted": self.fitted, "averaged": self.averaged, "logged": self.logged}
-        # Compares against immediate relative
-
-    def Update(self, event=None):
-        attrs = {"fitted": self.fitted, "averaged": True, "logged": self.logged}  # will force the average of everything
-        if self.logged:
-            print("Please don't try to upgrade a logged file")
-            return
-        if self.fitted:
-            data = {"ds1": self.ds1, "ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf}
-        else:
-            data = {"ds1": self.ds1, "ds2": self.ds2, "ds3": self.ds3}
-        ds = xr.Dataset(coords=self.coords, data_vars=data, attrs=attrs)
-        filename = str(self.filename).split(".")[
-                       0] + ".5nca"  # We're using the 5nca file extension for all files from now on
-        ds.to_netcdf(filename, engine="h5netcdf", invalid_netcdf=True)
-        # self.filename = filename  # load the new file one its written
-        # Actually a bad idea, causes too many issues
+    fitData = param.Boolean(default=False, precedence=-1)
+    fitAll = param.Boolean(default=False, precedence=-1)
+    button = pn.widgets.Button(name='Fit All Blocks and save to file', button_type='primary')
 
     def Upgrade(self, event=None):
-        if not (self.fitted):
-            self.fitBlocks()
-        self.Update()
+        self.fitBlocks()
+        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf}
+        ds = xr.Dataset(coords=self.coords, data_vars=data)
+        filename = str(self.filename) + "f"  # We're sticking a f to the filename
+        ds.to_netcdf(filename, engine="h5netcdf")
 
     def fitBlocks(self, event=None):
         if not (self.fitted):
@@ -93,59 +65,34 @@ class grapher(param.Parameterized):
                                     coords={"C": C, "Orientation": data.coords["Orientation"],
                                             "wavelength": data.coords["wavelength"]})
 
-            self.dsf = xr.map_blocks(fitx_blocks, self.ds1, template=template).compute()
+            self.dsf = xr.map_blocks(fitx_blocks, self.ds1, template=template)
             self.button.disabled = True
             self.fitted = True
 
-    @param.depends('filename', watch=True)
     def _update_dataset(self):
-        extension = str(self.filename).split('.')[1]
-        if extension == '5nc':
-
-            self.ds = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1,
-                                                                      'wavelength': 20}))  # chunked for heatmap selected
-            self.ds1 = self.ds
-            self.ds2 = self.ds1.mean(dim='Polarization')  # chunked for navigation
-            self.ds3 = self.ds1.mean(dim=['x', 'y'])  # chunked for heatmap all
-            self.attrs = {**self.ds.attrs, **self.ds1.attrs}
-            self.averaged = False
-            self.fitted = False
-            self.logged = False
-        elif extension == '5nca':
-            self.ds = xr.open_dataset(self.filename, chunks={'Orientation': 1, 'wavelength': 1}, engine="h5netcdf")
-            self.ds1 = self.ds['ds1']
-            self.ds2 = self.ds['ds2'].persist()
-            self.ds3 = self.ds['ds3'].persist()
-            self.attrs = {**self.ds.attrs, **self.ds1.attrs}  # copy the attrs
-            self.fitted = bool(self.attrs["fitted"])
-            self.logged = bool(self.attrs["logged"])
-            self.averaged = bool(self.attrs["averaged"])
-            if self.attrs["fitted"]:
-                self.dsf = self.ds['fitted'].persist()
-        elif extension == '5nce':
-            self.ds = hotfix(xr.open_dataset(self.filename, chunks={'Orientation': 1, 'wavelength': 1}))
-            self.ds1 = self.ds['da1']
-            self.ds2 = self.ds['da2'].persist()
-            self.ds3 = self.ds['da3'].persist()
-            self.attrs = {**self.ds.attrs, **self.ds1.attrs}
+        if extension(self.filename) == '5nc':  # innaccurate dimensions
+            self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1,
+                                                                       'wavelength': 1}))  # chunked for heatmap selected
+        elif extension(self.filename) == "nc":
+            self.ds1 = xr.open_dataarray(self.filename, chunks={'Orientation': 1,
+                                                                'wavelength': 1})  # chunked for heatmap selected
+        if os.path.exists(str(self.filename) + "f"):
+            ds = xr.open_dataset((str(self.filename) + "f"), chunks={'Orientation': 1,
+                                                                     'wavelength': 20})
+            self.ds2 = ds["ds2"]
+            self.ds3 = ds["ds3"]
+            self.dsf = ds["fitted"]
             self.averaged = True
-            self.logged = True
-            self.fitted = False
-        elif extension == "5ncu":
-            self.ds = xr.open_dataset(self.filename, chunks={'Orientation': 1, 'wavelength': 1})
-            self.ds1 = self.ds['ds1']
-            self.ds2 = self.ds['ds2'].persist()
-            self.ds3 = self.ds['ds3'].persist()
-            self.dsf = self.ds['fitted'].persist()
-            self.attrs = {**self.ds.attrs, **self.ds1.attrs}
-            self.averaged = True
-            self.logged = False
             self.fitted = True
         else:
-            print("ERROR: INVALID FILE")
-        self.button2.disabled = self.logged or self.fitted
+            self.ds2 = self.ds1.mean(dim='Polarization')  # chunked for navigation
+            self.ds3 = self.ds1.mean(dim=['x', 'y'])  # chunked for heatmap all
+            self.averaged = False
+            self.fitted = False
+        self.attrs = {**self.ds1.attrs, **self.ds1.attrs}
+
+        self.logged = False
         self.button.disabled = self.fitted
-        self.button3.disabled = self.logged
         self.coords = self.ds1.coords
         dattrs = {"Polarization": "radians", "Orientation": "Idk", "wavelength": "nm", "x": "micrometers",
                   "y": "micrometers"}
@@ -168,23 +115,14 @@ class grapher(param.Parameterized):
         pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9)
         return pf
 
-    def __init__(self, filename=False, client_input=None):
+    def __init__(self, filename, client_input):
         super().__init__()
-        global client
-        if not client_input is None:  # use the global client
-            self.client = client_input
-        elif client is None:  # create its own client
-            self.client = Client()
-            client = self.client
-        else:
-            self.client = client  # Has to execute so the class knows the client before the filename checks happen
-        if not False == filename:
-            self.filename = Path(filename)
-            self.fileChoosing = False
-
+        self.client = client_input
+        self.filename = Path(filename)
+        self.fileChoosing = False
         self._update_dataset()
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'filename')
+    @param.depends('Orientation', 'wavelength', 'colorMap')
     def nav(self):
         self.selected = False
         polys = hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
@@ -208,7 +146,7 @@ class grapher(param.Parameterized):
             self.y1 = data['y1'][0]
             self.selected = True
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'filename', 'x1', 'x0', 'y0', 'y1', 'selected')
+    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected')
     def title(self):
         if self.selected:
             return pn.pane.Markdown(
@@ -219,7 +157,7 @@ class grapher(param.Parameterized):
                 f'''##{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points''',
                 width=1800)
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'filename', 'x1', 'x0', 'y0', 'y1', 'selected')
+    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected')
     def heatMap(self):
         if not self.selected:
             output = self.ds3.sel(Orientation=self.Orientation).compute()
@@ -239,7 +177,7 @@ class grapher(param.Parameterized):
         return hv.Image(output).opts(opts).redim(wavelength=self.wavelengthDim,
                                                  Polarization=self.PolarizationDim) * line
 
-    @param.depends('Orientation', 'wavelength', 'filename', 'x1', 'x0', 'y0', 'y1', 'fitData', 'selected', 'fitted')
+    @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'fitData', 'selected', 'fitted')
     def Polar(self):
         thetaVals = self.coords['Polarization'].values
         thetaRadians = self.coords['Polarization'].values
@@ -280,15 +218,12 @@ class grapher(param.Parameterized):
     def dask(self):
         return self.client
 
-    @param.depends('filename')
     def xarray(self):
-        return pn.panel(self.ds, width=700)
+        return pn.panel(self.ds1, width=700)
 
-    @param.depends('filename', watch=True)
     def view(self):
         return pn.Column(self.title, pn.Row(self.nav, self.heatMap), pn.Row(self.Polar, self.xarray))
 
-    @param.depends('filename')
     def sidebar(self):
         cores = sum(self.client.nthreads().values())
         estimate1 = convert(self.coords['x'].size * self.coords['y'].size * 0.006)
@@ -313,16 +248,7 @@ class grapher(param.Parameterized):
         Most of the computation will be to Fit All
         ''')
 
-    @param.depends('filename', watch=True)
     def widgets(self):
-        self.button.on_click(self.fitBlocks)
-        self.button2.on_click(self.Upgrade)
-        self.button3.on_click(self.Update)
-        if self.fileChoosing:
-            params = ['filename', 'colorMap', 'fitData', 'Orientation', 'wavelength']
-        else:
-            params = ['colorMap', 'fitData', 'Orientation', 'wavelength']
-        return pn.Column(pn.Param(self.param, parameters=params, widgets={"wavelength": pn.widgets.DiscreteSlider}),
-                         self.button, self.button2, self.button3, self.dask, self.sidebar, )
-# graph = grapher()
-# pn.Row(graph.widgets(),graph.view()).show()
+        self.button.on_click(self.Upgrade)
+        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}),
+                         self.button, self.dask, self.sidebar)
