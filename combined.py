@@ -62,13 +62,14 @@ class instrumental(param.Parameterized):
         instrument_classes["RASHG"] = RASHG.RASHG
         instruments.append("RASHG")
     instruments = param.ObjectSelector(default="random", objects=instruments)
-    confirmed = param.Boolean(default=False)
+    confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
 
     def __init__(self, client):
         super().__init__()
         self.client = client
         self.load()
+        self.gui = RASHG.gui.grapher()
 
     @param.depends('instruments', watch=True)
     def load(self):
@@ -78,22 +79,23 @@ class instrumental(param.Parameterized):
 
     @param.depends('instruments', 'confirmed')
     def widgets(self):
-        if not self.confirmed:
-            self.button.on_click(self.initialize)
-            # only show instruments widget
-            return pn.Column(pn.Param(self.param, parameters=['instruments']), self.instrument.widgets(), self.button)
-        else:
-            return pn.Column(pn.Param(self.param, parameters=['instruments']), self.button)
+        self.button.on_click(self.initialize)
+        return pn.Column(self.param, self.instrument.param,self.gui.param, self.button,self.gui.widgets)
 
     def initialize(self, event=None):
-        self.button.disabled = True
         self.instrument.initialize()
+        self.gui.initialize(self.instrument) #initialize the GUI with the instruments
+        self.button.disabled = True
+        self.confirmed = True
+        self.gui.live_view() #start live view immediately
 
-    @param.depends('instruments')
+    @param.depends('instruments','confirmed')
     def gView(self):
-
         # more complicated due to instruments and gui relationship
-        pass
+        if self.confirmed:
+            return self.gui.output
+        else:
+            pass
 
 
 # wrapper around viewer class to interface with instrumental class
@@ -116,11 +118,11 @@ class combined(param.Parameterized):
 
     @param.depends('applets')
     def widgets(self):
-        return self.applet.widgets()
+        return self.applet.widgets
 
     @param.depends('applets')
     def gView(self):
-        return self.applet.gView()
+        return self.applet.gView
 
     def view(self):
         return pn.Row(pn.Column(self.param, self.widgets), self.gView)

@@ -15,7 +15,7 @@ hv.extension('bokeh', 'plotly')
 import posixpath
 
 client = None
-from .utils  import *
+from .utils import *
 
 '''
 if not "visualizer" in os.listdir():
