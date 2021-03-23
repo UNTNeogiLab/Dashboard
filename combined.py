@@ -52,18 +52,47 @@ class viewer(param.Parameterized):
 
 
 class instrumental(param.Parameterized):
+    instrument_classes = {"random": RASHG.random}
     instruments = []
     if RASHG.random_enabled:
         instruments.append("random")
     else:
         print("Random initialization falied, check your environment. This will almost certainly break the program")
     if RASHG.RASHG_enabled:
+        instrument_classes["RASHG"] = RASHG.RASHG
         instruments.append("RASHG")
+    instruments = param.ObjectSelector(default="random", objects=instruments)
+    confirmed = param.Boolean(default=False)
+    button = pn.widgets.Button(name='Confirm', button_type='primary')
 
+    def __init__(self, client):
+        super().__init__()
+        self.client = client
+        self.load()
+
+    @param.depends('instruments', watch=True)
+    def load(self):
+        self.confirmed = False
+        self.button.disabled = False
+        self.instrument = self.instrument_classes[self.instruments].instruments()
+
+    @param.depends('instruments', 'confirmed')
     def widgets(self):
-        return self.param
+        if not self.confirmed:
+            self.button.on_click(self.initialize)
+            # only show instruments widget
+            return pn.Column(pn.Param(self.param, parameters=['instruments']), self.instrument.widgets(), self.button)
+        else:
+            return pn.Column(pn.Param(self.param, parameters=['instruments']), self.button)
 
+    def initialize(self, event=None):
+        self.button.disabled = True
+        self.instrument.initialize()
+
+    @param.depends('instruments')
     def gView(self):
+
+        # more complicated due to instruments and gui relationship
         pass
 
 
@@ -83,7 +112,7 @@ class combined(param.Parameterized):
         if self.applets == "viewer":
             self.applet = viewer(self.client)
         elif self.applets == "instrumental":
-            self.applet = instrumental()
+            self.applet = instrumental(self.client)
 
     @param.depends('applets')
     def widgets(self):
