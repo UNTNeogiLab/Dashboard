@@ -17,6 +17,7 @@ When cloning use --recurse-submodules or run
 `pip install --user pipenv` (unpriviledged installation, use `pip install pipenv` or use package manager for global
 install)  
 (optionally use `module load python/3.7.4` for UNT server support)  
+(to download another version of python install `pyenv curl https://pyenv.run | bash`)  
 `pipenv sync` (installs dependencies)
 
 ### Updating dependencies
