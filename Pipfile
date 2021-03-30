@@ -34,9 +34,12 @@ nidaqmx = "*"
 pyvisa = "*"
 thorlabs-apt = "*"
 instrumental-lib = "*"
+pip-licenses = "*"
+pyvisa-py = "*"
 
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
+pip-licenses = "*" #check licenses of libraries
 
 [requires]
 python_version = "3.7.4"
