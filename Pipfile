@@ -32,9 +32,9 @@ scipy = "*"
 nidaqmx = "*"
 pyvisa = "*"
 thorlabs-apt = "*"
-instrumental-lib = "*"
 pip-licenses = "*"
 pyvisa-py = "*"
+instrumental-lib = "*"
 
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
