@@ -36,9 +36,13 @@ pip-licenses = "*"
 pyvisa-py = "*"
 instrumental-lib = "*"
 
+
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
 pip-licenses = "*" #check licenses of libraries
-
+labview-automation = "*"
 [requires]
 python_version = "3.7.4"
+
+[pipenv]
+allow_prereleases = true
