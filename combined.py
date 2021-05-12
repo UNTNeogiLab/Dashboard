@@ -48,15 +48,8 @@ class viewer(param.Parameterized):
 
 
 class instrumental(param.Parameterized):
-    instrument_classes = {"random": RASHG.random}
-    instruments = []
-    if RASHG.random_enabled:
-        instruments.append("random")
-    else:
-        print("Random initialization falied, check your environment. This will almost certainly break the program")
-    if RASHG.RASHG_enabled:
-        instrument_classes["RASHG"] = RASHG.RASHG
-        instruments.append("RASHG")
+    instrument_classes = RASHG.instruments
+    instruments = list(RASHG.instruments.keys())
     instruments = param.ObjectSelector(default="random", objects=instruments)
     confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
