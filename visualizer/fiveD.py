@@ -1,20 +1,12 @@
-import os
 import pandas as pd
 import param
 import plotly.express as px
-from dask.distributed import Client
-from scipy.optimize import curve_fit
-
 import xarray as xr
 import holoviews as hv
 import panel as pn
-import numpy as np
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-import posixpath
-
-client = None
 from .utils import *
 
 '''
@@ -35,44 +27,28 @@ class grapher(param.Parameterized):
     fitted = param.Boolean(default=False, precedence=-1)
     selected = param.Boolean(default=False, precedence=-1)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
-    fitData = param.Boolean(default=False, precedence=-1)
+    fitData = param.Boolean(default=False)
     fitAll = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Fit All Blocks and save to file', button_type='primary')
 
     def Upgrade(self, event=None):
         self.fitBlocks()
-        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf}
+        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf.curvefit_coefficients,
+                "covars": self.dsf.curvefit_covariance}
         ds = xr.Dataset(coords=self.coords, data_vars=data)
         filename = str(self.filename) + "f"  # We're sticking a f to the filename
         ds.to_netcdf(filename, engine="h5netcdf")
 
     def fitBlocks(self, event=None):
         if not (self.fitted):
-            O = self.coords['Orientation']
-            w = self.coords['wavelength']
-            C = ["delta", "A", "B", "theta", "C"]
-            dims = len(C)
-            xcoords = self.ds1.coords['Polarization'].values
-            xdata = np.tile(xcoords, int(self.ds1.coords['x'].size * self.ds1.coords['y'].size))
-            template = xr.DataArray(np.zeros((dims, O.size, w.size)), dims=["C", "Orientation", "wavelength"],
-                                    coords=[C, O, w],
-                                    name="fitted").chunk({"wavelength": 1, "Orientation": 1})
-
-            def fitx_blocks(data):
-                ydata = data.values.flatten(order="C")
-                pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9)
-                return xr.DataArray(pf.reshape((dims, 1, 1)), dims=["C", "Orientation", "wavelength"],
-                                    coords={"C": C, "Orientation": data.coords["Orientation"],
-                                            "wavelength": data.coords["wavelength"]})
-
-            self.dsf = xr.map_blocks(fitx_blocks, self.ds1, template=template)
+            self.dsf = self.ds1.curvefit(["Polarization"], function, reduce_dims=["x", "y"]).compute()
             self.button.disabled = True
             self.fitted = True
 
     def _update_dataset(self):
         if extension(self.filename) == '5nc':  # innaccurate dimensions
-            self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1,
-                                                                       'wavelength': 1}))  # chunked for heatmap selected
+            self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 1},
+                                                engine="h5netcdf"))  # chunked for heatmap selected
         elif extension(self.filename) == "nc":
             self.ds1 = xr.open_dataarray(self.filename, chunks={'Orientation': 1,
                                                                 'wavelength': 1})  # chunked for heatmap selected
@@ -106,13 +82,10 @@ class grapher(param.Parameterized):
     def fit(self):
         if self.selected:
             output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength).sel(
-                x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).compute()
+                x=slice(self.x0, self.x1), y=slice(self.y0, self.y1))
         else:
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength).compute()
-        xcoords = self.coords['Polarization'].values
-        xdata = np.tile(xcoords, int(output.coords['x'].size * output.coords['y'].size))
-        ydata = output.values.flatten(order="C")
-        pf, pcov = curve_fit(function, xdata, ydata, maxfev=1000000, xtol=1e-9, ftol=1e-9)
+            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength)
+        pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"]).compute().curvefit_coefficients.values
         return pf
 
     def __init__(self, filename, client_input):
@@ -205,7 +178,7 @@ class grapher(param.Parameterized):
                                    columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
                 df = df.append(df2)
         if self.fitted:
-            params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength).values
+            params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength).curvefit_coefficients.values
             fitted = functionN(thetaRadians, *params)
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
