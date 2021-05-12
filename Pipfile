@@ -42,7 +42,7 @@ bpytop = "*" #monitoring program of my choice
 pip-licenses = "*" #check licenses of libraries
 labview-automation = "*"
 [requires]
-python_version = "3.7.4"
+python_version = "3.7"
 
 [pipenv]
 allow_prereleases = true
