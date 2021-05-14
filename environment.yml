@@ -5,8 +5,6 @@ channels:
   - pyviz
   - numba
 dependencies:
-  - jupyterlab
-  - jupyter
   - mamba
   - pandas
   - numpy
@@ -33,3 +31,10 @@ dependencies:
   - netCDF4
   - plotly
   - jupyter_bokeh
+  - nidaqmx
+  - pyvisa
+  - thorlabs-apt
+  - pip-licenses
+  - pyvisa-py
+  - instrumental-lib
+  - labview-automation

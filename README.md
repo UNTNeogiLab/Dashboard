@@ -13,12 +13,18 @@ When cloning use --recurse-submodules or run
 ## Installing Dependencies
 
 ### Using Pipfile (requires python)
-
+If running debian or ubuntu or other derivatives, read the next section first  
 `pip install --user pipenv` (unpriviledged installation, use `pip install pipenv` or use package manager for global
 install)  
 (optionally use `module load python/3.7.4` for UNT server support)  
-(to download another version of python install `pyenv curl https://pyenv.run | bash`)  
+(to download another version of python install `curl https://pyenv.run | bash`)  
 `pipenv sync` (installs dependencies)
+### debian/ubuntu
+Do not use the debian/ubuntu versions of pip and pipenv since they are out of date  (5/14/21)  
+instead use https://github.com/pyenv/pyenv#installation from source  
+also dependencies needed before pipenv sync  
+`sudo apt install python3-aiohttp`  
+Actually current Ubuntu has broken pip, leaving us with expiremental conda support again
 
 ### Updating dependencies
 

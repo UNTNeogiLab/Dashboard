@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-jupyter = "*"
 pandas = "*"
 numpy = "*"
 matplotlib = "*"
@@ -25,14 +24,12 @@ dask = "*"
 colorcet = "*"
 plotly = "*"
 jupyter-bokeh = "*"
-Bottleneck = "*"
 netcdf4 = "*"
 numba = "*"
 scipy = "*"
 nidaqmx = "*"
 pyvisa = "*"
 thorlabs-apt = "*"
-pip-licenses = "*"
 pyvisa-py = "*"
 instrumental-lib = "*"
 
