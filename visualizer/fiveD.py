@@ -33,15 +33,17 @@ class grapher(param.Parameterized):
 
     def Upgrade(self, event=None):
         self.fitBlocks()
-        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf.curvefit_coefficients,
-                "covars": self.dsf.curvefit_covariance}
+        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf,
+                "covars": self.dsf_covar}
         ds = xr.Dataset(coords=self.coords, data_vars=data)
         filename = str(self.filename) + "f"  # We're sticking a f to the filename
         ds.to_netcdf(filename, engine="h5netcdf")
 
     def fitBlocks(self, event=None):
         if not (self.fitted):
-            self.dsf = self.ds1.curvefit(["Polarization"], function, reduce_dims=["x", "y"]).compute()
+            self.dsf_all = self.ds1.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
+            self.dsf = self.dsf_all.curvefit_coefficients
+            self.dsf_covar = self.dsf_all.curvefit_covariance
             self.button.disabled = True
             self.fitted = True
 
@@ -54,7 +56,7 @@ class grapher(param.Parameterized):
                                                                 'wavelength': 1})  # chunked for heatmap selected
         if os.path.exists(str(self.filename) + "f"):
             ds = xr.open_dataset((str(self.filename) + "f"), chunks={'Orientation': 1,
-                                                                     'wavelength': 20})
+                                                                     'wavelength': 20},engine="h5netcdf")
             self.ds2 = ds["ds2"]
             self.ds3 = ds["ds3"]
             self.dsf = ds["fitted"]
@@ -85,8 +87,9 @@ class grapher(param.Parameterized):
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1))
         else:
             output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength)
-        pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"]).compute().curvefit_coefficients.values
-        return pf
+        pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
+        curvefit_coefficients = pf.curvefit_coefficients #idk what to do with the covars
+        return curvefit_coefficients.compute().values
 
     def __init__(self, filename, client_input):
         super().__init__()
@@ -178,7 +181,7 @@ class grapher(param.Parameterized):
                                    columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
                 df = df.append(df2)
         if self.fitted:
-            params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength).curvefit_coefficients.values
+            params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength).values
             fitted = functionN(thetaRadians, *params)
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)

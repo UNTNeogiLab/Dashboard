@@ -90,7 +90,7 @@ class instrumental(param.Parameterized):
 # wrapper around viewer class to interface with instrumental class
 class combined(param.Parameterized):
     applets = ["viewer", "instrumental"]
-    applets = param.ObjectSelector(default="viewer", objects=applets)
+    applets = param.ObjectSelector(default="instrumental", objects=applets)
 
     def __init__(self):
         super().__init__()
