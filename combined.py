@@ -22,9 +22,9 @@ class viewer(param.Parameterized):
     default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
 
-    def __init__(self, client):
+    def __init__(self):
         super().__init__()
-        self.client = client
+        self.client = Client()
         self.load()
 
     def reload_files(self):
@@ -54,9 +54,8 @@ class instrumental(param.Parameterized):
     confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
 
-    def __init__(self, client):
+    def __init__(self):
         super().__init__()
-        self.client = client
         self.load()
         self.gui = RASHG.gui.grapher()
 
@@ -94,16 +93,14 @@ class combined(param.Parameterized):
 
     def __init__(self):
         super().__init__()
-        self.client = Client()
-        client = self.client
         self.load()
 
     @param.depends('applets', watch=True)
     def load(self):
         if self.applets == "viewer":
-            self.applet = viewer(self.client)
+            self.applet = viewer()
         elif self.applets == "instrumental":
-            self.applet = instrumental(self.client)
+            self.applet = instrumental()
 
     @param.depends('applets')
     def widgets(self):
