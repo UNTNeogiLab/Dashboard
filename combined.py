@@ -1,5 +1,5 @@
 import param
-# from dask.distributed import Client
+from dask.distributed import Client
 import posixpath
 from visualizer.utils import *
 from visualizer.fiveD import grapher
@@ -31,7 +31,7 @@ class viewer(param.Parameterized):
 
     def __init__(self, filename=default):
         super().__init__()
-        self.client = None
+        self.client = Client()
         self.filename = filename
         self.load()
 
