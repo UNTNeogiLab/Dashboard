@@ -5,6 +5,7 @@ from visualizer.utils import *
 from visualizer.fiveD import grapher
 from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
+import time
 
 # try import RASHG.instruments_RASHG
 pn.extension('plotly')
@@ -143,8 +144,11 @@ if __name__ == '__main__':
     elif not args.filename == False:
         view = viewer(filename=Path(args.filename))
         print(view.client)
+        start = time.time()
         view.grapher.Upgrade()
         print(args.filename)
+        end = time.time()
+        print(end - start)
     else:
         print("Defaulting to local server")
         local()
