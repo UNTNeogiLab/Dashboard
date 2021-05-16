@@ -1,11 +1,12 @@
 import param
-from dask.distributed import Client
+# from dask.distributed import Client
 import posixpath
 from visualizer.utils import *
 from visualizer.fiveD import grapher
 from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
 import time
+import socket
 
 # try import RASHG.instruments_RASHG
 pn.extension('plotly')
@@ -17,6 +18,11 @@ pbar = ProgressBar()
 pbar.register()
 
 
+def is_port_in_use(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
+
 class viewer(param.Parameterized):
     extensions = {'3nc': grapher3D, "5nc": grapher, "nc": grapher}
     files = getDir(extensions)
@@ -25,7 +31,7 @@ class viewer(param.Parameterized):
 
     def __init__(self, filename=default):
         super().__init__()
-        self.client = Client()
+        self.client = None
         self.filename = filename
         self.load()
 
@@ -45,8 +51,11 @@ class viewer(param.Parameterized):
     def gView(self):
         return self.grapher.view()
 
+    def dask(self):
+        return self.client
+
     def view(self):
-        return pn.Row(self.widgets, self.gView)
+        return pn.Row(self.widgets, self.gView, self.dask)
 
 
 class instrumental(param.Parameterized):
@@ -119,8 +128,11 @@ class combined(param.Parameterized):
 # these two functions are basically identical for now
 def local(port=5006):
     view = combined()
-    view.view().show(
-        port=port)  # if you need to change this, change this on your own or implement ports yourself. It isn't very hard
+    if is_port_in_use(port):
+        view.view().show()
+    else:
+        view.view().show(
+            port=port)  # if you need to change this, change this on your own or implement ports yourself. It isn't very hard
 
 
 def server(reload=False):

@@ -192,8 +192,7 @@ class grapher(param.Parameterized):
                                 direction="counterclockwise",
                                 range_r=(df['Intensity'].min() * 0.8, df['Intensity'].max() * 1.2))
 
-    def dask(self):
-        return self.client
+
 
     def xarray(self):
         return pn.panel(self.ds1, width=700)
@@ -202,20 +201,13 @@ class grapher(param.Parameterized):
         return pn.Column(self.title, pn.Row(self.nav, self.heatMap), pn.Row(self.Polar, self.xarray))
 
     def sidebar(self):
-        cores = sum(self.client.nthreads().values())
-        estimate1 = convert(self.coords['x'].size * self.coords['y'].size * 0.006)
-        estimate2 = convert(
-            self.coords['wavelength'].size * self.coords['Orientation'].size * self.coords['x'].size *
-            self.coords['y'].size * 0.006 / cores)
         return pn.pane.Markdown(f'''
         ##NOTES
         estimates are probably innacurate
         ###Fit data
-        **estimated:** {estimate1} for all pixels
 
         Will fit data to point selections, dramatically increasing processing times when selecting new wavelengths, Orientations, or point selections
         ###Fit all
-        **estimated:** {estimate2}
 
         will fit them upon selection, taking significant processing time, but will be much faster when changing wavelengths, orientations. Will not pay attention to point selections
         ###Using both
@@ -228,4 +220,4 @@ class grapher(param.Parameterized):
     def widgets(self):
         self.button.on_click(self.Upgrade)
         return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}),
-                         self.button, self.dask, self.sidebar)
+                         self.button, self.sidebar)
