@@ -33,18 +33,22 @@ class grapher(param.Parameterized):
 
     def Upgrade(self, event=None):
         self.fitBlocks()
-        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf,
-                "covars": self.dsf_covar}
+        self.ds2.compute()
+        self.ds3.compute()
+        self.dsf_all.compute()
+        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf_all.curvefit_coefficients,
+                "covars": self.dsf_all.curvefit_covariance}
         ds = xr.Dataset(coords=self.coords, data_vars=data)
         filename = str(self.filename) + "f"  # We're sticking a f to the filename
         ds.to_netcdf(filename, engine="h5netcdf")
+        self.button.disabled = True
 
     def fitBlocks(self, event=None):
         if not (self.fitted):
             self.dsf_all = self.ds1.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
             self.dsf = self.dsf_all.curvefit_coefficients
             self.dsf_covar = self.dsf_all.curvefit_covariance
-            self.button.disabled = True
+
             self.fitted = True
 
     def _update_dataset(self):
