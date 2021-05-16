@@ -49,7 +49,7 @@ class grapher(param.Parameterized):
 
     def _update_dataset(self):
         if extension(self.filename) == '5nc':  # innaccurate dimensions
-            self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 1},
+            self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength':14},
                                                 engine="h5netcdf"))  # chunked for heatmap selected
         elif extension(self.filename) == "nc":
             self.ds1 = xr.open_dataarray(self.filename, chunks={'Orientation': 1,
