@@ -90,7 +90,7 @@ class grapher(param.Parameterized):
             output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength)
         pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
         curvefit_coefficients = pf.curvefit_coefficients #idk what to do with the covars
-        return curvefit_coefficients.compute().values
+        return curvefit_coefficients.values
 
     def __init__(self, filename, client_input):
         super().__init__()
@@ -104,7 +104,7 @@ class grapher(param.Parameterized):
         self.selected = False
         polys = hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
         box_stream = hv.streams.BoxEdit(source=polys, num_objects=1)
-        output = self.ds2.sel(Orientation=self.Orientation, wavelength=self.wavelength).persist()
+        output = self.ds2.sel(Orientation=self.Orientation, wavelength=self.wavelength)
         box_stream.add_subscriber(self.tracker)
         self.zdim = hv.Dimension('Intensity', range=(output.values.min(), output.values.max()))
         opts = [hv.opts.Image(colorbar=True, height=600,
@@ -137,12 +137,12 @@ class grapher(param.Parameterized):
     @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected')
     def heatMap(self):
         if not self.selected:
-            output = self.ds3.sel(Orientation=self.Orientation).compute()
+            output = self.ds3.sel(Orientation=self.Orientation)
             title = f'''{self.fname}: Orientation: {self.Orientation}, Average across all points'''
         else:
             output = self.ds1.sel(Orientation=self.Orientation).sel(x=slice(self.x0, self.x1),
                                                                     y=slice(self.y0, self.y1)).mean(
-                dim=['x', 'y']).compute()
+                dim=['x', 'y'])
             title = f'''{self.fname}: Orientation: {self.Orientation}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
         self.PolarizationDim = hv.Dimension('Polarization', range=getRange('Polarization', self.coords),
                                             unit=self.attrs['Polarization'])
@@ -158,13 +158,13 @@ class grapher(param.Parameterized):
     def Polar(self):
         thetaVals = self.coords['Polarization'].values
         thetaRadians = self.coords['Polarization'].values
-        overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength).persist()
+        overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength)
         df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
                           columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
             output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength).sel(
-                x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y']).persist()
+                x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
             df2 = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
             df = df.append(df2)
