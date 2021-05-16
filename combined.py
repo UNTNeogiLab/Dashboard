@@ -22,9 +22,10 @@ class viewer(param.Parameterized):
     default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
 
-    def __init__(self):
+    def __init__(self, filename=default):
         super().__init__()
         self.client = Client()
+        self.filename = filename
         self.load()
 
     def reload_files(self):
@@ -115,7 +116,7 @@ class combined(param.Parameterized):
 
 
 # these two functions are basically identical for now
-def local():
+def local(port="random"):
     view = combined()
     view.view().show()
 
@@ -131,11 +132,18 @@ if __name__ == '__main__':
                         action='store_const', const=True, default=False)
     parser.add_argument('-local', dest='local', help='Runs the panel server for single clients', action='store_const',
                         const=True, default=False)
+    parser.add_argument('-fit', dest='filename', help='fit FILENAME fits datafile and saves to file from command line',
+                        action='store', default=False)
     args = parser.parse_args()
     if args.server:
         server()
     elif args.local:
         local()
+    elif not args.filename == False:
+        view= viewer(filename=Path(args.filename))
+        print(view.client)
+        view.grapher.Upgrade()
+        print(args.filename)
     else:
         print("Defaulting to local server")
         local()

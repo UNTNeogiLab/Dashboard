@@ -60,6 +60,7 @@ class grapher(param.Parameterized):
             self.ds2 = ds["ds2"]
             self.ds3 = ds["ds3"]
             self.dsf = ds["fitted"]
+            self.dsf_covar = ds["covars"]
             self.averaged = True
             self.fitted = True
         else:
