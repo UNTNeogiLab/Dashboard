@@ -45,7 +45,7 @@ class viewer(param.Parameterized):
 
     @param.depends('filename')
     def widgets(self):
-        return pn.Column(self.param, self.grapher.widgets())
+        return pn.Column(self.param, self.grapher.widgets(),self.dask)
 
     @param.depends('filename')
     def gView(self):
@@ -55,7 +55,7 @@ class viewer(param.Parameterized):
         return self.client
 
     def view(self):
-        return pn.Row(self.widgets, self.gView, self.dask)
+        return pn.Row(self.widgets, self.gView)
 
 
 class instrumental(param.Parameterized):
