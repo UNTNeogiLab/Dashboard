@@ -116,13 +116,14 @@ class combined(param.Parameterized):
 
 
 # these two functions are basically identical for now
-def local(port="random"):
+def local(port=5006):
     view = combined()
-    view.view().show()
+    view.view().show(
+        port=port)  # if you need to change this, change this on your own or implement ports yourself. It isn't very hard
 
 
 def server(reload=False):
-    view = viewer()
+    view = combined()
     view.view().show(port=5006, open=False)
 
 
@@ -140,7 +141,7 @@ if __name__ == '__main__':
     elif args.local:
         local()
     elif not args.filename == False:
-        view= viewer(filename=Path(args.filename))
+        view = viewer(filename=Path(args.filename))
         print(view.client)
         view.grapher.Upgrade()
         print(args.filename)
