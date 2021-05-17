@@ -9,13 +9,6 @@ pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 from .utils import *
 
-'''
-if not "visualizer" in os.listdir():
-    from utils import *
-else:
-    from visualizer.utils import *
-'''
-
 
 class grapher(param.Parameterized):
     Orientation = param.Integer(default=0, bounds=(0, 1))
@@ -29,52 +22,39 @@ class grapher(param.Parameterized):
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     fitData = param.Boolean(default=False)
     fitAll = param.Boolean(default=False, precedence=-1)
-    button = pn.widgets.Button(name='Fit All Blocks and save to file', button_type='primary')
-
-    def Upgrade(self, event=None):
-        self.fitBlocks()
-        data = {"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf_all.curvefit_coefficients,
-                "covars": self.dsf_all.curvefit_covariance}
-        ds = xr.Dataset(coords=self.coords, data_vars=data)
-        filename = str(self.filename) + "f"  # We're sticking a f to the filename
-
-        ds.to_netcdf(filename, engine="h5netcdf")
-        self.button.disabled = True
-
-    def fitBlocks(self, event=None):
-        self.dsf_all = self.ds1.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
-        self.dsf = self.dsf_all.curvefit_coefficients
-        self.dsf_covar = self.dsf_all.curvefit_covariance
-
-        self.fitted = True
 
     def _update_dataset(self):
         if extension(self.filename) == '5nc':  # innaccurate dimensions
             self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 14},
-                                                engine="h5netcdf"))  # chunked for heatmap selected
+                                                engine="netcdf4"))  # chunked for heatmap selected
         elif extension(self.filename) == "nc":
             self.ds1 = xr.open_dataarray(self.filename, chunks={'Orientation': 1,
-                                                                'wavelength': 1})  # chunked for heatmap selected
+                                                                'wavelength': 1},
+                                         engine="netcdf4")  # chunked for heatmap selected
+        self.coords = self.ds1.coords
         if os.path.exists(str(self.filename) + "f"):
             ds = xr.open_dataset((str(self.filename) + "f"), chunks={'Orientation': 1,
-                                                                     'wavelength': 20}, engine="h5netcdf")
+                                                                     'wavelength': 20}, engine="netcdf4")
             self.ds2 = ds["ds2"]
             self.ds3 = ds["ds3"]
             self.dsf = ds["fitted"]
             self.dsf_covar = ds["covars"]
-            self.averaged = True
-            self.fitted = True
-            self.button.disabled = True
-        else:
-            self.ds2 = self.ds1.mean(dim='Polarization')  # chunked for navigation
-            self.ds3 = self.ds1.mean(dim=['x', 'y'])  # chunked for heatmap all
-            self.averaged = False
-            self.fitted = False
-        self.attrs = {**self.ds1.attrs, **self.ds1.attrs}
 
-        self.logged = False
-        self.button.disabled = self.fitted
-        self.coords = self.ds1.coords
+            self.fitted = True
+        else:
+
+            self.ds2 = self.ds1.mean(dim='Polarization').compute()  # chunked for navigation
+            self.ds3 = self.ds1.mean(dim=['x', 'y']).compute()   # chunked for heatmap all
+            self.dsf_all = self.ds3.curvefit(["Polarization"], function).compute()
+            self.dsf = self.dsf_all.curvefit_coefficients
+            self.dsf_covar = self.dsf_all.curvefit_covariance
+            ds = xr.Dataset(coords=self.coords,
+                            data_vars={"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf_all.curvefit_coefficients,
+                                       "covars": self.dsf_all.curvefit_covariance})
+            filename = str(self.filename) + "f"  # We're sticking a f to the filename
+            ds.to_netcdf(filename, engine="netcdf4")
+            self.fitted = True
+        self.attrs = {**self.ds1.attrs, **self.ds1.attrs}
         dattrs = {"Polarization": "radians", "Orientation": "Idk", "wavelength": "nm", "x": "micrometers",
                   "y": "micrometers"}
         self.attrs['Polarization'] = "radians"
@@ -207,8 +187,8 @@ class grapher(param.Parameterized):
 
         Will fit data to point selections, dramatically increasing processing times when selecting new wavelengths, Orientations, or point selections
         ###Fit all
-
-        will fit them upon selection, taking significant processing time, but will be much faster when changing wavelengths, orientations. Will not pay attention to point selections
+        Done at file load and saves to file automatically
+        Takes significant processing time, but will be much faster when changing wavelengths, orientations. Will not pay attention to point selections
         ###Using both
         Will fit both the whole dataset and selections, significant preformance considerations.
         ###Upgrading files
@@ -217,6 +197,4 @@ class grapher(param.Parameterized):
         ''')
 
     def widgets(self):
-        self.button.on_click(self.Upgrade)
-        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}),
-                         self.button, self.sidebar)
+        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}),self.sidebar)
