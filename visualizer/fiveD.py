@@ -44,8 +44,9 @@ class grapher(param.Parameterized):
         else:
 
             self.ds2 = self.ds1.mean(dim='Polarization').compute()  # chunked for navigation
-            self.ds3 = self.ds1.mean(dim=['x', 'y']).compute()   # chunked for heatmap all
-            self.dsf_all = self.ds3.curvefit(["Polarization"], function).compute()
+            self.ds3 = self.ds1.mean(dim=['x', 'y']).compute()  # chunked for heatmap all
+            self.dsf_all = self.ds3.curvefit(["Polarization"], function,
+                                             kwargs={"maxfev": 1000000, "xtol": 10 ** -9, "ftol": 10 ** -9}).compute()
             self.dsf = self.dsf_all.curvefit_coefficients
             self.dsf_covar = self.dsf_all.curvefit_covariance
             ds = xr.Dataset(coords=self.coords,
@@ -197,4 +198,4 @@ class grapher(param.Parameterized):
         ''')
 
     def widgets(self):
-        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}),self.sidebar)
+        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.sidebar)
