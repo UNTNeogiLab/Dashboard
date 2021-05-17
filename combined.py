@@ -118,11 +118,8 @@ if __name__ == '__main__':
     elif args.local:
         local()
     elif not args.filename == False:
-        view = viewer(filename=Path(args.filename))
-        print(view.client)
         start = time.time()
-        view.grapher.Upgrade()
-        print(args.filename)
+        view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
         end = time.time()
         print(end - start)
     else:
