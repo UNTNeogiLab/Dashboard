@@ -31,11 +31,10 @@ dependencies:
   - netCDF4
   - plotly
   - jupyter_bokeh
-  - nidaqmx
   - pyvisa
-  - thorlabs-apt
-  - pip-licenses
   - pyvisa-py
-  - instrumental-lib
   - python-kaleido
-  - labview-automation
+  - bpytop
+  - pip:
+      - nidaqmx
+      - instrumental-lib
