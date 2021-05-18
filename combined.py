@@ -1,5 +1,5 @@
 import os.path
-
+import holoviews as hv
 import param
 from dask.distributed import Client
 import posixpath
@@ -10,11 +10,11 @@ from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
 import time
 import socket
+
 # try import RASHG.instruments_RASHG
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 from dask.diagnostics import ProgressBar
-
 
 pbar = ProgressBar()
 pbar.register()
@@ -25,7 +25,7 @@ def is_port_in_use(port):
         return s.connect_ex(('localhost', port)) == 0
 
 
-class viewer(param.Parameterized):
+class Viewer(param.Parameterized):
     extensions = {'3nc': grapher3D, "5nc": grapher, "nc": grapher}
     files = getDir(extensions)
     default = Path("data/truncated_1.5nc")
@@ -47,7 +47,7 @@ class viewer(param.Parameterized):
 
     @param.depends('filename')
     def widgets(self):
-        return pn.Column(self.param, self.grapher.widgets(),self.dask)
+        return pn.Column(self.param, self.grapher.widgets(), self.dask)
 
     @param.depends('filename')
     def gView(self):
@@ -57,9 +57,7 @@ class viewer(param.Parameterized):
         return self.client
 
     def view(self):
-        return pn.Row(self.widgets, self.gView)
-
-
+        return pn.Row(self.widgets, self.gview)
 
 
 # wrapper around viewer class to interface with instrumental class
@@ -74,7 +72,7 @@ class combined(param.Parameterized):
     @param.depends('applets', watch=True)
     def load(self):
         if self.applets == "viewer":
-            self.applet = viewer()
+            self.applet = Viewer()
         elif self.applets == "instrumental":
             from instruments import instrumental
             self.applet = instrumental()
@@ -115,7 +113,7 @@ if __name__ == '__main__':
     parser.add_argument('--fit', dest='filename', help='fits datafile and saves to file from command line',
                         action='store', default=False)
     parser.add_argument('--Polar', dest='Polar', help='filename, X, Y Plots all polar plots across wavelength for',
-                        action='store', default=False, nargs=3) #TODO: add subparsers
+                        action='store', default=False, nargs=3)  # TODO: add subparsers
     args = parser.parse_args()
     if args.server:
         server()
@@ -123,31 +121,29 @@ if __name__ == '__main__':
         local()
     elif not args.filename == False:
         start = time.time()
-        view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
+        view = Viewer(filename=Path(args.filename))  # use port 8787 to view stats
         end = time.time()
         print(end - start)
     elif not args.Polar == False:
         start = time.time()
-        Filename,X,Y= args.Polar
-        view = viewer(filename=Path(Filename))  # use port 8787 to view stats
+        Filename, X, Y = args.Polar
+        view = Viewer(filename=Path(Filename))  # use port 8787 to view stats
         view.grapher.x0 = int(X)
         view.grapher.y0 = int(Y)
-        view.grapher.x1 = int(X)+0.06 #get at least 1 pixel
-        view.grapher.y1 = int(Y)+0.06 #get at least 1 pixel
-        view.grapher.fitData=True
-        view.grapher.selected=True
-        view.grapher.ignoreOverall=True
+        view.grapher.x1 = int(X) + 0.06  # get at least 1 pixel
+        view.grapher.y1 = int(Y) + 0.06  # get at least 1 pixel
+        view.grapher.selected = True
         wavelengths = view.grapher.ds1.coords['wavelength'].values.tolist()
         Orientations = view.grapher.ds1.coords['Orientation'].values.tolist()
-        Folder=Filename.replace(f".{extension(Filename)}",'')
+        Folder = Filename.replace(f".{extension(Filename)}", '')
         if not os.path.isdir(Folder):
             os.mkdir(Folder)
         for Orientation in Orientations:
-            view.grapher.Orientation=Orientation
+            view.grapher.Orientation = Orientation
             for wavelength in wavelengths:
-                view.grapher.wavelength=wavelength
+                view.grapher.wavelength = wavelength
                 view.grapher.Polar().write_image(f"{Folder}/Polar_X{X}Y{Y}O{Orientation}W{wavelength}.png")
-        #view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
+        # view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
         end = time.time()
         print(end - start)
     else:

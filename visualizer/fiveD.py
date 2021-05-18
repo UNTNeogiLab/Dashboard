@@ -20,9 +20,8 @@ class grapher(param.Parameterized):
     fitted = param.Boolean(default=False, precedence=-1)
     selected = param.Boolean(default=False, precedence=-1)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
-    fitData = param.Boolean(default=False)
-    fitAll = param.Boolean(default=False, precedence=-1)
-    ignoreOverall = param.Boolean(default=False,precedence=-1)
+    button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
+
     def _update_dataset(self):
         if extension(self.filename) == '5nc':  # innaccurate dimensions
             self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 14},
@@ -136,34 +135,25 @@ class grapher(param.Parameterized):
         return hv.Image(output).opts(opts).redim(wavelength=self.wavelengthDim,
                                                  Polarization=self.PolarizationDim) * line
 
-    @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'fitData', 'selected', 'fitted')
-    def Polar(self):
-        thetaVals = self.coords['degrees'].values
+    @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'fitted')
+    def Polar(self,dataset="Polarization"):
+        thetaVals = self.coords[dataset].values
         thetaRadians = self.coords['Polarization'].values
         overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength)
-
-        if not self.ignoreOverall:
-            df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
-                          columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
             output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength).sel(
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
-            df2 = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
+            df = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
+                              columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
+            fitted = functionN(thetaRadians, *self.fit())
+            df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to selected points", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-            if self.ignoreOverall:
-                df = df2
-            else:
-                df = df.append(df2)
+            df = df.append(df2)
         else:
             title = f'''{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points'''
-        if self.fitData:
-            if self.selected:
-                fitted = functionN(thetaRadians, *self.fit())
-                df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to selected points", 180))).T,
-                                   columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-                df = df.append(df2)
-        if not self.ignoreOverall:
+            df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
+                              columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
             params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength).values
             fitted = functionN(thetaRadians, *params)
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
@@ -172,7 +162,38 @@ class grapher(param.Parameterized):
         df = df.astype({'Polarization': 'float', 'Intensity': "float", "Data": "string"})
         return px.scatter_polar(df, theta="Polarization", r='Intensity', color='Data', title=title, start_angle=0,
                                 direction="counterclockwise",
-                                range_r=(df['Intensity'].min() * 0.8, df['Intensity'].max() * 1.2),)
+                                range_r=(df['Intensity'].min() * 0.8, df['Intensity'].max() * 1.2), )
+
+    def PolarsToFile(self, event=None):
+        start = time.time()
+        ori_Wavelength, ori_Orientation = self.wavelength, self.Orientation
+        self.param["Orientation"].precedence = -1
+        self.param["wavelength"].precedence = -1
+        wavelengths = self.ds1.coords['wavelength'].values.tolist()
+        Orientations = self.ds1.coords['Orientation'].values.tolist()
+        Folder = str(self.filename).replace(f".{extension(self.filename)}", '')
+        if not os.path.isdir(Folder):
+            os.mkdir(Folder)
+        for Orientation in Orientations:
+            selected = self.selected
+            self.Orientation = Orientation
+            self.selected = selected
+            for wavelength in wavelengths:
+                selected = self.selected
+                self.wavelength = wavelength
+                self.selected=selected #prevent it resetting like it should
+                if self.selected:
+                    title = f"{Folder}/Polar_X{self.x0}:{self.x1}Y{self.y0}:{self.y1},O{Orientation}W{wavelength}.png"
+                else:
+                    title = f"{Folder}/Polar_O{Orientation}W{wavelength}.png"
+                self.Polar("degrees").write_image(title)
+        self.nav()
+        self.param["Orientation"].precedence = 1
+        self.param["wavelength"].precedence = 1
+        self.wavelength, self.Orientation = ori_Wavelength, ori_Orientation
+        self.ignoreOverall = False
+        end = time.time()
+        print(end - start)
 
     def xarray(self):
         return pn.panel(self.ds1, width=700)
@@ -182,20 +203,11 @@ class grapher(param.Parameterized):
 
     def sidebar(self):
         return pn.pane.Markdown(f'''
-        ##NOTES
-        estimates are probably innacurate
-        ###Fit data
-
-        Will fit data to point selections, dramatically increasing processing times when selecting new wavelengths, Orientations, or point selections
-        ###Fit all
-        Done at file load and saves to file automatically
-        Takes significant processing time, but will be much faster when changing wavelengths, orientations. Will not pay attention to point selections
-        ###Using both
-        Will fit both the whole dataset and selections, significant preformance considerations.
-        ###Upgrading files
-        Will only work on original .5nc files, not .5nce
-        Most of the computation will be to Fit All
-        ''')
+            ##NOTES
+            TBD probably will move to README
+            ''')
 
     def widgets(self):
-        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.sidebar)
+        self.button.on_click(self.PolarsToFile)
+        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.button,
+                         self.sidebar)
