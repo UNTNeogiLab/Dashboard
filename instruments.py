@@ -18,7 +18,7 @@ class instrumental(param.Parameterized):
     def __init__(self):
         super().__init__()
         self.load()
-        self.gui = RASHG.gui.grapher()
+        self.gui = RASHG.gui.gui()
 
     @param.depends('instruments', watch=True)
     def load(self):

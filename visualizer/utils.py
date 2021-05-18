@@ -38,6 +38,8 @@ def hotfix(ds):
     ds.coords['wavelength'] = ds.coords['wavelength'] * 2 + 780
     ds.coords['Polarization'] = np.arange(0, 180, 1) / 90 * np.pi
     ds.coords['degrees'] = ("Polarization", np.arange(0, 360, 2))
+    ds.coords['x_pixels'] = ("x",ds.coords['x'].values)
+    ds.coords['y_pixels'] = ("y",ds.coords['y'].values)
     ds.coords['x'] = ds.coords['x'] * 0.05338
     ds.coords['y'] = ds.coords['y'] * 0.05338
     ds.attrs['x'] = "micrometers"
