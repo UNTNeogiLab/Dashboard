@@ -32,7 +32,7 @@ pyvisa = "*"
 thorlabs-apt = "*"
 pyvisa-py = "*"
 instrumental-lib = "*"
-
+kaleido = "*"
 
 [dev-packages]
 bpytop = "*" #monitoring program of my choice

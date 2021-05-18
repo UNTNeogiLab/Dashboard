@@ -22,7 +22,7 @@ class grapher(param.Parameterized):
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     fitData = param.Boolean(default=False)
     fitAll = param.Boolean(default=False, precedence=-1)
-
+    ignoreOverall = param.Boolean(default=False,precedence=-1)
     def _update_dataset(self):
         if extension(self.filename) == '5nc':  # innaccurate dimensions
             self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 14},
@@ -138,10 +138,12 @@ class grapher(param.Parameterized):
 
     @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'fitData', 'selected', 'fitted')
     def Polar(self):
-        thetaVals = self.coords['Polarization'].values
+        thetaVals = self.coords['degrees'].values
         thetaRadians = self.coords['Polarization'].values
         overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength)
-        df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
+
+        if not self.ignoreOverall:
+            df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
                           columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
@@ -149,7 +151,10 @@ class grapher(param.Parameterized):
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
             df2 = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-            df = df.append(df2)
+            if self.ignoreOverall:
+                df = df2
+            else:
+                df = df.append(df2)
         else:
             title = f'''{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points'''
         if self.fitData:
@@ -158,12 +163,7 @@ class grapher(param.Parameterized):
                 df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to selected points", 180))).T,
                                    columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
                 df = df.append(df2)
-            elif not self.fitted:
-                fitted = functionN(thetaRadians, *self.fit())
-                df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
-                                   columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-                df = df.append(df2)
-        if self.fitted:
+        if not self.ignoreOverall:
             params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength).values
             fitted = functionN(thetaRadians, *params)
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
@@ -172,7 +172,7 @@ class grapher(param.Parameterized):
         df = df.astype({'Polarization': 'float', 'Intensity': "float", "Data": "string"})
         return px.scatter_polar(df, theta="Polarization", r='Intensity', color='Data', title=title, start_angle=0,
                                 direction="counterclockwise",
-                                range_r=(df['Intensity'].min() * 0.8, df['Intensity'].max() * 1.2))
+                                range_r=(df['Intensity'].min() * 0.8, df['Intensity'].max() * 1.2),)
 
     def xarray(self):
         return pn.panel(self.ds1, width=700)

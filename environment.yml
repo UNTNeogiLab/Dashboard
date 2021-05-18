@@ -37,4 +37,5 @@ dependencies:
   - pip-licenses
   - pyvisa-py
   - instrumental-lib
+  - python-kaleido
   - labview-automation

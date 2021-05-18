@@ -1,3 +1,5 @@
+import os.path
+
 import param
 from dask.distributed import Client
 import posixpath
@@ -8,7 +10,6 @@ from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
 import time
 import socket
-from instruments import instrumental
 # try import RASHG.instruments_RASHG
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -75,6 +76,7 @@ class combined(param.Parameterized):
         if self.applets == "viewer":
             self.applet = viewer()
         elif self.applets == "instrumental":
+            from instruments import instrumental
             self.applet = instrumental()
 
     @param.depends('applets')
@@ -110,8 +112,10 @@ if __name__ == '__main__':
                         action='store_const', const=True, default=False)
     parser.add_argument('-local', dest='local', help='Runs the panel server for single clients', action='store_const',
                         const=True, default=False)
-    parser.add_argument('-fit', dest='filename', help='fit FILENAME fits datafile and saves to file from command line',
+    parser.add_argument('--fit', dest='filename', help='fits datafile and saves to file from command line',
                         action='store', default=False)
+    parser.add_argument('--Polar', dest='Polar', help='filename, X, Y Plots all polar plots across wavelength for',
+                        action='store', default=False, nargs=3) #TODO: add subparsers
     args = parser.parse_args()
     if args.server:
         server()
@@ -120,6 +124,30 @@ if __name__ == '__main__':
     elif not args.filename == False:
         start = time.time()
         view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
+        end = time.time()
+        print(end - start)
+    elif not args.Polar == False:
+        start = time.time()
+        Filename,X,Y= args.Polar
+        view = viewer(filename=Path(Filename))  # use port 8787 to view stats
+        view.grapher.x0 = int(X)
+        view.grapher.y0 = int(Y)
+        view.grapher.x1 = int(X)+0.06 #get at least 1 pixel
+        view.grapher.y1 = int(Y)+0.06 #get at least 1 pixel
+        view.grapher.fitData=True
+        view.grapher.selected=True
+        view.grapher.ignoreOverall=True
+        wavelengths = view.grapher.ds1.coords['wavelength'].values.tolist()
+        Orientations = view.grapher.ds1.coords['Orientation'].values.tolist()
+        Folder=Filename.replace(f".{extension(Filename)}",'')
+        if not os.path.isdir(Folder):
+            os.mkdir(Folder)
+        for Orientation in Orientations:
+            view.grapher.Orientation=Orientation
+            for wavelength in wavelengths:
+                view.grapher.wavelength=wavelength
+                view.grapher.Polar().write_image(f"{Folder}/Polar_X{X}Y{Y}O{Orientation}W{wavelength}.svg")
+        #view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
         end = time.time()
         print(end - start)
     else:
