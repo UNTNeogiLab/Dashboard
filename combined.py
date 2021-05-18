@@ -146,7 +146,7 @@ if __name__ == '__main__':
             view.grapher.Orientation=Orientation
             for wavelength in wavelengths:
                 view.grapher.wavelength=wavelength
-                view.grapher.Polar().write_image(f"{Folder}/Polar_X{X}Y{Y}O{Orientation}W{wavelength}.svg")
+                view.grapher.Polar().write_image(f"{Folder}/Polar_X{X}Y{Y}O{Orientation}W{wavelength}.png")
         #view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
         end = time.time()
         print(end - start)
