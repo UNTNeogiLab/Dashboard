@@ -34,6 +34,7 @@ pyvisa-py = "*"
 instrumental-lib = "*"
 kaleido = "*"
 typing-extensions = "*"
+zarr = "*"
 
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
