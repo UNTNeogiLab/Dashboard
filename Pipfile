@@ -33,13 +33,15 @@ thorlabs-apt = "*"
 pyvisa-py = "*"
 instrumental-lib = "*"
 kaleido = "*"
+typing-extensions = "*"
 
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
 pip-licenses = "*" #check licenses of libraries
 labview-automation = "*"
+
 [requires]
-python_version = "3.7"
+python_version = "3.9"
 
 [pipenv]
 allow_prereleases = true
