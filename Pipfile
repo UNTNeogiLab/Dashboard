@@ -34,8 +34,8 @@ pyvisa-py = "*"
 instrumental-lib = "*"
 kaleido = "*"
 typing-extensions = "*"
-zarr = "*"
-
+zarr = ">=2.3"
+thorpy = {git='https://github.com/UniNE-CHYN/thorpy',editable=true}
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
 pip-licenses = "*" #check licenses of libraries
