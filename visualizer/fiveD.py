@@ -209,5 +209,4 @@ class grapher(param.Parameterized):
 
     def widgets(self):
         self.button.on_click(self.PolarsToFile)
-        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.button,
-                         self.sidebar)
+        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.button)

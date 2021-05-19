@@ -1,15 +1,9 @@
-import panel as pn
-import holoviews as hv
 import numpy as np
 from numba import njit, jit
 import time
 import os
 from itertools import chain
 from pathlib import Path
-
-pn.extension('plotly')
-hv.extension('bokeh', 'plotly')
-
 
 def getDir(extensions):
     # parses directories for valid files

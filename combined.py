@@ -1,8 +1,6 @@
-import os.path
 import holoviews as hv
 import param
 from dask.distributed import Client
-import posixpath
 import panel as pn
 from visualizer.utils import *
 from visualizer.fiveD import grapher
