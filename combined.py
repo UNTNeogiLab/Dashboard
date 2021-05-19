@@ -4,6 +4,7 @@ from dask.distributed import Client
 import panel as pn
 from visualizer.utils import *
 from visualizer.fiveD import grapher
+from visualizer.sixD import grapher as grapher6
 from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
 import time
@@ -24,7 +25,7 @@ def is_port_in_use(port):
 
 
 class Viewer(param.Parameterized):
-    extensions = {'3nc': grapher3D, "5nc": grapher, "nc": grapher}
+    extensions = {'3nc': grapher3D, "5nc": grapher,"zarr":grapher6}
     files = getDir(extensions)
     default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
