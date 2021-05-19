@@ -18,7 +18,6 @@ class grapher(param.Parameterized):
     x1 = param.Number(default=1, precedence=-1)
     y0 = param.Number(default=0, precedence=-1)
     y1 = param.Number(default=1, precedence=-1)
-    fitted = param.Boolean(default=False, precedence=-1)
     selected = param.Boolean(default=False, precedence=-1)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
@@ -28,14 +27,12 @@ class grapher(param.Parameterized):
                                      engine="zarr")  # chunked for heatmap selected
         self.coords = self.ds1.coords
         if os.path.exists(str(self.filename) + "f"):
-            ds = xr.open_dataset((str(self.filename) + "f"), chunks={'Orientation': 1,
-                                                                     'wavelength': 20}, engine="netcdf4")
+            ds = xr.open_dataset((str(self.filename) + "f"), chunks={'Orientation': 1, 'wavelength': 20},
+                                 engine="netcdf4")
             self.ds2 = ds["ds2"]
             self.ds3 = ds["ds3"]
             self.dsf = ds["fitted"]
             self.dsf_covar = ds["covars"]
-
-            self.fitted = True
         else:
 
             self.ds2 = self.ds1.mean(dim='Polarization').compute()  # chunked for navigation
@@ -49,13 +46,8 @@ class grapher(param.Parameterized):
                                        "covars": self.dsf_all.curvefit_covariance})
             filename = str(self.filename) + "f"  # We're sticking a f to the filename
             ds.to_netcdf(filename, engine="netcdf4")
-            self.fitted = True
         self.attrs = {**self.ds1.attrs, **self.ds1.attrs}
-        dattrs = {"Polarization": "radians", "Orientation": "Idk", "wavelength": "nm", "x": "micrometers",
-                  "y": "micrometers"}
-        self.attrs['Polarization'] = "radians"
-        self.attrs['wavelength'] = "nm"
-        self.fname = fname(self.filename)
+        self.fname = self.attrs["title"]
         self.x = hv.Dimension('x', unit=self.attrs['x'])
         self.y = hv.Dimension('y', unit=self.attrs['y'])
         self.param['wavelength'].objects = self.ds1.coords['wavelength'].values.tolist()
@@ -65,21 +57,22 @@ class grapher(param.Parameterized):
 
     def fit(self):
         if self.selected:
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength).sel(
+            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength,power=self.power).sel(
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1))
         else:
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength)
+            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength,power=self.power)
         pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
         curvefit_coefficients = pf.curvefit_coefficients  # idk what to do with the covars
         return curvefit_coefficients.values
 
     def __init__(self, filename, client_input):
         super().__init__()
+        self.ignoreOverall = False
         self.client = client_input
         self.filename = Path(filename)
         self._update_dataset()
 
-    @param.depends('Orientation', 'wavelength', 'colorMap')
+    @param.depends('Orientation', 'wavelength', 'colorMap', 'power')
     def nav(self):
         self.selected = False
         polys = hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
@@ -103,25 +96,25 @@ class grapher(param.Parameterized):
             self.y1 = data['y1'][0]
             self.selected = True
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected')
+    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def title(self):
         if self.selected:
             return pn.pane.Markdown(
-                f'''##{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength},x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}''',
+                f'''##{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, power: {self.power},x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}''',
                 width=1800)
         else:
             return pn.pane.Markdown(
-                f'''##{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points''',
+                f'''##{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, power: {self.power}, Average across all points''',
                 width=1800)
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected')
+    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def heatMap(self):
         if not self.selected:
-            output = self.ds3.sel(Orientation=self.Orientation,power=self.power)
+            output = self.ds3.sel(Orientation=self.Orientation, power=self.power)
             title = f'''{self.fname}: Orientation: {self.Orientation}, Average across all points'''
         else:
-            output = self.ds1.sel(Orientation=self.Orientation,power=self.power).sel(x=slice(self.x0, self.x1),
-                                                                    y=slice(self.y0, self.y1)).mean(
+            output = self.ds1.sel(Orientation=self.Orientation, power=self.power).sel(x=slice(self.x0, self.x1),
+                                                                                      y=slice(self.y0, self.y1)).mean(
                 dim=['x', 'y'])
             title = f'''{self.fname}: Orientation: {self.Orientation}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
         self.PolarizationDim = hv.Dimension('Polarization', range=getRange('Polarization', self.coords),
@@ -134,11 +127,11 @@ class grapher(param.Parameterized):
         return hv.Image(output).opts(opts).redim(wavelength=self.wavelengthDim,
                                                  Polarization=self.PolarizationDim) * line
 
-    @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'fitted')
+    @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def Polar(self, dataset="Polarization"):
         thetaVals = self.coords[dataset].values
         thetaRadians = self.coords['Polarization'].values
-        overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength,power=self.power)
+        overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
             output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength).sel(
@@ -153,7 +146,7 @@ class grapher(param.Parameterized):
             title = f'''{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points'''
             df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-            params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength,power=self.power).values
+            params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power).values
             fitted = functionN(thetaRadians, *params)
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
@@ -190,7 +183,6 @@ class grapher(param.Parameterized):
         self.param["Orientation"].precedence = 1
         self.param["wavelength"].precedence = 1
         self.wavelength, self.Orientation = ori_Wavelength, ori_Orientation
-        self.ignoreOverall = False
         end = time.time()
         print(end - start)
 
@@ -208,4 +200,9 @@ class grapher(param.Parameterized):
 
     def widgets(self):
         self.button.on_click(self.PolarsToFile)
-        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.button)
+        if self.ds1.coords["power"].size > 1:
+            widgets = {"wavelength": pn.widgets.DiscreteSlider, "power": pn.widgets.DiscreteSlider}
+        else:
+            widgets = {"wavelength": pn.widgets.DiscreteSlider}
+            self.param["power"].precedence = -1  # effectively a 5d graph
+        return pn.Column(pn.Param(self.param, widgets=widgets), self.button)
