@@ -33,6 +33,7 @@ kaleido = "*"
 typing-extensions = "*"
 zarr = ">=2.3"
 thorpy = { git = 'https://github.com/UniNE-CHYN/thorpy', editable = true }
+k10cr1 = { git = 'https://github.com/QuantumQuadrate/k10cr1', editable = true }
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
 pip-licenses = "*" #check licenses of libraries

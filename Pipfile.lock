@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1a57db6190b44c3e0658b7151f91dfdb264d522d206b226c67447be37e6f9524"
+            "sha256": "028e68f11c99940c07b036455770211a2911a9339fe2ea619ce53f24a933207d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -560,6 +560,11 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==1.0.0"
+        },
+        "k10cr1": {
+            "editable": true,
+            "git": "https://github.com/QuantumQuadrate/k10cr1",
+            "ref": "2ffdc284da575e525f96ef27b99e5e260bbe415d"
         },
         "kaleido": {
             "hashes": [
@@ -1269,10 +1274,6 @@
                 "sha256:f18eb813d3a1439918071234589162c2f209a19adbeffeb1377ce078a4aebc70"
             ],
             "version": "==1.1.1"
-        },
-        "pyvcam": {
-            "editable": true,
-            "path": "./PyVCAM/pyvcam_wrapper"
         },
         "pyvisa": {
             "hashes": [
