@@ -9,6 +9,7 @@ from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
 import time
 import socket
+import sys
 
 # try import RASHG.instruments_RASHG
 pn.extension('plotly')
@@ -25,7 +26,7 @@ def is_port_in_use(port):
 
 
 class Viewer(param.Parameterized):
-    extensions = {'3nc': grapher3D, "5nc": grapher,"zarr":grapher6}
+    extensions = {'3nc': grapher3D, "5nc": grapher, "zarr": grapher6}
     files = getDir(extensions)
     default = Path("data/truncated_1.5nc")
     filename = param.ObjectSelector(default=default, objects=files)
@@ -64,6 +65,7 @@ class combined(param.Parameterized):
     applets = ["viewer", "instrumental"]
     applets = param.ObjectSelector(default="instrumental", objects=applets)
     button = pn.widgets.Button(name="STOP", button_type='primary')
+
     def __init__(self):
         super().__init__()
         self.load()
@@ -83,11 +85,13 @@ class combined(param.Parameterized):
     @param.depends('applets')
     def gView(self):
         return self.applet.gView
-    def quit(self,event=None):
-        quit()
+
+    def quit(self, event=None):
+        sys.exit()
+
     def view(self):
         self.button.on_click(self.quit)
-        return pn.Row(pn.Column(self.param, self.widgets,self.button), self.gView)
+        return pn.Row(pn.Column(self.param, self.widgets, self.button), self.gView)
 
 
 # these two functions are basically identical for now
