@@ -3,9 +3,8 @@
 Originally the _holoviz_ branch of [2020SummerResearch](https://github.com/UNTNeogiLab/2020SummerResearch)
 
 ## Submodule
-
-(expiremental)  
-Using a git submodule to reference files from the https://github.com/UNTNeogiLab/RASHG project  
+Using a git submodule to reference files from the https://github.com/UNTNeogiLab/RASHG project
+RASHG is developed in parellel with the project    
 When cloning use --recurse-submodules or run  
 `git submodule init`  
 `git submodule update`
@@ -18,14 +17,19 @@ If running debian or ubuntu or other derivatives, read the next section first
 install)  
 (optionally use `module load python/3.7.4` for UNT server support)  
 (to download another version of python install `curl https://pyenv.run | bash`)  
-`pipenv sync` (installs dependencies)
+`pipenv sync` (installs dependencies)  
 ### debian/ubuntu
-Do not use the debian/ubuntu versions of pip and pipenv since they are out of date  (5/14/21)  
-instead use https://github.com/pyenv/pyenv#installation from source  
-also dependencies needed before pipenv sync  
-`sudo apt install python3-aiohttp`  
-Actually current Ubuntu has broken pip, leaving us with expiremental conda support again
-
+Debian/Ubuntu Pip or pipenv may be broken  
+The best option is to install [pyenv](https://github.com/pyenv/pyenv) with its build dependencies
+### Linux data aqusition/PyVcam  
+You'll need [PyVcam](https://github.com/Photometrics/PyVCAM) and the accompanying SDK first
+### Windows
+Data aqusition is unsupported on windows but fully possible  
+Substitute thorpy with thorlabs-apt
+### MAC
+Data aqusition is unsupported on mac and impossible
+### Scanimage
+there's some placeholder scanimage code for now
 ### Updating dependencies
 
 `pipenv sync`
@@ -33,7 +37,9 @@ Actually current Ubuntu has broken pip, leaving us with expiremental conda suppo
 ## Running
 
 `pipenv run python combined.py` (runs visualization script)
-
+## Development environment
+You'll need to run pipenv shell to get into the pipenv virtual environment  
+The better option is to use fish and [fish-pipenv](https://github.com/sentriz/fish-pipenv)
 ## Server Deployment
 
 Currently out of date for pipenv  
@@ -54,7 +60,10 @@ Requires environment with all files
 ## Examples
 
 ![example](examples/Parameterized.png)
-
+## File formats
+.3nc: Raman data, unsuported  
+.5nc: old RASHG data, netCDF4, uses fiveD.py  
+.zarr: new RASHG, zarr, uses sixD.py 
 ## Decapretated Documentation
 
 ### Using setup.py (requires python and anaconda)

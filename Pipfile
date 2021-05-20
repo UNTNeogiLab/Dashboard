@@ -10,7 +10,6 @@ matplotlib = "*"
 dask-jobqueue = "*"
 nodejs = "*"
 selenium = "*"
-pylint = "*"
 ipympl = "*"
 ipykernel = "*"
 ipywidgets = "*"
@@ -29,13 +28,11 @@ numba = "*"
 scipy = "*"
 nidaqmx = "*"
 pyvisa = "*"
-thorlabs-apt = "*"
 pyvisa-py = "*"
-instrumental-lib = "*"
 kaleido = "*"
 typing-extensions = "*"
 zarr = ">=2.3"
-thorpy = {git='https://github.com/UniNE-CHYN/thorpy',editable=true}
+thorpy = { git = 'https://github.com/UniNE-CHYN/thorpy', editable = true }
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
 pip-licenses = "*" #check licenses of libraries
