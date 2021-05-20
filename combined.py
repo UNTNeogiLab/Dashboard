@@ -63,7 +63,7 @@ class Viewer(param.Parameterized):
 class combined(param.Parameterized):
     applets = ["viewer", "instrumental"]
     applets = param.ObjectSelector(default="instrumental", objects=applets)
-
+    button = pn.widgets.Button(name="STOP", button_type='primary')
     def __init__(self):
         super().__init__()
         self.load()
@@ -83,9 +83,11 @@ class combined(param.Parameterized):
     @param.depends('applets')
     def gView(self):
         return self.applet.gView
-
+    def quit(self,event=None):
+        quit()
     def view(self):
-        return pn.Row(pn.Column(self.param, self.widgets), self.gView)
+        self.button.on_click(self.quit)
+        return pn.Row(pn.Column(self.param, self.widgets,self.button), self.gView)
 
 
 # these two functions are basically identical for now
