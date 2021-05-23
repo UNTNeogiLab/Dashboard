@@ -74,7 +74,7 @@ class grapher(param.Parameterized):
 
     @param.depends('Orientation', 'wavelength', 'colorMap', 'power')
     def nav(self):
-        self.selected = False
+        #self.selected = False
         polys = hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
         box_stream = hv.streams.BoxEdit(source=polys, num_objects=1)
         output = self.ds2.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
