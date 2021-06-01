@@ -4,6 +4,7 @@ import plotly.express as px
 import xarray as xr
 import holoviews as hv
 import panel as pn
+from holoviews import streams
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -23,11 +24,12 @@ class grapher(param.Parameterized):
     button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
 
     def _update_dataset(self):
-        self.ds1 = xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 14},
+        self.ds1 = xr.open_dataarray(self.filename,
+                                     chunks={'Orientation': 1, 'wavelength': 14, 'x': -1, 'y': -1, 'Polarization': -1},
                                      engine="zarr")  # chunked for heatmap selected
         self.coords = self.ds1.coords
         if os.path.exists(str(self.filename) + "f"):
-            ds = xr.open_dataset((str(self.filename) + "f"), chunks={'Orientation': 1, 'wavelength': 20},
+            ds = xr.open_dataset((str(self.filename) + "f"),
                                  engine="netcdf4")
             self.ds2 = ds["ds2"]
             self.ds3 = ds["ds3"]
@@ -57,10 +59,10 @@ class grapher(param.Parameterized):
 
     def fit(self):
         if self.selected:
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength,power=self.power).sel(
+            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power).sel(
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1))
         else:
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength,power=self.power)
+            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
         pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
         curvefit_coefficients = pf.curvefit_coefficients  # idk what to do with the covars
         return curvefit_coefficients.values
@@ -74,17 +76,26 @@ class grapher(param.Parameterized):
 
     @param.depends('Orientation', 'wavelength', 'colorMap', 'power')
     def nav(self):
-        #self.selected = False
-        polys = hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
-        box_stream = hv.streams.BoxEdit(source=polys, num_objects=1)
-        output = self.ds2.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
+        polys = self.poly_generate()
+        box_stream = streams.BoxEdit(source=polys, num_objects=1)
         box_stream.add_subscriber(self.tracker)
+        output = self.ds2.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
         self.zdim = hv.Dimension('Intensity', range=(output.values.min(), output.values.max()))
         opts = [hv.opts.Image(colorbar=True, height=600,
                               width=round(600 * self.ds1.coords['x'].size / self.ds1.coords['y'].size),
                               title=f"Wavelength: {self.wavelength}, Orientation: {self.Orientation}",
                               cmap=self.colorMap, tools=['hover'], framewise=True, logz=True)]
         return hv.Image(output, vdims=self.zdim).opts(opts).redim(x=self.x, y=self.y) * polys
+
+    def poly_generate(self):
+        if self.selected:
+            avg_x = (self.x0 + self.x1) / 2
+            avg_y = (self.y0 + self.y1) / 2
+            width = self.x1 - self.x0
+            height = self.y1 - self.y0
+            return hv.Polygons([hv.Box(avg_x, avg_y, (width, height))]).opts(fill_alpha=0.2, line_color='white')
+        else:
+            return hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
 
     def tracker(self, data):
         if not data or not any(len(d) for d in data.values()):

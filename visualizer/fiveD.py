@@ -24,7 +24,7 @@ class grapher(param.Parameterized):
 
     def _update_dataset(self):
         self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 14},
-                                                engine="netcdf4"))  # chunked for heatmap selected
+                                            engine="netcdf4"))  # chunked for heatmap selected
         self.coords = self.ds1.coords
         if os.path.exists(str(self.filename) + "f"):
             ds = xr.open_dataset((str(self.filename) + "f"), chunks={'Orientation': 1,
@@ -77,8 +77,8 @@ class grapher(param.Parameterized):
 
     @param.depends('Orientation', 'wavelength', 'colorMap')
     def nav(self):
-        #self.selected = False
-        polys = hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
+        # self.selected = False
+        polys = self.poly_generate()
         box_stream = hv.streams.BoxEdit(source=polys, num_objects=1)
         output = self.ds2.sel(Orientation=self.Orientation, wavelength=self.wavelength)
         box_stream.add_subscriber(self.tracker)
@@ -88,6 +88,16 @@ class grapher(param.Parameterized):
                               title=f"Wavelength: {self.wavelength}, Orientation: {self.Orientation}",
                               cmap=self.colorMap, tools=['hover'], framewise=True, logz=True)]
         return hv.Image(output, vdims=self.zdim).opts(opts).redim(x=self.x, y=self.y) * polys
+
+    def poly_generate(self):
+        if self.selected:
+            avg_x = (self.x0 + self.x1) / 2
+            avg_y = (self.y0 + self.y1) / 2
+            width = self.x1 - self.x0
+            height = self.y1 - self.y0
+            return hv.Polygons([hv.Box(avg_x, avg_y, (width, height))]).opts(fill_alpha=0.2, line_color='white')
+        else:
+            return hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
 
     def tracker(self, data):
         if not data or not any(len(d) for d in data.values()):
@@ -131,7 +141,7 @@ class grapher(param.Parameterized):
                                                  Polarization=self.PolarizationDim) * line
 
     @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'fitted')
-    def Polar(self,dataset="Polarization"):
+    def Polar(self, dataset="Polarization"):
         thetaVals = self.coords[dataset].values
         thetaRadians = self.coords['Polarization'].values
         overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength)
@@ -176,7 +186,7 @@ class grapher(param.Parameterized):
             for wavelength in wavelengths:
                 selected = self.selected
                 self.wavelength = wavelength
-                self.selected=selected #prevent it resetting like it should
+                self.selected = selected  # prevent it resetting like it should
                 if self.selected:
                     title = f"{Folder}/Polar_X{self.x0}:{self.x1}Y{self.y0}:{self.y1},O{Orientation}W{wavelength}.png"
                 else:
