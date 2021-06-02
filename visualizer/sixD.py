@@ -145,7 +145,7 @@ class grapher(param.Parameterized):
         overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength).sel(
+            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength,
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
             df = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)

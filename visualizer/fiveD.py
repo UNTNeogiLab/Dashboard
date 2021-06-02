@@ -4,6 +4,7 @@ import plotly.express as px
 import xarray as xr
 import holoviews as hv
 import panel as pn
+import zarr
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -21,7 +22,7 @@ class grapher(param.Parameterized):
     selected = param.Boolean(default=False, precedence=-1)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
-
+    button2 = pn.widgets.Button(name='Save file as Zarr', button_type='primary')
     def _update_dataset(self):
         self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 14},
                                             engine="netcdf4"))  # chunked for heatmap selected
@@ -55,9 +56,24 @@ class grapher(param.Parameterized):
         self.attrs['Polarization'] = "radians"
         self.attrs['wavelength'] = "nm"
         self.fname = fname(self.filename)
+        self.attrs["title"] = self.fname
+        self.ds1.attrs["title"] = self.fname
         self.x = hv.Dimension('x', unit=self.attrs['x'])
         self.y = hv.Dimension('y', unit=self.attrs['y'])
         self.param['wavelength'].objects = self.ds1.coords['wavelength'].values.tolist()
+        #self.to_zarr()
+
+    def to_zarr(self,event=None):
+        compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+        filename = str(self.filename).replace(f".{extension(self.filename)}", '.zarr')
+        print(filename)
+        coords = self.ds1.coords
+        ds = self.ds1
+        ds_coords = ds.assign_coords(power=0).expand_dims("power")
+        data = xr.Dataset(data_vars={"ds1":ds_coords },
+                          attrs=self.attrs,
+                          coords=coords)
+        data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
 
     def fit(self):
         if self.selected:
@@ -213,5 +229,6 @@ class grapher(param.Parameterized):
             ''')
 
     def widgets(self):
-        self.button.on_click(self.PolarsToFile)
-        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.button)
+        #self.button.on_click(self.PolarsToFile)
+        #self.button2.on_click(self.to_zarr())
+        return pn.Column(pn.Param(self.param, widgets={"wavelength": pn.widgets.DiscreteSlider}), self.button,self.button2)
