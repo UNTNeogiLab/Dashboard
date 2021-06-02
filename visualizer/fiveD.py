@@ -64,7 +64,7 @@ class grapher(param.Parameterized):
         #self.to_zarr()
 
     def to_zarr(self,event=None):
-        compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+        #compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
         filename = str(self.filename).replace(f".{extension(self.filename)}", '.zarr')
         print(filename)
         coords = self.ds1.coords
@@ -73,7 +73,9 @@ class grapher(param.Parameterized):
         data = xr.Dataset(data_vars={"ds1":ds_coords },
                           attrs=self.attrs,
                           coords=coords)
-        data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
+        #data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
+
+        data.to_zarr(filename, consolidated=True)
 
     def fit(self):
         if self.selected:
