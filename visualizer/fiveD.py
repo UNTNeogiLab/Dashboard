@@ -24,7 +24,7 @@ class grapher(param.Parameterized):
     button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
     button2 = pn.widgets.Button(name='Save file as Zarr', button_type='primary')
     def _update_dataset(self):
-        self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 14},
+        self.ds1 = hotfix(xr.open_dataarray(self.filename, chunks={'Orientation': 1, 'wavelength': 5, 'x': -1, 'y': -1, 'Polarization': -1},
                                             engine="netcdf4"))  # chunked for heatmap selected
         self.coords = self.ds1.coords
         if os.path.exists(str(self.filename) + "f"):
@@ -64,7 +64,7 @@ class grapher(param.Parameterized):
         #self.to_zarr()
 
     def to_zarr(self,event=None):
-        #compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
+        compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
         filename = str(self.filename).replace(f".{extension(self.filename)}", '.zarr')
         print(filename)
         coords = self.ds1.coords
@@ -73,9 +73,7 @@ class grapher(param.Parameterized):
         data = xr.Dataset(data_vars={"ds1":ds_coords },
                           attrs=self.attrs,
                           coords=coords)
-        #data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
-
-        data.to_zarr(filename, consolidated=True)
+        data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
 
     def fit(self):
         if self.selected:
