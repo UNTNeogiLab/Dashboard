@@ -34,8 +34,8 @@ def hotfix(ds):
     ds.coords['degrees'] = ("Polarization", np.arange(0, 360, 2))
     ds.coords['x_pixels'] = ("x",ds.coords['x'].values)
     ds.coords['y_pixels'] = ("y",ds.coords['y'].values)
-    ds.coords['x'] = ds.coords['x'] * 0.05338
-    ds.coords['y'] = ds.coords['y'] * 0.05338
+    ds.coords['x'] = ds.coords['x'] * 0.05338 #TODO fix incorrect magic numbers
+    ds.coords['y'] = ds.coords['y'] * 0.05338 #TODO fix incorrect magic numbers
     ds.attrs['x'] = "micrometers"
     ds.attrs['y'] = "micrometers"
     ds.attrs['Polarization'] = "radians"

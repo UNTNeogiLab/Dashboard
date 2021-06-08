@@ -59,6 +59,9 @@ class Viewer(param.Parameterized):
     def view(self):
         return pn.Row(self.widgets, self.gview)
 
+    def stop(self):
+        pass
+
 
 # wrapper around viewer class to interface with instrumental class
 class combined(param.Parameterized):
@@ -87,6 +90,7 @@ class combined(param.Parameterized):
         return self.applet.gView
 
     def quit(self, event=None):
+        self.applet.stop()
         sys.exit()
 
     def view(self):

@@ -3,10 +3,12 @@ import RASHG
 import panel as pn
 import holoviews as hv
 from dask.diagnostics import ProgressBar
+
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 pbar = ProgressBar()
 pbar.register()
+
 
 class instrumental(param.Parameterized):
     instrument_classes = RASHG.instruments
@@ -45,3 +47,6 @@ class instrumental(param.Parameterized):
             return self.gui.output
         else:
             pass
+
+    def stop(self):
+        self.gui.stop()
