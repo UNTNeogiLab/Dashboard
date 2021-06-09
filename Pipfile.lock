@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8c8642feca6c34614b301003e50622a11288d0f0192051dd64652582c792339e"
+            "sha256": "c3fe4ff796d22400bad6703ec4c0fc9f53c1ef16b2651751b460525e7577d4df"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1135,22 +1135,6 @@
             "markers": "python_version >= '3.6'",
             "version": "==8.2.0"
         },
-        "pint": {
-            "hashes": [
-                "sha256:6593c5dfaf2f701c54f17453191dff05e90ec9ebc3d1901468a59cfcb3289a4c",
-                "sha256:f4d0caa713239e6847a7c6eefe2427358566451fe56497d533f21fb590a3f313"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==0.17"
-        },
-        "pint-xarray": {
-            "hashes": [
-                "sha256:8e757bf167d893464e5d8e52437ee095068b632e1b5dc1e048fd6acf8a6e1cd5",
-                "sha256:9908ae6e34969a4f76277db0c754076300825ee52d0f51b46a7ae5bd87e81e3a"
-            ],
-            "index": "pypi",
-            "version": "==0.2"
-        },
         "plotly": {
             "hashes": [
                 "sha256:7d8aaeed392e82fb8e0e48899f2d3d957b12327f9d38cdd5802bc574a8a39d91",
@@ -1263,6 +1247,14 @@
             ],
             "version": "==3.5"
         },
+        "pystage-apt": {
+            "hashes": [
+                "sha256:4971d6ae355b062c1403f4e1e4c946e389f6ebcfd48b09a4594ac9aaa50fe901",
+                "sha256:7d20a8c6e473d6280d8dc989da59c33ac17f0aa3724b5e63961d3d1f700f8dd7"
+            ],
+            "index": "pypi",
+            "version": "==0.3"
+        },
         "python-dateutil": {
             "hashes": [
                 "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c",
@@ -1277,6 +1269,13 @@
                 "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"
             ],
             "version": "==2021.1"
+        },
+        "pyusb": {
+            "hashes": [
+                "sha256:7d449ad916ce58aff60b89aae0b65ac130f289c24d6a5b7b317742eccffafc38",
+                "sha256:f18eb813d3a1439918071234589162c2f209a19adbeffeb1377ce078a4aebc70"
+            ],
+            "version": "==1.1.1"
         },
         "pyvisa": {
             "hashes": [
@@ -1296,10 +1295,10 @@
         },
         "pyviz-comms": {
             "hashes": [
-                "sha256:be63957a49772895ddebeac02c697e1675e0bdf1515824f60fcc261914f23624",
-                "sha256:cb464384d3ee130169f2eb52c262c8377615a46c92ce3f2a620394d92c2dbc9b"
+                "sha256:0ed42ffd0dd2182edc7a331100c72d9923a027120f4225dbbc33663eadddba8e",
+                "sha256:cdb4daa3605880035c68f630fb95257376ecce09c0a7ea845031fd21ee1c0635"
             ],
-            "version": "==2.0.1"
+            "version": "==2.0.2"
         },
         "pyyaml": {
             "hashes": [
@@ -1457,14 +1456,6 @@
                 "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"
             ],
             "version": "==2.4.0"
-        },
-        "streamz": {
-            "hashes": [
-                "sha256:04446ece273c041506b1642bd3d8380367a8372196be4d6d6d03faafadc590b2",
-                "sha256:5bb414ef450065d1d35c1247a9bb5f2a8d91935ac742978520587f816126c993"
-            ],
-            "index": "pypi",
-            "version": "==0.6.2"
         },
         "tblib": {
             "hashes": [
