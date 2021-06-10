@@ -29,7 +29,7 @@ class Viewer(param.Parameterized):
     extensions = {'3nc': grapher3D, "5nc": grapher, "zarr": grapher6}
     files = getDir(extensions)
     default = Path("data/truncated_1.5nc")
-    filename = param.ObjectSelector(default=default, objects=files)
+    filename = param.ObjectSelector(objects=files)
 
     def __init__(self, filename=default):
         super().__init__()
