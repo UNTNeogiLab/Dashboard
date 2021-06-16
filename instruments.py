@@ -13,7 +13,7 @@ pbar.register()
 class instrumental(param.Parameterized):
     instrument_classes = RASHG.instruments
     instruments = list(RASHG.instruments.keys())
-    instruments = param.ObjectSelector(default="random", objects=instruments)
+    instruments = param.ObjectSelector(objects=instruments)
     confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
 
