@@ -8,8 +8,9 @@ from holoviews import streams
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-from .utils import *
-
+from visualizer.utils import *
+type = "RASHG"
+name = "sixD"
 
 class grapher(param.Parameterized):
     Orientation = param.Integer(default=0, bounds=(0, 1))

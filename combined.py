@@ -1,16 +1,12 @@
 import holoviews as hv
 import param
-from dask.distributed import Client
 import panel as pn
 from visualizer.utils import *
-from visualizer.fiveD import grapher
-from visualizer.sixD import grapher as grapher6
-from visualizer.grapher3D import grapher3D as grapher3D
 import argparse
 import time
 import socket
 import sys
-
+import visualizer.visualizer as Viewer
 # try import RASHG.instruments_RASHG
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -25,42 +21,6 @@ def is_port_in_use(port):
         return s.connect_ex(('localhost', port)) == 0
 
 
-class Viewer(param.Parameterized):
-    extensions = {'3nc': grapher3D, "5nc": grapher, "zarr": grapher6}
-    files = getDir(extensions)
-    default = Path("data/truncated_1.5nc")
-    filename = param.ObjectSelector(objects=files)
-
-    def __init__(self, filename=default):
-        super().__init__()
-        self.client = Client()
-        self.filename = filename
-        self.load()
-
-    def reload_files(self):
-        self.param["filename"].objects = getDir(self.extensions)
-
-    @param.depends('filename', watch=True)
-    def load(self):
-        self.reload_files()  # temp solution
-        self.grapher = self.extensions[extension(self.filename)](self.filename, self.client)
-
-    @param.depends('filename')
-    def widgets(self):
-        return pn.Column(self.param, self.grapher.widgets(), self.dask)
-
-    @param.depends('filename')
-    def gView(self):
-        return self.grapher.view()
-
-    def dask(self):
-        return self.client
-
-    def view(self):
-        return pn.Row(self.widgets, self.gview)
-
-    def stop(self):
-        pass
 
 
 # wrapper around viewer class to interface with instrumental class

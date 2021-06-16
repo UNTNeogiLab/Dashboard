@@ -1,5 +1,5 @@
 import param
-import RASHG
+import instruments
 import panel as pn
 import holoviews as hv
 from dask.diagnostics import ProgressBar
@@ -11,8 +11,8 @@ pbar.register()
 
 
 class instrumental(param.Parameterized):
-    instrument_classes = RASHG.instruments
-    instruments = list(RASHG.instruments.keys())
+    instrument_classes = instruments.instruments
+    instruments = list(instruments.instruments.keys())
     instruments = param.ObjectSelector(default="random", objects=instruments)
     confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
@@ -20,7 +20,7 @@ class instrumental(param.Parameterized):
     def __init__(self):
         super().__init__()
         self.load()
-        self.gui = RASHG.gui.gui()
+        self.gui = instruments.gui.gui()
 
     @param.depends('instruments', watch=True)
     def load(self):

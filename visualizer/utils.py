@@ -1,13 +1,19 @@
 import numpy as np
-from numba import njit, jit
+from numba import njit
 import time
 import os
 from itertools import chain
 from pathlib import Path
+import xarray as xr
 
 def getDir(extensions):
     # parses directories for valid files
-    return list(chain.from_iterable(Path(".").rglob("*." + extension) for extension in extensions))
+    files = list(chain.from_iterable(Path(".").rglob("*.zarr")))
+    fike
+    for file in files:
+        ds = xr.open_dataset(file,engine="zarr")
+        if ds.attrs["data_type"]
+    return
 
 
 def extension(file):
