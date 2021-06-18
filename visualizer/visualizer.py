@@ -1,13 +1,17 @@
 from dask.distributed import Client
 import param
 import panel as pn
-from . import extensions, types
-from .utils import *
+from . import types
+from . import utils
+
+
 
 
 class Viewer(param.Parameterized):
-    files = getDir(extensions)
-    filename = param.ObjectSelector(objects=files)
+    files = utils.getDir(types)
+    if len(files) == 0:
+        raise Exception("must have at least one file")
+    filename = param.ObjectSelector(objects=files.keys(),default=list(files.keys())[0])
 
     def __init__(self, filename=None):
         super().__init__()
@@ -17,12 +21,13 @@ class Viewer(param.Parameterized):
         self.load()
 
     def reload_files(self):
-        self.param["filename"].objects = getDir(self.extensions)
+        self.param["filename"].objects = utils.getDir(types)
 
     @param.depends('filename', watch=True)
     def load(self):
         self.reload_files()  # temp solution
-        self.grapher = self.extensions[extension(self.filename)](self.filename, self.client)
+        visualizer = self.files[self.filename].grapher
+        self.grapher = visualizer(self.filename, self.client)
 
     @param.depends('filename')
     def widgets(self):

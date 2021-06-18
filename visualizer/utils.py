@@ -8,12 +8,18 @@ import xarray as xr
 
 def getDir(extensions):
     # parses directories for valid files
-    files = list(chain.from_iterable(Path(".").rglob("*.zarr")))
-    fike
+    files = list(Path(".").rglob("*.zarr"))
+    file_dict = {}
     for file in files:
-        ds = xr.open_dataset(file,engine="zarr")
-        if ds.attrs["data_type"]
-    return
+        try:
+            ds = xr.open_dataset(file,engine="zarr")
+            data_type = ds.attrs["data_type"]
+            ds.close()
+            if data_type in extensions:
+                file_dict[file] = extensions[data_type]
+        except:
+            print(f"{file} open failed. Skipping")
+    return file_dict
 
 
 def extension(file):
@@ -54,3 +60,11 @@ def getRange(dim, coords):
 
 def convert(seconds):
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
+
+
+def data_type(filename):
+    try:
+        return xr.open_dataset(filename, engine="zarr").attrs["data_type"]
+    except:
+        print("couldn't get data type")
+        return ""

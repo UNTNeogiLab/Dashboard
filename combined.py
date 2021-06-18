@@ -7,6 +7,7 @@ import time
 import socket
 import sys
 import visualizer.visualizer as Viewer
+import instruments
 # try import RASHG.instruments_RASHG
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -36,10 +37,10 @@ class combined(param.Parameterized):
     @param.depends('applets', watch=True)
     def load(self):
         if self.applets == "viewer":
-            self.applet = Viewer()
+            self.applet = Viewer.Viewer()
         elif self.applets == "instrumental":
-            from instruments import instrumental
-            self.applet = instrumental()
+
+            self.applet = instruments.dashboard.instrumental()
 
     @param.depends('applets')
     def widgets(self):

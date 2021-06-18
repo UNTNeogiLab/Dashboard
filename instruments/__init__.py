@@ -16,3 +16,4 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)) :
                              print(f"{file} import failed")
                          else:
                              instruments[module.name] = module
+from . import dashboard
