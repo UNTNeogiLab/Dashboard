@@ -39,14 +39,15 @@ class grapher(param.Parameterized):
         current_fit_version = 1
         if fit_ver < current_fit_version:
             time1 = time.time()
+            self.ds = self.ds.drop_vars(["fitted","covariance"],errors="ignore")
             self.ds["navigation"] = self.ds["ds1"].mean(dim='Polarization').compute()  # chunked for navigation
             self.ds["heatmap_all"] = self.ds["ds1"].mean(dim=['x', 'y']).compute()  # chunked for heatmap all
             self.ds = self.ds.merge(self.ds["heatmap_all"].curvefit(["Polarization"], function,
                                                                     kwargs={"maxfev": 1000000, "xtol": 10 ** -9,
                                                                             "ftol": 10 ** -9}).compute())
-            self.ds.attrs["fit_ver"] = current_fit_version
+            self.ds.attrs["fit_version"] = current_fit_version
             self.ds = self.ds.rename({"curvefit_coefficients": "fitted", "curvefit_covariance": "covariance"})
-            self.ds.to_zarr(self.filename, mode="a")
+            self.ds.to_zarr(self.filename, mode="a", compute=True)
             time2 = time.time()
             print(f"finished in {str(timedelta(seconds =time2-time1))}")
         self.coords = self.ds["ds1"].coords
