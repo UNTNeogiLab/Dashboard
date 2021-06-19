@@ -9,8 +9,10 @@ from holoviews import streams
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 from visualizer.utils import *
+
 type = "RASHG"
 name = "sixD"
+
 
 class grapher(param.Parameterized):
     Orientation = param.Integer(default=0, bounds=(0, 1))
@@ -25,45 +27,40 @@ class grapher(param.Parameterized):
     button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
 
     def _update_dataset(self):
-        self.ds1 = xr.open_dataarray(self.filename,
-                                     chunks={'Orientation': 1, 'wavelength': 14, 'x': -1, 'y': -1, 'Polarization': -1},
-                                     engine="zarr")  # chunked for heatmap selected
-        self.coords = self.ds1.coords
-        if os.path.exists(str(self.filename) + "f"):
-            ds = xr.open_dataset((str(self.filename) + "f"),
-                                 engine="netcdf4")
-            self.ds2 = ds["ds2"]
-            self.ds3 = ds["ds3"]
-            self.dsf = ds["fitted"]
-            self.dsf_covar = ds["covars"]
-        else:
-
-            self.ds2 = self.ds1.mean(dim='Polarization').compute()  # chunked for navigation
-            self.ds3 = self.ds1.mean(dim=['x', 'y']).compute()  # chunked for heatmap all
-            self.dsf_all = self.ds3.curvefit(["Polarization"], function,
-                                             kwargs={"maxfev": 1000000, "xtol": 10 ** -9, "ftol": 10 ** -9}).compute()
-            self.dsf = self.dsf_all.curvefit_coefficients
-            self.dsf_covar = self.dsf_all.curvefit_covariance
-            ds = xr.Dataset(coords=self.coords,
-                            data_vars={"ds2": self.ds2, "ds3": self.ds3, "fitted": self.dsf_all.curvefit_coefficients,
-                                       "covars": self.dsf_all.curvefit_covariance})
-            filename = str(self.filename) + "f"  # We're sticking a f to the filename
-            ds.to_netcdf(filename, engine="netcdf4")
-        self.attrs = {**self.ds1.attrs, **self.ds1.attrs}
+        self.ds = xr.open_dataset(self.filename,
+                                  chunks={'Orientation': 1, 'wavelength': 14, 'x': -1, 'y': -1, 'Polarization': -1},
+                                  engine="zarr")  # chunked for heatmap selected
+        try:
+            fit_ver = self.ds.attrs["fit_version"]
+        except:
+            fit_ver = 0
+        current_fit_version = 1
+        if fit_ver < current_fit_version:
+            self.ds["navigation"] = self.ds["ds1"].mean(dim='Polarization').compute()  # chunked for navigation
+            self.ds["heatmap_all"] = self.ds["ds1"].mean(dim=['x', 'y']).compute()  # chunked for heatmap all
+            self.ds = self.ds.merge(self.ds["heatmap_all"].curvefit(["Polarization"], function,
+                                                                    kwargs={"maxfev": 1000000, "xtol": 10 ** -9,
+                                                                            "ftol": 10 ** -9}).compute())
+            print(self.ds)
+            self.ds.attrs["fit_ver"] = current_fit_version
+            self.ds = self.ds.rename({"curvefit_coefficients": "fitted", "curvefit_covariance": "covariance"})
+            self.ds.to_zarr(self.filename, mode="a")
+        self.coords = self.ds["ds1"].coords
+        self.attrs = {**self.ds["ds1"].attrs, **self.ds.attrs}
         self.fname = self.attrs["title"]
         self.x = hv.Dimension('x', unit=self.attrs['x'])
         self.y = hv.Dimension('y', unit=self.attrs['y'])
-        self.param['wavelength'].objects = self.ds1.coords['wavelength'].values.tolist()
-        self.param['power'].objects = self.ds1.coords['power'].values.tolist()
-        self.wavelength = self.ds1.coords["wavelength"].min().values
-        self.power = self.ds1.coords["power"].min().values
+        self.param['wavelength'].objects = self.ds["ds1"].coords['wavelength'].values.tolist()
+        self.param['power'].objects = self.ds["ds1"].coords['power'].values.tolist()
+        self.wavelength = self.ds["ds1"].coords["wavelength"].min().values
+        self.power = self.ds["ds1"].coords["power"].min().values
 
     def fit(self):
         if self.selected:
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power).sel(
+            output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power).sel(
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1))
         else:
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
+            output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
         pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
         curvefit_coefficients = pf.curvefit_coefficients  # idk what to do with the covars
         return curvefit_coefficients.values
@@ -80,10 +77,10 @@ class grapher(param.Parameterized):
         polys = self.poly_generate()
         box_stream = streams.BoxEdit(source=polys, num_objects=1)
         box_stream.add_subscriber(self.tracker)
-        output = self.ds2.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
+        output = self.ds["navigation"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
         self.zdim = hv.Dimension('Intensity', range=(output.values.min(), output.values.max()))
         opts = [hv.opts.Image(colorbar=True, height=600,
-                              width=round(600 * self.ds1.coords['x'].size / self.ds1.coords['y'].size),
+                              width=round(600 * self.ds["ds1"].coords['x'].size / self.ds["ds1"].coords['y'].size),
                               title=f"Wavelength: {self.wavelength}, Orientation: {self.Orientation}",
                               cmap=self.colorMap, tools=['hover'], framewise=True, logz=True)]
         return hv.Image(output, vdims=self.zdim).opts(opts).redim(x=self.x, y=self.y) * polys
@@ -122,11 +119,12 @@ class grapher(param.Parameterized):
     @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def heatMap(self):
         if not self.selected:
-            output = self.ds3.sel(Orientation=self.Orientation, power=self.power)
+            output = self.ds["heatmap_all"].sel(Orientation=self.Orientation, power=self.power)
             title = f'''{self.fname}: Orientation: {self.Orientation}, Average across all points'''
         else:
-            output = self.ds1.sel(Orientation=self.Orientation, power=self.power).sel(x=slice(self.x0, self.x1),
-                                                                                      y=slice(self.y0, self.y1)).mean(
+            output = self.ds["ds1"].sel(Orientation=self.Orientation, power=self.power).sel(x=slice(self.x0, self.x1),
+                                                                                            y=slice(self.y0,
+                                                                                                    self.y1)).mean(
                 dim=['x', 'y'])
             title = f'''{self.fname}: Orientation: {self.Orientation}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
         self.PolarizationDim = hv.Dimension('Polarization', range=getRange('Polarization', self.coords),
@@ -143,11 +141,11 @@ class grapher(param.Parameterized):
     def Polar(self, dataset="Polarization"):
         thetaVals = self.coords[dataset].values
         thetaRadians = self.coords['Polarization'].values
-        overall = self.ds3.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
+        overall = self.ds["heatmap_all"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
-            output = self.ds1.sel(Orientation=self.Orientation, wavelength=self.wavelength,
-                x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
+            output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
+                                        x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
             df = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
             fitted = functionN(thetaRadians, *self.fit())
@@ -158,7 +156,8 @@ class grapher(param.Parameterized):
             title = f'''{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points'''
             df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-            params = self.dsf.sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power).values
+            params = self.ds["fitted"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
+                                           power=self.power).values
             fitted = functionN(thetaRadians, *params)
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
@@ -173,8 +172,8 @@ class grapher(param.Parameterized):
         ori_Wavelength, ori_Orientation = self.wavelength, self.Orientation
         self.param["Orientation"].precedence = -1
         self.param["wavelength"].precedence = -1
-        wavelengths = self.ds1.coords['wavelength'].values.tolist()
-        Orientations = self.ds1.coords['Orientation'].values.tolist()
+        wavelengths = self.ds["ds1"].coords['wavelength'].values.tolist()
+        Orientations = self.ds["ds1"].coords['Orientation'].values.tolist()
         Folder = str(self.filename).replace(f".{extension(self.filename)}", '')
         if not os.path.isdir(Folder):
             os.mkdir(Folder)
@@ -199,7 +198,7 @@ class grapher(param.Parameterized):
         print(end - start)
 
     def xarray(self):
-        return pn.panel(self.ds1, width=700)
+        return pn.panel(self.ds, width=700)
 
     def view(self):
         return pn.Column(self.title, pn.Row(self.nav, self.heatMap), pn.Row(self.Polar, self.xarray))
@@ -212,7 +211,7 @@ class grapher(param.Parameterized):
 
     def widgets(self):
         self.button.on_click(self.PolarsToFile)
-        if self.ds1.coords["power"].size > 1:
+        if self.ds["ds1"].coords["power"].size > 1:
             widgets = {"wavelength": pn.widgets.DiscreteSlider, "power": pn.widgets.DiscreteSlider}
         else:
             widgets = {"wavelength": pn.widgets.DiscreteSlider}
