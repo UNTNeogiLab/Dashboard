@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pandas as pd
 import param
 import plotly.express as px
@@ -5,7 +7,7 @@ import xarray as xr
 import holoviews as hv
 import panel as pn
 from holoviews import streams
-
+import time
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 from visualizer.utils import *
@@ -36,15 +38,17 @@ class grapher(param.Parameterized):
             fit_ver = 0
         current_fit_version = 1
         if fit_ver < current_fit_version:
+            time1 = time.time()
             self.ds["navigation"] = self.ds["ds1"].mean(dim='Polarization').compute()  # chunked for navigation
             self.ds["heatmap_all"] = self.ds["ds1"].mean(dim=['x', 'y']).compute()  # chunked for heatmap all
             self.ds = self.ds.merge(self.ds["heatmap_all"].curvefit(["Polarization"], function,
                                                                     kwargs={"maxfev": 1000000, "xtol": 10 ** -9,
                                                                             "ftol": 10 ** -9}).compute())
-            print(self.ds)
             self.ds.attrs["fit_ver"] = current_fit_version
             self.ds = self.ds.rename({"curvefit_coefficients": "fitted", "curvefit_covariance": "covariance"})
             self.ds.to_zarr(self.filename, mode="a")
+            time2 = time.time()
+            print(f"finished in {str(timedelta(seconds =time2-time1))}")
         self.coords = self.ds["ds1"].coords
         self.attrs = {**self.ds["ds1"].attrs, **self.ds.attrs}
         self.fname = self.attrs["title"]
