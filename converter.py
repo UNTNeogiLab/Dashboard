@@ -25,6 +25,6 @@ if __name__ == '__main__':
             data = xr.Dataset(data_vars={"ds1": ds_coords},
                               attrs=ds.attrs,
                               coords=coords)
-            data["data_type"] = "RASHG"
+            data.attrs["data_type"] = "RASHG"
             print(data)
             data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True,compute=True)
