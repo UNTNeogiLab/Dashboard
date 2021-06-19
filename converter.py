@@ -26,5 +26,6 @@ if __name__ == '__main__':
                               attrs=ds.attrs,
                               coords=coords)
             data.attrs["data_type"] = "RASHG"
+            data.attrs["title"] = "RASHG"
             print(data)
             data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True,compute=True)
