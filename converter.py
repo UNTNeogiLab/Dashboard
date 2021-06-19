@@ -19,7 +19,7 @@ if __name__ == '__main__':
     for file in list(Path(".").rglob("*.5nc")):
         filename = str(file).replace(f".{utils.extension(file)}", '.zarr')
         if not filename in list(Path(".").rglob("*.zarr")):
-            ds = xr.open_dataarray(file,engine="zarr")
+            ds = xr.open_dataarray(file,engine="netcdf4")
             coords = ds.coords
             ds_coords = ds.assign_coords(power=0).expand_dims("power")
             data = xr.Dataset(data_vars={"ds1": ds_coords},
