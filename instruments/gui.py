@@ -71,7 +71,9 @@ class gui(param.Parameterized):
             "institution": self.institution,
             "sample": self.sample,
             "source": self.instruments.type,
-            "data_type":self.instruments.data
+            "data_type":self.instruments.data,
+            "fit_version":0,
+            "data_version":2
         }
         self.coords = {}
         for coord in self.instruments.coords:

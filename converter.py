@@ -9,7 +9,7 @@ from visualizer import utils
 
 compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 if __name__ == '__main__':
-    client = Client()
+    #client = Client()
     for file in list(Path(".").rglob("*.zarr")):
         print(file)
         ds1 = xr.open_dataset(file,engine="zarr")
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     for file in list(Path(".").rglob("*.5nc")):
         filename = str(file).replace(f".{utils.extension(file)}", '.zarr')
         if not filename in list(Path(".").rglob("*.zarr")):
-            ds = xr.open_dataarray(file,engine="netcdf4")
+            ds = utils.hotfix(xr.open_dataarray(file,engine="netcdf4"))
             coords = ds.coords
             ds_coords = ds.assign_coords(power=0).expand_dims("power")
             data = xr.Dataset(data_vars={"ds1": ds_coords},
@@ -27,5 +27,6 @@ if __name__ == '__main__':
                               coords=coords)
             data.attrs["data_type"] = "RASHG"
             data.attrs["title"] = "RASHG"
+            data.attrs["data_version"] = 2
             print(data)
             data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True,compute=True)

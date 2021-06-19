@@ -1,8 +1,6 @@
 import numpy as np
-from numba import njit
 import time
 import os
-from itertools import chain
 from pathlib import Path
 import xarray as xr
 
@@ -31,13 +29,6 @@ def fname(file):
     return fname.replace(extension(fname), '')
 
 
-@njit(cache=True)
-def function(phi, delta, A, B, theta, C):
-    return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
-
-
-def functionN(phi, delta, A, B, theta, C):
-    return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
 
 
 def hotfix(ds):
