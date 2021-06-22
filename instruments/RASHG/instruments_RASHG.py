@@ -1,11 +1,14 @@
 import math
 import numpy as np
-
+from pyvcam import pvc
+from pyvcam.camera import Camera
+from K10CR1.k10cr1 import K10CR1
 from .instruments_base import instruments_base
-from . import RASHG_functions as RASHG
 import time
 import param
+
 name = "RASHG"
+import elliptec
 
 
 class instruments(instruments_base):
@@ -38,13 +41,44 @@ class instruments(instruments_base):
     def __init__(self):
         super().__init__()
 
+    def init_cam(self):
+        pvc.init_pvcam()  # Initialize PVCAM
+        try:
+            cam = next(Camera.detect_camera())  # Use generator to find first camera
+            cam.open()  # Open the camera.
+            if cam.is_open:
+                print("Camera open")
+        except:
+            raise Exception("Error: camera not found")
+        return cam
+
+    def init_rotator(self, i, type="K10CR1"):
+        if type == "K10CR1":
+            rotator = K10CR1(i)
+            rotator.home()
+            return rotator
+        elif type == "elliptec":
+            rotator = elliptec.Motor(i)
+            rotator.do_("forward")
+            return rotator
+        '''
+        elif type == "thorlabs_apt":
+            rotator = apt.Motor(i[1])
+            rotator.set_move_home_parameters(2, 1, 10, 0)
+            rotator.set_velocity_parameters(0, 10, 10)
+            rotator.move_home()
+            return rotator
+        '''
+
     def initialize(self):
         self.initialized = True
         exclude = []
         for param in self.param:
             if not param in exclude:
                 self.param[param].constant = True
-        self.cam, self.rbot, self.rtop, self.atten = RASHG.InitializeInstruments()
+        self.cam = self.init_cam()
+
+        self.rbot, self.rtop = [self.init_rotator(i, type="K10CR1") for i in ["55001000", "55114554", "55114654"]]
         self.cam.roi = (self.x1, self.x2, self.y1, self.y2)
         self.cam.binning = (self.xbin, self.ybin)
         if self.xbin != self.ybin:
