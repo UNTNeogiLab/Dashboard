@@ -6,7 +6,7 @@ def find_ports(type):
     if type == "K10CR1":
         return ["55001000", "55114554", "55114654"]
     elif type == "elliptec":
-        return [port.device for port in elliptec.find_ports()]
+        return elliptec.find_ports()
     # more or less documentation on finding the rotators
 
 
@@ -18,7 +18,10 @@ class rotator():
             self.home()
 
         elif type == "elliptec":
-            self.rotator = elliptec.Motor(i)
+            ports = elliptec.find_ports()
+            for port in ports:
+                if port.serial_number == i:
+                    self.rotator = elliptec.Motor(port.device)
             rotator.do_("forward")
         '''
         elif type == "thorlabs_apt":

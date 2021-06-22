@@ -62,7 +62,7 @@ class instruments(instruments_base):
         self.cam = self.init_cam()
 
         self.rbot, self.rtop = [rotator(i, type="K10CR1") for i in ["55001000", "55114554", "55114654"]]
-        self.atten = rotator(elliptec.find_ports()[0].device,type="elliptec")
+        self.atten = rotator("DK0AHAJZ",type="elliptec")
         self.cam.roi = (self.x1, self.x2, self.y1, self.y2)
         self.cam.binning = (self.xbin, self.ybin)
         if self.xbin != self.ybin:
