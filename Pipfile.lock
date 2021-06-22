@@ -390,7 +390,7 @@
         "elliptec": {
             "editable": true,
             "git": "https://github.com/UNTNeogiLab/TL-rotation-control",
-            "ref": "a982cdb8cacc2e8695b6f4b62cd556f402bc9f0a"
+            "ref": "9ddf0fa0a1a7804677c6fb7222c64cee7321fb73"
         },
         "entrypoints": {
             "hashes": [
