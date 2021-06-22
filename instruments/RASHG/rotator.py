@@ -22,7 +22,6 @@ class rotator():
             for port in ports:
                 if port.serial_number == i:
                     self.rotator = elliptec.Motor(port.device)
-            rotator.do_("forward")
         '''
         elif type == "thorlabs_apt":
             rotator = apt.Motor(i[1])
