@@ -1,3 +1,5 @@
+from datetime import timedelta
+from numba import njit
 import pandas as pd
 import param
 import plotly.express as px
@@ -5,13 +7,26 @@ import xarray as xr
 import holoviews as hv
 import panel as pn
 from holoviews import streams
+import time
+import numpy as np
+import os
+from pathlib import Path
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-from visualizer.utils import *
+from visualizer import utils
 
 type = "RASHG"
 name = "sixD"
+
+
+@njit(cache=True)
+def function(phi, delta, A, B, theta, C):
+    return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
+
+
+def functionN(phi, delta, A, B, theta, C):
+    return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
 
 
 class grapher(param.Parameterized):
@@ -34,17 +49,31 @@ class grapher(param.Parameterized):
             fit_ver = self.ds.attrs["fit_version"]
         except:
             fit_ver = 0
+        try:
+            data_ver = self.ds.attrs["data_version"]
+        except:
+            data_ver = 0
         current_fit_version = 1
+        current_data_version = 2
         if fit_ver < current_fit_version:
+            time1 = time.time()
+            self.ds = self.ds.drop_vars(["fitted", "covariance"], errors="ignore")
             self.ds["navigation"] = self.ds["ds1"].mean(dim='Polarization').compute()  # chunked for navigation
             self.ds["heatmap_all"] = self.ds["ds1"].mean(dim=['x', 'y']).compute()  # chunked for heatmap all
             self.ds = self.ds.merge(self.ds["heatmap_all"].curvefit(["Polarization"], function,
                                                                     kwargs={"maxfev": 1000000, "xtol": 10 ** -9,
                                                                             "ftol": 10 ** -9}).compute())
-            print(self.ds)
-            self.ds.attrs["fit_ver"] = current_fit_version
+            self.ds.attrs["fit_version"] = current_fit_version
             self.ds = self.ds.rename({"curvefit_coefficients": "fitted", "curvefit_covariance": "covariance"})
-            self.ds.to_zarr(self.filename, mode="a")
+            self.ds.to_zarr(self.filename, mode="a", compute=True)
+            time2 = time.time()
+            print(f"finished in {str(timedelta(seconds=time2 - time1))}")
+        if data_ver == 1:
+            print("fixing dataset innaccuracies")
+            self.ds.attrs["data_version"] = current_data_version
+            self.ds.coords['Polarization'] = np.arange(0, 180, 1) / 90 * np.pi
+            self.ds.coords['degrees'] = ("Polarization", np.arange(0, 360, 2))
+            self.ds.to_zarr(self.filename, mode="a", compute=True)
         self.coords = self.ds["ds1"].coords
         self.attrs = {**self.ds["ds1"].attrs, **self.ds.attrs}
         self.fname = self.attrs["title"]
@@ -93,7 +122,7 @@ class grapher(param.Parameterized):
             height = self.y1 - self.y0
             return hv.Polygons([hv.Box(avg_x, avg_y, (width, height))]).opts(fill_alpha=0.2, line_color='white')
         else:
-            return hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
+            return hv.Polygons([]).opts(fill_alpha=0.2, line_color = 'white')
 
     def tracker(self, data):
         if not data or not any(len(d) for d in data.values()):
@@ -122,18 +151,20 @@ class grapher(param.Parameterized):
             output = self.ds["heatmap_all"].sel(Orientation=self.Orientation, power=self.power)
             title = f'''{self.fname}: Orientation: {self.Orientation}, Average across all points'''
         else:
-            output = self.ds["ds1"].sel(Orientation=self.Orientation, power=self.power).sel(x=slice(self.x0, self.x1),
-                                                                                            y=slice(self.y0,
-                                                                                                    self.y1)).mean(
+            output = self.ds["ds1"].sel(Orientation=self.Orientation, power=self.power).sel(
+                x=slice(self.x0, self.x1),
+                y=slice(self.y0,
+                        self.y1)).mean(
                 dim=['x', 'y'])
             title = f'''{self.fname}: Orientation: {self.Orientation}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
-        self.PolarizationDim = hv.Dimension('Polarization', range=getRange('Polarization', self.coords),
+        self.PolarizationDim = hv.Dimension('Polarization', range=utils.getRange('Polarization', self.coords),
                                             unit=self.attrs['Polarization'])
-        self.wavelengthDim = hv.Dimension('wavelength', range=getRange('wavelength', self.coords),
+        self.wavelengthDim = hv.Dimension('wavelength', range=utils.getRange('wavelength', self.coords),
                                           unit=self.attrs['wavelength'])
         line = hv.HLine(self.wavelength).opts(line_width=600 / self.coords['wavelength'].values.size, alpha=0.6)
-        opts = [hv.opts.Image(cmap=self.colorMap, height=600, width=900, colorbar=True, title=title, tools=['hover'],
-                              framewise=True, logz=True)]
+        opts = [
+            hv.opts.Image(cmap=self.colorMap, height=600, width=900, colorbar=True, title=title, tools=['hover'],
+                          framewise=True, logz=True)]
         return hv.Image(output).opts(opts).redim(wavelength=self.wavelengthDim,
                                                  Polarization=self.PolarizationDim) * line
 
@@ -141,10 +172,11 @@ class grapher(param.Parameterized):
     def Polar(self, dataset="Polarization"):
         thetaVals = self.coords[dataset].values
         thetaRadians = self.coords['Polarization'].values
-        overall = self.ds["heatmap_all"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
+        overall = self.ds["heatmap_all"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
+                                             power=self.power)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
-            output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
+            output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power,
                                         x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
             df = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
@@ -174,7 +206,7 @@ class grapher(param.Parameterized):
         self.param["wavelength"].precedence = -1
         wavelengths = self.ds["ds1"].coords['wavelength'].values.tolist()
         Orientations = self.ds["ds1"].coords['Orientation'].values.tolist()
-        Folder = str(self.filename).replace(f".{extension(self.filename)}", '')
+        Folder = str(self.filename).replace(f".{utils.extension(self.filename)}", '')
         if not os.path.isdir(Folder):
             os.mkdir(Folder)
         for Orientation in Orientations:
@@ -205,9 +237,9 @@ class grapher(param.Parameterized):
 
     def sidebar(self):
         return pn.pane.Markdown(f'''
-            ##NOTES
-            TBD probably will move to README
-            ''')
+        ##NOTES
+        TBD probably will move to README
+        ''')
 
     def widgets(self):
         self.button.on_click(self.PolarsToFile)
