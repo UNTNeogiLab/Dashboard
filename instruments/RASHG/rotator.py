@@ -54,8 +54,8 @@ class rotator():
         elif self.type == "elliptec":
             new_val = self.degree + val_dif
             while new_val > self.max_degree:
-                new_val += 360
-                val_dif += 360
+                new_val -= 360
+                val_dif -= 360
             while new_val < self.min_degree:
                 new_val += 360
                 val_dif += 360
