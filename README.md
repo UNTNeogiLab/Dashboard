@@ -9,7 +9,7 @@ Originally the _holoviz_ branch of [2020SummerResearch](https://github.com/UNTNe
 ### Using Poetry (requires python)
 https://python-poetry.org/  
 to download another version of python install `curl https://pyenv.run | bash`  
-`poetry sync` (installs dependencies)  
+`poetry install` (installs dependencies)  
 ### debian/ubuntu/not Arch
 Debian/Ubuntu Pip or pipenv may be broken  
 The best option is to install [pyenv](https://github.com/pyenv/pyenv) with its build dependencies
@@ -24,7 +24,7 @@ Data aqusition is unsupported on mac and impossible
 there's some placeholder scanimage code for now
 ### Updating dependencies
 
-`poetry sync`
+`poetry install`
 
 ## Running
 

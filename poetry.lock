@@ -970,7 +970,7 @@ test = ["check-manifest", "fastjsonschema", "testpath", "pytest", "pytest-cov"]
 
 [[package]]
 name = "neogiinstruments"
-version = "0.1.0"
+version = "0.1.1"
 description = "Communication and helper functions for lab equipment"
 category = "main"
 optional = false
@@ -2351,8 +2351,8 @@ nbformat = [
     {file = "nbformat-5.1.3.tar.gz", hash = "sha256:b516788ad70771c6250977c1374fcca6edebe6126fd2adb5a69aa5c2356fd1c8"},
 ]
 neogiinstruments = [
-    {file = "NeogiInstruments-0.1.0-py3-none-any.whl", hash = "sha256:fcbd454b4fcf7abd7e78431a82005051e7932156faf395256dff658da1d61c98"},
-    {file = "NeogiInstruments-0.1.0.tar.gz", hash = "sha256:8ed6755bc952bc9d9d9a70352e7ade9e3769fb085962d1adaa2bfacfc4105be9"},
+    {file = "NeogiInstruments-0.1.1-py3-none-any.whl", hash = "sha256:0f781b701c6545e99ff45c24138b095400039f78b3053fe394ef98c8b347fede"},
+    {file = "NeogiInstruments-0.1.1.tar.gz", hash = "sha256:b9acd4795f43ac1afcb122701d4d11879dab86bb4272b9f17a314e546384b3e9"},
 ]
 nest-asyncio = [
     {file = "nest_asyncio-1.5.1-py3-none-any.whl", hash = "sha256:76d6e972265063fe92a90b9cc4fb82616e07d586b346ed9d2c89a4187acea39c"},
