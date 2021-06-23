@@ -2,6 +2,7 @@ import math
 
 import elliptec
 import numpy as np
+import panel
 from pyvcam import pvc
 from pyvcam.camera import Camera
 from .rotator import rotator
@@ -34,7 +35,8 @@ class instruments(instruments_base):
     type = name
     data = "RASHG"
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
-
+    pid_time = param.Number(default=1)
+    pid = simple_pid.PID(sample_time= sample_time)
     def start(self):
         print("Gathering Data, Get Out")
         if not self.debug:
@@ -54,7 +56,9 @@ class instruments(instruments_base):
             raise Exception("Error: camera not found")
         return cam
 
-
+    def pid_step(self):
+        control = self.pid(value)
+        self.atten.move_abs(control)
     def initialize(self):
         self.initialized = True
         exclude = []
@@ -88,6 +92,8 @@ class instruments(instruments_base):
         }
         self.cap_coords = ["x", "y"]
         self.loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
+        #do something with the PID
+        panel.state.add_periodic_callback(self.pid,self.pid_time)
     def init_vars(self):
         self.x = self.x2 - self.x1
         self.y = self.y2 - self.y1  # TODO: fix binning

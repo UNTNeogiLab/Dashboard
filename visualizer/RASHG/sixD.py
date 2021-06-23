@@ -122,7 +122,7 @@ class grapher(param.Parameterized):
             height = self.y1 - self.y0
             return hv.Polygons([hv.Box(avg_x, avg_y, (width, height))]).opts(fill_alpha=0.2, line_color='white')
         else:
-            return hv.Polygons([]).opts(fill_alpha=0.2, line_color = 'white')
+            return hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
 
     def tracker(self, data):
         if not data or not any(len(d) for d in data.values()):

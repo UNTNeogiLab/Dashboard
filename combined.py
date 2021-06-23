@@ -8,7 +8,7 @@ import socket
 import sys
 import visualizer.visualizer as Viewer
 import instruments
-# try import RASHG.instruments_RASHG
+
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 from dask.diagnostics import ProgressBar

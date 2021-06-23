@@ -14,7 +14,6 @@ ipympl = "*"
 ipykernel = "*"
 ipywidgets = "*"
 dask-labextension = "*"
-h5netcdf = "*"
 panel = "*"
 bokeh = "*"
 xarray = "*"
@@ -41,10 +40,7 @@ neogiinstruments = "*"
 [dev-packages]
 bpytop = "*" #monitoring program of my choice
 pip-licenses = "*" #check licenses of libraries
-labview-automation = "*"
 
 [requires]
 python_version = "3.9"
 
-[pipenv]
-allow_prereleases = true
