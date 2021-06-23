@@ -59,7 +59,6 @@ class rotator():
             while new_val < self.min_degree:
                 new_val += 360
                 val_dif += 360
-
             val = self.rotator.deg_to_hex(abs(val_dif))
             self.rotator.set_('stepsize', val)
             if val_dif > 0:

@@ -7,7 +7,7 @@ from pyvcam import pvc
 from pyvcam.camera import Camera
 from .rotator import rotator
 from .instruments_base import instruments_base
-import neogiinstruments
+from neogiinstruments import Photodiode
 import simple_pid
 import time
 import param
@@ -36,7 +36,7 @@ class instruments(instruments_base):
     data = "RASHG"
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     pid_time = param.Number(default=1)
-    pid = simple_pid.PID(sample_time= pid_time)
+    pid = simple_pid.PID()
     def start(self):
         print("Gathering Data, Get Out")
         if not self.debug:
@@ -93,7 +93,8 @@ class instruments(instruments_base):
         self.cap_coords = ["x", "y"]
         self.loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
         #do something with the PID
-        panel.state.add_periodic_callback(self.pid,self.pid_time)
+        self.pid.sample_time = self.pid_time
+        panel.state.add_periodic_callback(self.pid_step,self.pid_time)
     def init_vars(self):
         self.x = self.x2 - self.x1
         self.y = self.y2 - self.y1  # TODO: fix binning
