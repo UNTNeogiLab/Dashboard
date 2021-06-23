@@ -36,7 +36,7 @@ class instruments(instruments_base):
     data = "RASHG"
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     pid_time = param.Number(default=1)
-    pid = simple_pid.PID(sample_time= sample_time)
+    pid = simple_pid.PID(sample_time= pid_time)
     def start(self):
         print("Gathering Data, Get Out")
         if not self.debug:
