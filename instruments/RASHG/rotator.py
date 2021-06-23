@@ -37,18 +37,25 @@ class rotator():
         elif self.type == "elliptec":
             self.degree = 0
             self.rotator.do_("home")
-    def move_abs(self,value):
+
+    def move_abs(self, value):
         if self.type == "K10CR1":
             self.rotator.move_abs(value)
         elif self.type == "elliptec":
-            val_dif = (value - self.degree)%360
+            val_dif = (value - self.degree) % 360
+            self.move_rel(val_dif)
+
+    def move_rel(self, val_dif):
+        if self.type == "K10CR1":
+            self.rotator.move_rel(val_dif)
+        elif self.type == "elliptec":
             val = self.rotator.deg_to_hex(abs(val_dif))
-            self.rotator.set_('stepsize',val)
+            self.rotator.set_('stepsize', val)
             if val_dif > 0:
                 self.rotator.do_("forward")
-                self.degree = (self.degree + val_dif)%360
+                self.degree = (self.degree + val_dif) % 360
             elif val_dif < 0:
                 self.rotator.do_("backward")
-                self.degree = (self.degree + val_dif)%360
+                self.degree = (self.degree + val_dif) % 360
             else:
                 print("No change, moving 0 degrees")
