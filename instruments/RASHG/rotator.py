@@ -23,8 +23,8 @@ class rotator():
                 if port.serial_number == i:
                     self.rotator = elliptec.Motor(port.device)
                     self.home()
-            self.max_degree = 360
-            self.min_degree = 360
+            self.max_degree = 180
+            self.min_degree = -180
         '''
         elif type == "thorlabs_apt":
             rotator = apt.Motor(i[1])
