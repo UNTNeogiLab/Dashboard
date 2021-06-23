@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4e799d8b3bbd8f169f924ac33c18c4454ea5fe39c7ce7254c604623dd40cd82a"
+            "sha256": "013b032b9b3bf3a4e79e63b8ae4110fe1d4a66ea71fa6c96f5a93495124be73f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -409,11 +409,11 @@
         },
         "fsspec": {
             "hashes": [
-                "sha256:931961514c67acab86519ca16985491e639ebf992dbc3a1aae24d44202b52426",
-                "sha256:e926b66c074ff3fc732d7678187a294e4a0bf112ccb51594fa9dff5a9fbdc4a1"
+                "sha256:0ca23992f425c1ba61bf11d3cb3af8ad5363be8612e26732b520090556f173f2",
+                "sha256:2cdaafb51dd71e062afffcabcbc4925acef95f9bdd8d822d2010e4bf92951bd7"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==2021.6.0"
+            "version": "==2021.6.1"
         },
         "h11": {
             "hashes": [
@@ -869,11 +869,11 @@
         },
         "nbconvert": {
             "hashes": [
-                "sha256:e01bc018b65a359a61964cfb4f68c4ae09b5de70e4cdcf6036cbfc0ac3b90623",
-                "sha256:e32dddbda229a774c038eab7a3b79aaff89bbcc68b705f814fcd80b133e41321"
+                "sha256:37cd92ff2ae6a268e62075ff8b16129e0be4939c4dfcee53dc77cc8a7e06c684",
+                "sha256:d22a8ff202644d31db254d24d52c3a96c82156623fcd7c7f987bba2612303ec9"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==6.1.0rc0"
+            "version": "==6.1.0"
         },
         "nbformat": {
             "hashes": [
@@ -882,6 +882,14 @@
             ],
             "markers": "python_version >= '3.5'",
             "version": "==5.1.3"
+        },
+        "neogiinstruments": {
+            "hashes": [
+                "sha256:8ed6755bc952bc9d9d9a70352e7ade9e3769fb085962d1adaa2bfacfc4105be9",
+                "sha256:fcbd454b4fcf7abd7e78431a82005051e7932156faf395256dff658da1d61c98"
+            ],
+            "index": "pypi",
+            "version": "==0.1.0"
         },
         "nest-asyncio": {
             "hashes": [
@@ -1014,7 +1022,7 @@
                 "sha256:ea760153a0304748394500b189e6c072cbfc54c809322c4ff9fa85b300790094",
                 "sha256:f3e177d9d35a4615fe09891548923fd22eabdd716ada28eb2e19075a1793d831"
             ],
-            "markers": "python_version >= '3.6' and python_version < '4'",
+            "markers": "python_version >= '3.6' and python_version < '4.0'",
             "version": "==0.8.0"
         },
         "numpy": {
@@ -1538,6 +1546,14 @@
             ],
             "version": "==0.4"
         },
+        "simple-pid": {
+            "hashes": [
+                "sha256:60d6b3a7c3f19734d33bbc5938293c4924d7cfea74176def03306057b3f99524",
+                "sha256:99254d8f9a630062264ce4842ef1e90443558f336697268d16b9de52d3baec0b"
+            ],
+            "index": "pypi",
+            "version": "==1.0.1"
+        },
         "six": {
             "hashes": [
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
@@ -1696,7 +1712,7 @@
                 "sha256:753a0374df26658f99d826cfe40394a686d05985786d946fbe4165b5148f5a7c",
                 "sha256:a7acd0977125325f516bda9735fa7142b909a8d01e8b2e4c8108d0984e6e0098"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
             "version": "==1.26.5"
         },
         "wcwidth": {
@@ -2116,7 +2132,7 @@
                 "sha256:753a0374df26658f99d826cfe40394a686d05985786d946fbe4165b5148f5a7c",
                 "sha256:a7acd0977125325f516bda9735fa7142b909a8d01e8b2e4c8108d0984e6e0098"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
             "version": "==1.26.5"
         },
         "werkzeug": {

@@ -6,9 +6,11 @@ from pyvcam import pvc
 from pyvcam.camera import Camera
 from .rotator import rotator
 from .instruments_base import instruments_base
+import neogiinstruments
+import simple_pid
 import time
 import param
-name = "RASHG"
+name = "RASHG_PID"
 
 
 class instruments(instruments_base):
@@ -86,7 +88,6 @@ class instruments(instruments_base):
         }
         self.cap_coords = ["x", "y"]
         self.loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
-
     def init_vars(self):
         self.x = self.x2 - self.x1
         self.y = self.y2 - self.y1  # TODO: fix binning
