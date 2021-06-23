@@ -23,6 +23,8 @@ class rotator():
                 if port.serial_number == i:
                     self.rotator = elliptec.Motor(port.device)
                     self.home()
+            self.max_degree = 360
+            self.min_degree = 360
         '''
         elif type == "thorlabs_apt":
             rotator = apt.Motor(i[1])
@@ -50,13 +52,21 @@ class rotator():
         if self.type == "K10CR1":
             self.rotator.move_rel(val_dif)
         elif self.type == "elliptec":
+            new_val = self.degree + val_dif
+            while new_val > self.max_degree:
+                new_val += 360
+                val_dif += 360
+            while new_val < self.min_degree:
+                new_val += 360
+                val_dif += 360
+
             val = self.rotator.deg_to_hex(abs(val_dif))
             self.rotator.set_('stepsize', val)
             if val_dif > 0:
                 self.rotator.do_("forward")
-                self.degree = (self.degree + val_dif) % 360
+                self.degree = (self.degree + val_dif)
             elif val_dif < 0:
                 self.rotator.do_("backward")
-                self.degree = (self.degree + val_dif) % 360
+                self.degree = (self.degree + val_dif)
             else:
                 print("No change, moving 0 degrees")
