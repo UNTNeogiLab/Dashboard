@@ -4,9 +4,12 @@ import time
 from instruments.instruments_base import instruments_base
 import param
 from neogiinstruments.MaiTai import MaiTai
+from neogiinstruments.Photodiode import Photodiode
+from neogiinstruments.PowerMeter import PowerMeter
 from rotator import rotator
 
 name = "WavelengthPoweredCalib"
+
 
 class instruments(instruments_base):
     wavstart = param.Integer(default=780)
@@ -20,7 +23,11 @@ class instruments(instruments_base):
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     type = name
     data = "WavelengthPoweredCalib"
-    dimensions = ["wavelength", "Polarization", "variable"]
+    dimensions = ["wavelength", "Polarization"]
+    cap_coords = []
+    loop_coords = ["wavelength", "Polarization"]
+    datasets = ["Pwr", "Pwrstd", "Vol", "Volstd"]
+
     def stop(self):
         self.MaiTai.MaiTai.write('OFF')
 
@@ -52,3 +59,10 @@ class instruments(instruments_base):
         pol = xs[1]
         self.rotator.move_abs(pol)
         time.sleep(self.pwait)
+
+    def get_frame(self, xs):
+        p = PowerMeter.PowAvg()
+        Pwr = p[0]
+        Pwrstd = p[1]
+        V, Vstd = Photodiode()
+        return {"Pwr": Pwr, "Pwrstd": Pwrstd, "Vol": V, "Volstd": Vstd}
