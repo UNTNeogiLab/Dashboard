@@ -32,7 +32,8 @@ class instruments(instruments_base):
     type = name
     data = "RASHG"
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
-
+    cap_coords = ["x", "y"]
+    loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
     def start(self):
         print("Gathering Data, Get Out")
         if not self.debug:
@@ -83,8 +84,6 @@ class instruments(instruments_base):
             "Orientation": {"name": "Orientation", "unit": "?", "dimension": "Orientation", "values": self.Orientation,
                             "function": "none"},
         }
-        self.cap_coords = ["x", "y"]
-        self.loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
 
     def init_vars(self):
         self.x = self.x2 - self.x1
