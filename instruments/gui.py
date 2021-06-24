@@ -154,6 +154,7 @@ class gui(param.Parameterized):
                 self.bars[dim_num].update()  # don't update the first run ever
         self.data.to_zarr(self.instruments.filename, append_dim=self.instruments.loop_coords[0])
         self.bars[0].update()
+        self.instruments.stop()
         print("Finished")
         self.cPol = self.cPol + 1
         self.data.close()

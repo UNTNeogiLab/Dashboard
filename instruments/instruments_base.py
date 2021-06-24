@@ -24,3 +24,5 @@ class instruments_base(param.Parameterized):
 
     def start(self):
         pass
+    def stop(self):
+        pass
