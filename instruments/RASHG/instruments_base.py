@@ -4,6 +4,8 @@ import param
 class instruments_base(param.Parameterized):
     initialized = param.Boolean(default=False, precedence=-1)  # dummy variable to make code work
     type = "base"
+    title = param.String(default="Power/Wavelength dependent RASHG")
+    filename = param.String(default="data/testfolder.zarr")
 
     def __init__(self):
         super().__init__()

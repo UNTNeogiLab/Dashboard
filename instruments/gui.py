@@ -1,3 +1,5 @@
+import time
+
 import holoviews as hv
 import xarray as xr
 import numpy as np
@@ -25,10 +27,7 @@ def compare(xs, dim_cache):
 class gui(param.Parameterized):
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     cPol = param.Number(default=0, precedence=-1)
-
     wavwait = param.Number(default=5)  # value is in seconds
-    filename = param.String(default="data/testfolder.zarr")
-    title = param.String(default="Power/Wavelength dependent RASHG")
     institution = param.String(default="University of North Texas")
     sample = param.String(default="MoS2")
     GUIupdate = param.Boolean(default=True)
@@ -67,13 +66,14 @@ class gui(param.Parameterized):
 
         # populate metadata
         self.attrs = {
-            "title": self.title,
+            "title": self.instruments.title,
             "institution": self.institution,
             "sample": self.sample,
             "source": self.instruments.type,
-            "data_type":self.instruments.data,
-            "fit_version":0,
-            "data_version":2
+            "data_type": self.instruments.data,
+            "time": time.time(),
+            "fit_version": 0,
+            "data_version": 2
         }
         self.coords = {}
         for coord in self.instruments.coords:
@@ -92,14 +92,14 @@ class gui(param.Parameterized):
         zero_array[0] = 1
         self.zeros = xr.DataArray(np.zeros(zero_array), dims=self.instruments.dimensions)
         # Get filename
-        fname = self.filename
+        fname = self.instruments.filename
         i = 2
-        while os.path.isdir(self.filename):
-            self.filename = fname.replace(".zarr", f"{i}.zarr")
+        while os.path.isdir(self.instruments.filename):
+            self.fiilename = fname.replace(".zarr", f"{i}.zarr")
             i += 1
-            print(f"Zarr store exists, trying {self.filename}")
+            print(f"Zarr store exists, trying {self.instruments.filename}")
         try:
-            os.mkdir(self.filename)
+            os.mkdir(self.instruments.filename)
         except:
             raise Exception("folder to create zarr store does not exist")
 
@@ -129,10 +129,10 @@ class gui(param.Parameterized):
                 if First == 0:
                     First = 1
                 elif First == 1:
-                    self.data.to_zarr(self.filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
+                    self.data.to_zarr(self.instruments.filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
                     First += 1
                 else:
-                    self.data.to_zarr(self.filename, append_dim=self.instruments.loop_coords[0])
+                    self.data.to_zarr(self.instruments.filename, append_dim=self.instruments.loop_coords[0])
                 self.coords[self.instruments.loop_coords[0]] = ([dim], [xs[0]])  # update 1st coord after saving
             self.data = xr.Dataset(
                 data_vars={"ds1": (self.instruments.dimensions, self.zeros, self.attrs)},
@@ -152,7 +152,7 @@ class gui(param.Parameterized):
                 self.cPol += 1  # refresh the GUI
             if not (dim_num == 0 and First == 1):
                 self.bars[dim_num].update()  # don't update the first run ever
-        self.data.to_zarr(self.filename, append_dim=self.instruments.loop_coords[0])
+        self.data.to_zarr(self.instruments.filename, append_dim=self.instruments.loop_coords[0])
         self.bars[0].update()
         print("Finished")
         self.cPol = self.cPol + 1
