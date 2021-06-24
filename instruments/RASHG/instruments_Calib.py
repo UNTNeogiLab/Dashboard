@@ -48,9 +48,21 @@ class instruments(instruments_base):
         print('Homing finished')
 
     def initialize(self):
+        self.initialized = True
+        exclude = []
+        for param in self.param:
+            if not param in exclude:
+                self.param[param].constant = True
         self.MaiTai = MaiTai()
         self.PowerMeter = PowerMeter()
         self.rotator = rotator("DK0AHAJZ", type="elliptec")
+        self.init_vars()
+        self.coords = {
+            "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
+                           "values": self.wavelength, "function": self.wav_step},
+            "Polarization": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
+                             "values": self.Polarization, "function": self.pol_step},
+        }
 
     def init_vars(self):
         self.wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
