@@ -49,6 +49,7 @@ class instruments(instruments_base):
 
     def initialize(self):
         self.MaiTai = MaiTai()
+        self.PowerMeter = PowerMeter()
         self.rotator = rotator("DK0AHAJZ", type="elliptec")
 
     def init_vars(self):
@@ -61,7 +62,7 @@ class instruments(instruments_base):
         time.sleep(self.pwait)
 
     def get_frame(self, xs):
-        p = PowerMeter.PowAvg()
+        p = self.PowerMeter.PowAvg()
         Pwr = p[0]
         Pwrstd = p[1]
         V, Vstd = Photodiode()
