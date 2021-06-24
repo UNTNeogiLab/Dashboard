@@ -46,7 +46,6 @@ class gui(param.Parameterized):
         super().__init__()
         self.xDim = hv.Dimension('x', unit="micrometers")
         self.yDim = hv.Dimension('y', unit="micrometers")
-        self.cache = np.random.rand(100, 100)
         self.button.disabled = True
         self.button2.disabled = True
 
@@ -87,7 +86,6 @@ class gui(param.Parameterized):
         # which is the shg intensity along the specified dimensions
         # populate coordinate dimensions
 
-        self.cache = self.instruments.live()
         zero_array = [self.instruments.coords[coord]["values"].size for coord in self.instruments.dimensions]
         zero_array[0] = 1
         self.zeros = xr.DataArray(np.zeros(zero_array), dims=self.instruments.dimensions)
@@ -129,7 +127,8 @@ class gui(param.Parameterized):
                 if First == 0:
                     First = 1
                 elif First == 1:
-                    self.data.to_zarr(self.instruments.filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True)
+                    self.data.to_zarr(self.instruments.filename, encoding={"ds1": {"compressor": compressor}},
+                                      consolidated=True)
                     First += 1
                 else:
                     self.data.to_zarr(self.instruments.filename, append_dim=self.instruments.loop_coords[0])
@@ -146,8 +145,9 @@ class gui(param.Parameterized):
             if not dim_num == len(xs) - 1:  # reset for all but the last dimension
                 self.bars[dim_num + 1].reset()
             else:
-                self.cache = self.instruments.get_frame(xs)
-                self.data["ds1"].loc[self.mask] = xr.DataArray(self.cache, dims=self.instruments.cap_coords)
+                data = self.instruments.get_frame(xs)
+                for dataset in self.instruments.datasets:
+                    self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset], dims=self.instruments.cap_coords)
             if self.GUIupdate:
                 self.cPol += 1  # refresh the GUI
             if not (dim_num == 0 and First == 1):
@@ -169,15 +169,11 @@ class gui(param.Parameterized):
     def live_view(self):
         if self.live:
             print("Updating live view")
-            self.cache = self.instruments.live()
             self.cPol = self.cPol + 1
 
     @param.depends('cPol')
     def graph(self):
-        output = self.cache
-        self.zdim = hv.Dimension('Intensity', range=(output.min(), output.max()))
-        opts = [hv.opts.Image(colorbar=True, cmap=self.colorMap, tools=['hover'], framewise=True, logz=True)]
-        return hv.Image(output, vdims=self.zdim).opts(opts).redim(x=self.xDim, y=self.yDim)
+        return self.instruments.graph(live=self.live)
 
     def widgets(self):
         return pn.Column(self.button)

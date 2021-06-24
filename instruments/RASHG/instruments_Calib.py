@@ -6,6 +6,7 @@ import param
 from neogiinstruments.MaiTai import MaiTai
 from rotator import rotator
 
+name = "WavelengthPoweredCalib"
 
 class instruments(instruments_base):
     wavstart = param.Integer(default=780)
@@ -17,7 +18,9 @@ class instruments(instruments_base):
     pwait = param.Integer(default=1)
     mai_time = param.Integer(default=30)
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
-
+    type = name
+    data = "WavelengthPoweredCalib"
+    dimensions = ["wavelength", "Polarization", "variable"]
     def stop(self):
         self.MaiTai.MaiTai.write('OFF')
 

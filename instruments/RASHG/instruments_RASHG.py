@@ -1,5 +1,5 @@
 import math
-
+import holoviews as hv
 import numpy as np
 from pyvcam import pvc
 from pyvcam.camera import Camera
@@ -7,6 +7,7 @@ from .rotator import rotator
 from instruments.instruments_base import instruments_base
 import time
 import param
+
 name = "RASHG"
 
 
@@ -51,7 +52,6 @@ class instruments(instruments_base):
             raise Exception("Error: camera not found")
         return cam
 
-
     def initialize(self):
         self.initialized = True
         exclude = []
@@ -61,7 +61,7 @@ class instruments(instruments_base):
         self.cam = self.init_cam()
 
         self.rbot, self.rtop = [rotator(i, type="K10CR1") for i in ["55001000", "55114554", "55114654"]]
-        self.atten = rotator("DK0AHAJZ",type="elliptec")
+        self.atten = rotator("DK0AHAJZ", type="elliptec")
         self.cam.roi = (self.x1, self.x2, self.y1, self.y2)
         self.cam.binning = (self.xbin, self.ybin)
         if self.xbin != self.ybin:
@@ -93,6 +93,7 @@ class instruments(instruments_base):
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
         x = int((self.x2 - self.x1) / self.xbin)
         y = int((self.y2 - self.y1) / self.ybin)
+        self.cache = self.live()
         self.x_coords = np.arange(x, dtype=np.uint16)
         self.x_mm = np.arange(x, dtype=np.uint16) * 0.05338  # magic
         self.y_coords = np.arange(y, dtype=np.uint16)
@@ -120,7 +121,16 @@ class instruments(instruments_base):
         self.rbot.moveabs(pos_bot)
         if self.debug:
             print(f"Capturing frame")
-        return self.cam.get_frame(exp_time=self.exp_time)
+        self.cache = self.cam.get_frame(exp_time=self.exp_time)
+        return {"ds1": self.cache}
+
+    def graph(self, live=False):
+        if live:
+            self.cache = self.live()
+        output = self.cache
+        self.zdim = hv.Dimension('Intensity', range=(output.min(), output.max()))
+        opts = [hv.opts.Image(colorbar=True, cmap=self.colorMap, tools=['hover'], framewise=True, logz=True)]
+        return hv.Image(output, vdims=self.zdim).opts(opts).redim(x=self.xDim, y=self.yDim)
 
     def live(self):
         return self.cam.get_frame(exp_time=self.exp_time)
@@ -130,4 +140,3 @@ class instruments(instruments_base):
 
     def widgets(self):
         return self.param
-

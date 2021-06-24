@@ -6,6 +6,7 @@ class instruments_base(param.Parameterized):
     type = "base"
     title = param.String(default="Power/Wavelength dependent RASHG")
     filename = param.String(default="data/testfolder.zarr")
+    datasets = ["ds1"]
 
     def __init__(self):
         super().__init__()
@@ -24,5 +25,9 @@ class instruments_base(param.Parameterized):
 
     def start(self):
         pass
+
     def stop(self):
         pass
+
+    def graph(self, live=False):
+        return None
