@@ -1,13 +1,11 @@
 import math
 
-import elliptec
 import numpy as np
 import panel
 from pyvcam import pvc
 from pyvcam.camera import Camera
 from .rotator import rotator
-from .instruments_base import instruments_base
-from neogiinstruments import Photodiode
+from instruments.instruments_base import instruments_base
 import simple_pid
 import time
 import param

@@ -1,11 +1,10 @@
 import math
 
-import elliptec
 import numpy as np
 from pyvcam import pvc
 from pyvcam.camera import Camera
 from .rotator import rotator
-from .instruments_base import instruments_base
+from instruments.instruments_base import instruments_base
 import time
 import param
 name = "RASHG"

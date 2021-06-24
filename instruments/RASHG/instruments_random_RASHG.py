@@ -1,4 +1,4 @@
-from .instruments_base import instruments_base
+from instruments.instruments_base import instruments_base
 import numpy as np
 import param
 import panel as pn
