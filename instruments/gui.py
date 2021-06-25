@@ -90,9 +90,11 @@ class gui(param.Parameterized):
         fname = self.instruments.filename
         i = 2
         while os.path.isdir(self.instruments.filename):
+            self.instruments.param["filename"].constant = False
             self.instruments.filename = fname.replace(".zarr", f"{i}.zarr")
             i += 1
             print(f"Zarr store exists, trying {self.instruments.filename}")
+            self.instruments.param["filename"].constant = True
         try:
             os.mkdir(self.instruments.filename)
         except:
