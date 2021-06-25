@@ -1,6 +1,4 @@
 import time
-
-import holoviews as hv
 import xarray as xr
 import numpy as np
 import panel as pn
@@ -9,11 +7,8 @@ from numba import njit
 from tqdm.notebook import tqdm
 import os
 import zarr
-import itertools
 from tqdm.contrib.itertools import product
 
-pn.extension('plotly')
-hv.extension('bokeh', 'plotly')
 compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 
 

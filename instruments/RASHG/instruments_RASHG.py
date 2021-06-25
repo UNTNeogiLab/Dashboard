@@ -10,6 +10,7 @@ import param
 
 name = "RASHG"
 
+hv.extension('bokeh', 'plotly')
 
 class instruments(instruments_base):
     x1 = param.Integer(default=0, bounds=(0, 2047))
