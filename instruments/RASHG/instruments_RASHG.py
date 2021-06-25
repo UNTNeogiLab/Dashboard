@@ -29,11 +29,16 @@ class instruments(instruments_base):
     escape_delay = param.Integer(default=120)  # should beep at 45
     wavwait = param.Number(default=5)
     debug = param.Boolean(default=True)
+    rotator_atten = param.String(default="DK0AHAJZ")
+    rotator_rtop = param.String(default="55001000")
+    rotator_rbot = param.String(default="55114554")
+    #55001000", "55114554", "55114654
     type = name
     data = "RASHG"
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     cap_coords = ["x", "y"]
     loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
+
     def start(self):
         print("Gathering Data, Get Out")
         if not self.debug:
@@ -61,8 +66,8 @@ class instruments(instruments_base):
                 self.param[param].constant = True
         self.cam = self.init_cam()
 
-        self.rbot, self.rtop = [rotator(i, type="K10CR1") for i in ["55001000", "55114554", "55114654"]]
-        self.atten = rotator("DK0AHAJZ", type="elliptec")
+        self.rbot, self.rtop = [rotator(i, type="K10CR1") for i in [self.rotator_rbot,self.rotator_rtop]]
+        self.atten = rotator(self.rotator_atten, type="elliptec")
         self.cam.roi = (self.x1, self.x2, self.y1, self.y2)
         self.cam.binning = (self.xbin, self.ybin)
         if self.xbin != self.ybin:
