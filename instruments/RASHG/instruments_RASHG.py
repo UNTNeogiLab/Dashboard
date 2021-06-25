@@ -47,6 +47,8 @@ class instruments(instruments_base):
 
     def __init__(self):
         super().__init__()
+        self.xDim = hv.Dimension('x', unit="micrometers")
+        self.yDim = hv.Dimension('y', unit="micrometers")
 
     def init_cam(self):
         pvc.init_pvcam()  # Initialize PVCAM

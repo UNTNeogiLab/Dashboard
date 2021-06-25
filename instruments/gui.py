@@ -43,8 +43,6 @@ class gui(param.Parameterized):
 
     def __init__(self):
         super().__init__()
-        self.xDim = hv.Dimension('x', unit="micrometers")
-        self.yDim = hv.Dimension('y', unit="micrometers")
         self.button.disabled = True
         self.button2.disabled = True
 
