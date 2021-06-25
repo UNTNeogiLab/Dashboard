@@ -90,7 +90,7 @@ class gui(param.Parameterized):
         fname = self.instruments.filename
         i = 2
         while os.path.isdir(self.instruments.filename):
-            self.fiilename = fname.replace(".zarr", f"{i}.zarr")
+            self.instruments.filename = fname.replace(".zarr", f"{i}.zarr")
             i += 1
             print(f"Zarr store exists, trying {self.instruments.filename}")
         try:
