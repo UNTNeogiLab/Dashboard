@@ -12,7 +12,7 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)) :
                          sname = file.replace(".py","")
                          try:
                              module = import_module(f"{__name__}.{directory.name}.{sname}")
-                         except ImportError:
+                         except:
                              print(f"{file} import failed")
                          else:
                              instruments[module.name] = module
