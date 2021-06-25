@@ -32,6 +32,7 @@ class instruments(instruments_base):
     rotator_atten = param.String(default="DK0AHAJZ")
     rotator_rtop = param.String(default="55001000")
     rotator_rbot = param.String(default="55114554")
+    colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     #55001000", "55114554", "55114654
     type = name
     data = "RASHG"

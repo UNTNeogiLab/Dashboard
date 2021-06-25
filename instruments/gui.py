@@ -25,7 +25,6 @@ def compare(xs, dim_cache):
 
 
 class gui(param.Parameterized):
-    colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     cPol = param.Number(default=0, precedence=-1)
     wavwait = param.Number(default=5)  # value is in seconds
     institution = param.String(default="University of North Texas")
