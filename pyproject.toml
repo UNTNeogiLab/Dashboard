@@ -17,8 +17,6 @@ dask = "^2021.6.2"
 colorcet = "^2.0.6"
 plotly = "^5.0.0"
 zarr = "^2.3"
-k10cr1 = { git = 'https://github.com/QuantumQuadrate/k10cr1' }
-elliptec = { git = 'https://github.com/UNTNeogiLab/TL-rotation-control' }
 typing-extensions = "^3.10.0"
 scipy = "^1.7.0"
 numba = "^0.53.1"
