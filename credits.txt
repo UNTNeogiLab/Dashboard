@@ -1,4 +1,0 @@
-Temporary file for all references
-https://stackoverflow.com/questions/20790926/ipython-notebook-open-select-file-with-gui-qt-dialog
-WDF importing
-https://github.com/alchem0x2A/py-wdf-reader

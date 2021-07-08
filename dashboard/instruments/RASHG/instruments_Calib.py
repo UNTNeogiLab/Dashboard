@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-from instruments.instruments_base import instruments_base
+from dashboard.instruments.instruments_base import instruments_base
 import param
 from neogiinstruments.MaiTai import MaiTai
 from neogiinstruments.Photodiode import Photodiode

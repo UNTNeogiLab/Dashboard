@@ -14,7 +14,7 @@ from pathlib import Path
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-from visualizer import utils
+from dashboard.visualizer import utils
 
 type = "RASHG"
 name = "sixD"

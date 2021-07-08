@@ -5,19 +5,19 @@ from . import types
 from . import utils
 
 
-
-
 class Viewer(param.Parameterized):
-    files = utils.getDir(types)
-    if len(files) == 0:
-        raise Exception("must have at least one file")
-    filename = param.ObjectSelector(objects=files.keys(),default=list(files.keys())[0])
+    filename = param.ObjectSelector()
 
     def __init__(self, filename=None):
         super().__init__()
         self.client = Client()
         if not filename == None:
             self.filename = filename
+        files = utils.getDir(types)
+        if len(files) == 0:
+            raise Exception("must have at least one file")
+        self.param["filename"].default = list(files.keys())[0]
+        self.param["filename"].objects = files.keys()
         self.load()
 
     def reload_files(self):
