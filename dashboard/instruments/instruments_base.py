@@ -7,7 +7,8 @@ class instruments_base(param.Parameterized):
     title = param.String(default="Power/Wavelength dependent RASHG")
     filename = param.String(default="data/testfolder.zarr")
     datasets = ["ds1"]
-
+    live = True
+    gather = True
     def __init__(self):
         super().__init__()
 
