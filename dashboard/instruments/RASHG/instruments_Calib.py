@@ -42,7 +42,7 @@ class instruments(instruments_base):
         time.sleep(self.mai_time)
         self.MaiTai.instrument.Shutter(1)
         print(f'starting loop at {xs[0]}')
-        self.pol_step(self.pstart - self.pstep)
+        self.pol_step([xs[0],self.pstart - self.pstep])
         print("Homing")
         self.rotator.instrument.home()
         time.sleep(5)
