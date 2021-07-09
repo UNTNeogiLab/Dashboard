@@ -83,7 +83,7 @@ class instruments(instruments_base):
         }
         #do something with the PID
         self.pid.sample_time = self.pid_time
-        panel.state.add_periodic_callback(self.pid_step,self.pid_time)
+        pn.state.add_periodic_callback(self.pid_step,self.pid_time)
 
     def init_vars(self):
         self.x = self.x2 - self.x1

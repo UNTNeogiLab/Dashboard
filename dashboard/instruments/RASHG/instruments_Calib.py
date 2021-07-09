@@ -27,7 +27,7 @@ class instruments(instruments_base):
     live = False
 
     def stop(self):
-        self.MaiTai.MaiTai.write('OFF')
+        self.MaiTai.instrument.MaiTai.write('OFF')
 
     def __init__(self):
         super().__init__()
@@ -35,16 +35,16 @@ class instruments(instruments_base):
         self.rotator = neogiinstruments.rotator("rotator")
         self.MaiTai = neogiinstruments.MaiTai()
         self.PowerMeter = neogiinstruments.PowerMeter()
-        self.Photodiode = neogiinstruments.PhotoDiode()
+        self.Photodiode = neogiinstruments.Photodiode()
     def wav_step(self, xs):
-        self.MaiTai.MoveWav(xs[0])
+        self.MaiTai.instrument.MoveWav(xs[0])
         print(f'moving to {xs[0]}')
         time.sleep(self.mai_time)
-        self.MaiTai.Shutter(1)
+        self.MaiTai.instrument.Shutter(1)
         print(f'starting loop at {xs[0]}')
         self.pol_step(self.pstart - self.pstep)
         print("Homing")
-        self.rotator.home()
+        self.rotator.instrument.home()
         time.sleep(5)
         print('Homing finished')
 
@@ -73,10 +73,10 @@ class instruments(instruments_base):
         time.sleep(self.pwait)
 
     def get_frame(self, xs):
-        p = self.PowerMeter.PowAvg()
+        p = self.PowerMeter.instrument.PowAvg()
         Pwr = p[0]
         Pwrstd = p[1]
-        V, Vstd = self.Photodiode.gather_data()
+        V, Vstd = self.Photodiode.instrument.gather_data()
         return {"Pwr": Pwr, "Pwrstd": Pwrstd, "Vol": V, "Volstd": Vstd}
 
     def widgets(self):
