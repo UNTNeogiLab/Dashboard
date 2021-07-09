@@ -37,10 +37,10 @@ class instruments(instruments_base):
         self.PowerMeter = neogiinstruments.PowerMeter()
         self.Photodiode = neogiinstruments.Photodiode()
     def wav_step(self, xs):
-        self.MaiTai.instrument.MoveWav(xs[0])
+        self.MaiTai.instrument.MaiTai.MoveWav(xs[0])
         print(f'moving to {xs[0]}')
         time.sleep(self.mai_time)
-        self.MaiTai.instrument.Shutter(1)
+        self.MaiTai.instrument.MaiTai.Shutter(1)
         print(f'starting loop at {xs[0]}')
         self.pol_step(self.pstart - self.pstep)
         print("Homing")
