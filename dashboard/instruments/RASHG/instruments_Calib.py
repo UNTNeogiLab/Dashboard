@@ -24,7 +24,11 @@ class instruments(instruments_base):
     cap_coords = []
     loop_coords = ["wavelength", "Polarization"]
     datasets = ["Pwr", "Pwrstd", "Vol", "Volstd"]
+    debug = self.param(default=False)
     live = False
+    #button = pn.widgets.Button(name="Power On")
+    #def start(self):
+    #    self.MaiTai.instrument.On()
 
     def stop(self):
         self.MaiTai.instrument.MaiTai.write('OFF')
@@ -73,9 +77,13 @@ class instruments(instruments_base):
         time.sleep(self.pwait)
 
     def get_frame(self, xs):
+        if self.debug:
+            print("Gathering power data")
         p = self.PowerMeter.instrument.PowAvg()
         Pwr = p[0]
         Pwrstd = p[1]
+        if self.debug:
+            print("Gathering Photodiode data")
         V, Vstd = self.Photodiode.instrument.gather_data()
         return {"Pwr": Pwr, "Pwrstd": Pwrstd, "Vol": V, "Volstd": Vstd}
 
