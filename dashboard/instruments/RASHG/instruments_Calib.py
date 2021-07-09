@@ -37,7 +37,7 @@ class instruments(instruments_base):
         self.PowerMeter = neogiinstruments.PowerMeter()
         self.Photodiode = neogiinstruments.Photodiode()
     def wav_step(self, xs):
-        self.MaiTai.instrument.MaiTai.MoveWav(xs[0])
+        self.MaiTai.instrument.Set_Wavelength(xs[0])
         print(f'moving to {xs[0]}')
         time.sleep(self.mai_time)
         self.MaiTai.instrument.MaiTai.Shutter(1)
