@@ -40,7 +40,7 @@ class instruments(instruments_base):
         self.MaiTai.instrument.Set_Wavelength(xs[0])
         print(f'moving to {xs[0]}')
         time.sleep(self.mai_time)
-        self.MaiTai.instrument.MaiTai.Shutter(1)
+        self.MaiTai.instrument.Shutter(1)
         print(f'starting loop at {xs[0]}')
         self.pol_step(self.pstart - self.pstep)
         print("Homing")
