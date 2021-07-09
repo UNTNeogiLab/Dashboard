@@ -1,16 +1,15 @@
 import math
-
+import holoviews as hv
 import numpy as np
-import panel
-from pyvcam import pvc
-from pyvcam.camera import Camera
-from .rotator import rotator
+import neogiinstruments
 from dashboard.instruments.instruments_base import instruments_base
 import simple_pid
 import time
 import param
+import panel as pn
 name = "RASHG_PID"
 
+hv.extension('bokeh')
 
 class instruments(instruments_base):
     x1 = param.Integer(default=0, bounds=(0, 2047))
@@ -30,9 +29,14 @@ class instruments(instruments_base):
     escape_delay = param.Integer(default=120)  # should beep at 45
     wavwait = param.Number(default=5)
     debug = param.Boolean(default=True)
+    colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
+    cam = neogiinstruments.camera("Camera")
+    rbot, rtop, atten = [neogiinstruments.rotator(name) for name in ["rbot", "rtop", "atten"]]
     type = name
     data = "RASHG"
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
+    cap_coords = ["x", "y"]
+    loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
     pid_time = param.Number(default=1)
     pid = simple_pid.PID()
     def start(self):
@@ -42,33 +46,22 @@ class instruments(instruments_base):
 
     def __init__(self):
         super().__init__()
-
-    def init_cam(self):
-        pvc.init_pvcam()  # Initialize PVCAM
-        try:
-            cam = next(Camera.detect_camera())  # Use generator to find first camera
-            cam.open()  # Open the camera.
-            if cam.is_open:
-                print("Camera open")
-        except:
-            raise Exception("Error: camera not found")
-        return cam
+        self.xDim = hv.Dimension('x', unit="micrometers")
+        self.yDim = hv.Dimension('y', unit="micrometers")
 
     def pid_step(self):
         control = self.pid(value)
         self.atten.move_abs(control)
+
     def initialize(self):
         self.initialized = True
         exclude = []
         for param in self.param:
             if not param in exclude:
                 self.param[param].constant = True
-        self.cam = self.init_cam()
 
-        self.rbot, self.rtop = [rotator(i, type="K10CR1") for i in ["55001000", "55114554", "55114654"]]
-        self.atten = rotator("DK0AHAJZ",type="elliptec")
-        self.cam.roi = (self.x1, self.x2, self.y1, self.y2)
-        self.cam.binning = (self.xbin, self.ybin)
+        self.cam.instrument.roi(self.x1, self.x2, self.y1, self.y2)
+        self.cam.instrument.binning(self.xbin, self.ybin)
         if self.xbin != self.ybin:
             print('X-bin and Y-bin must be equal, probably')
         self.init_vars()
@@ -88,11 +81,10 @@ class instruments(instruments_base):
             "Orientation": {"name": "Orientation", "unit": "?", "dimension": "Orientation", "values": self.Orientation,
                             "function": "none"},
         }
-        self.cap_coords = ["x", "y"]
-        self.loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
         #do something with the PID
         self.pid.sample_time = self.pid_time
         panel.state.add_periodic_callback(self.pid_step,self.pid_time)
+
     def init_vars(self):
         self.x = self.x2 - self.x1
         self.y = self.y2 - self.y1  # TODO: fix binning
@@ -100,6 +92,7 @@ class instruments(instruments_base):
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
         x = int((self.x2 - self.x1) / self.xbin)
         y = int((self.y2 - self.y1) / self.ybin)
+        self.cache = self.live()
         self.x_coords = np.arange(x, dtype=np.uint16)
         self.x_mm = np.arange(x, dtype=np.uint16) * 0.05338  # magic
         self.y_coords = np.arange(y, dtype=np.uint16)
@@ -121,20 +114,31 @@ class instruments(instruments_base):
         pos_bot = pos
         if self.debug:
             print(f"Moving A to {pos_top}")
-        self.rtop.moveabs(pos_top)
+        self.rtop.instrument.moveabs(pos_top)
         if self.debug:
             print(f"Moving B to {pos_bot}")
-        self.rbot.moveabs(pos_bot)
+        self.rbot.instrument.moveabs(pos_bot)
         if self.debug:
             print(f"Capturing frame")
-        return self.cam.get_frame(exp_time=self.exp_time)
+        self.cache = self.live()
+        return {"ds1": self.cache}
+
+    def graph(self, live=False):
+        if live:
+            self.cache = self.live()
+        output = self.cache
+        self.zdim = hv.Dimension('Intensity', range=(output.min(), output.max()))
+        opts = [hv.opts.Image(colorbar=True, cmap=self.colorMap, tools=['hover'], framewise=True, logz=True)]
+        return hv.Image(output, vdims=self.zdim).opts(opts).redim(x=self.xDim, y=self.yDim)
 
     def live(self):
-        return self.cam.get_frame(exp_time=self.exp_time)
+        return self.cam.instrument.get_frame(exp_time=self.exp_time)
 
     def wav_step(self, xs):
         time.sleep(self.wavwait)
 
     def widgets(self):
-        return self.param
-
+        if self.initialized:
+            return pn.Column(self.atten.view,self.rbot.view,self.rtop.view,self.cam.view)
+        else:
+            return None

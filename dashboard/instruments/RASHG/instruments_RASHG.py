@@ -111,7 +111,7 @@ class instruments(instruments_base):
         self.rbot.instrument.moveabs(pos_bot)
         if self.debug:
             print(f"Capturing frame")
-        self.cache = self.cam.instrument.get_frame(exp_time=self.exp_time)
+        self.cache = self.live()
         return {"ds1": self.cache}
 
     def graph(self, live=False):

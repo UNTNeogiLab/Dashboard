@@ -3,10 +3,8 @@ import time
 
 from dashboard.instruments.instruments_base import instruments_base
 import param
-from neogiinstruments.MaiTai import MaiTai
-from neogiinstruments.Photodiode import Photodiode
-from neogiinstruments.PowerMeter import PowerMeter
 import neogiinstruments
+import panel as pn
 name = "WavelengthPoweredCalib"
 
 
@@ -27,6 +25,7 @@ class instruments(instruments_base):
     loop_coords = ["wavelength", "Polarization"]
     datasets = ["Pwr", "Pwrstd", "Vol", "Volstd"]
     live = False
+
     def stop(self):
         self.MaiTai.MaiTai.write('OFF')
 
@@ -34,6 +33,9 @@ class instruments(instruments_base):
         super().__init__()
         self.param["filename"].default = "calib/WavelengthPowerCalib"
         self.rotator = neogiinstruments.rotator("rotator")
+        self.MaiTai = neogiinstruments.MaiTai()
+        self.PowerMeter = neogiinstruments.PowerMeter()
+        self.Photodiode = neogiinstruments.PhotoDiode()
     def wav_step(self, xs):
         self.MaiTai.MoveWav(xs[0])
         print(f'moving to {xs[0]}')
@@ -52,8 +54,6 @@ class instruments(instruments_base):
         for param in self.param:
             if not param in exclude:
                 self.param[param].constant = True
-        self.MaiTai = MaiTai()
-        self.PowerMeter = PowerMeter()
 
         self.init_vars()
         self.coords = {
@@ -76,10 +76,11 @@ class instruments(instruments_base):
         p = self.PowerMeter.PowAvg()
         Pwr = p[0]
         Pwrstd = p[1]
-        V, Vstd = Photodiode()
+        V, Vstd = self.Photodiode.gather_data()
         return {"Pwr": Pwr, "Pwrstd": Pwrstd, "Vol": V, "Volstd": Vstd}
+
     def widgets(self):
         if self.initialized:
-            return self.rotator.view
+            return pn.Column(self.rotator.view,self.PowerMeter.view,self.Photodiode.view,self.MaiTai.view)
         else:
             return None
