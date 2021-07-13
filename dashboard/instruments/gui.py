@@ -64,7 +64,7 @@ class gui(param.Parameterized):
             "sample": self.sample,
             "source": self.instruments.type,
             "data_type": self.instruments.data,
-            "time": time.time(),
+            "time": time.strftime('%a, %d %b %Y %H:%M:%S', time.localtime()),
             "fit_version": 0,
             "data_version": 2
         }

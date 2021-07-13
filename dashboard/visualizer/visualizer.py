@@ -27,7 +27,6 @@ class Viewer(param.Parameterized):
     @param.depends('filename', watch=True)
     def load(self):
         self.reload_files()  # temp solution
-        print(self.file_dict)
         visualizer = self.file_dict[self.filename].grapher
         self.grapher = visualizer(self.filename, self.client)
 
