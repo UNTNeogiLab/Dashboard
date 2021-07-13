@@ -67,7 +67,7 @@ class instruments(instruments_base):
         self.init_vars()
         self.coords = {
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
-                           "values": self.wavelength, "function": self.wavstep},
+                           "values": self.wavelength, "function": self.wav_step},
             "power": {"name": "Power", "unit": "milliwatts", "dimension": "power", "values": self.pwr,
                       "function": "none"},
             "degrees": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
