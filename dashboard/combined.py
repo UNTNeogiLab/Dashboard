@@ -79,8 +79,6 @@ def main():
                         const=True, default=False)
     parser.add_argument('--fit', dest='filename', help='fits datafile and saves to file from command line',
                         action='store', default=False)
-    parser.add_argument('--Polar', dest='Polar', help='filename, X, Y Plots all polar plots across wavelength for',
-                        action='store', default=False, nargs=3)  # TODO: add subparsers
     args = parser.parse_args()
     if args.server:
         server()

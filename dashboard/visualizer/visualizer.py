@@ -13,20 +13,22 @@ class Viewer(param.Parameterized):
         self.client = Client()
         if not filename == None:
             self.filename = filename
-        files = utils.getDir(types)
-        if len(files) == 0:
-            raise Exception("must have at least one file")
-        self.param["filename"].default = list(files.keys())[0]
-        self.param["filename"].objects = files.keys()
+        self.reload_files()
+        self.filename = self.files[0]
         self.load()
 
     def reload_files(self):
-        self.param["filename"].objects = utils.getDir(types)
+        self.file_dict = utils.getDir(types)
+        if len(self.file_dict) == 0:
+            raise Exception("must have at least one file")
+        self.files = list(self.file_dict.keys())
+        self.param["filename"].objects = self.files
 
     @param.depends('filename', watch=True)
     def load(self):
         self.reload_files()  # temp solution
-        visualizer = self.files[self.filename].grapher
+        print(self.file_dict)
+        visualizer = self.file_dict[self.filename].grapher
         self.grapher = visualizer(self.filename, self.client)
 
     @param.depends('filename')

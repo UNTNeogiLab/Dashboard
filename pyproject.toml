@@ -13,7 +13,7 @@ panel = "^0.11.3"
 bokeh = "^2.3.2"
 xarray = "^0.18.2"
 hvplot = "^0.7.2"
-dask = "^2021.6.2"
+dask = {extras = ["distributed"], version = "^2021.7.0"}
 colorcet = "^2.0.6"
 plotly = "^5.0.0"
 zarr = "^2.3"
