@@ -105,10 +105,10 @@ class instruments(instruments_base):
         pos_bot = pos
         if self.debug:
             print(f"Moving A to {pos_top}")
-        self.rtop.instrument.moveabs(pos_top)
+        self.rtop.instrument.move_abs(pos_top)
         if self.debug:
             print(f"Moving B to {pos_bot}")
-        self.rbot.instrument.moveabs(pos_bot)
+        self.rbot.instrument.move_abs(pos_bot)
         if self.debug:
             print(f"Capturing frame")
         self.cache = self.live()
