@@ -5,6 +5,7 @@ from dashboard.instruments.instruments_base import instruments_base
 import param
 import neogiinstruments
 import panel as pn
+
 name = "WavelengthPoweredCalib"
 
 
@@ -17,17 +18,17 @@ class instruments(instruments_base):
     pstep = param.Number(default=0.5)
     pwait = param.Integer(default=1)
     mai_time = param.Integer(default=30)
-    dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     type = name
     data = "WavelengthPoweredCalib"
     dimensions = ["wavelength", "Polarization"]
     cap_coords = []
     loop_coords = ["wavelength", "Polarization"]
     datasets = ["Pwr", "Pwrstd", "Vol", "Volstd"]
-    debug = self.param(default=False)
+    debug = param.Boolean(default=False)
     live = False
-    #button = pn.widgets.Button(name="Power On")
-    #def start(self):
+
+    # button = pn.widgets.Button(name="Power On")
+    # def start(self):
     #    self.MaiTai.instrument.On()
 
     def stop(self):
@@ -40,13 +41,14 @@ class instruments(instruments_base):
         self.MaiTai = neogiinstruments.MaiTai()
         self.PowerMeter = neogiinstruments.PowerMeter()
         self.Photodiode = neogiinstruments.Photodiode()
+
     def wav_step(self, xs):
         self.MaiTai.instrument.Set_Wavelength(xs[0])
         print(f'moving to {xs[0]}')
         time.sleep(self.mai_time)
         self.MaiTai.instrument.Shutter(1)
         print(f'starting loop at {xs[0]}')
-        self.pol_step([xs[0],self.pstart - self.pstep])
+        self.pol_step([xs[0], self.pstart - self.pstep])
         print("Homing")
         self.rotator.instrument.home()
         time.sleep(5)
@@ -89,6 +91,6 @@ class instruments(instruments_base):
 
     def widgets(self):
         if self.initialized:
-            return pn.Column(self.rotator.view,self.PowerMeter.view,self.Photodiode.view,self.MaiTai.view)
+            return pn.Column(self.rotator.view, self.PowerMeter.view, self.Photodiode.view, self.MaiTai.view)
         else:
             return None
