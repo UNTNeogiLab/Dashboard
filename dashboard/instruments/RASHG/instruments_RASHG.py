@@ -101,8 +101,8 @@ class instruments(instruments_base):
         else:
             sys_offset = 0
         pos = p * 90 / np.pi
-        pos_top = pos + sys_offset
-        pos_bot = pos
+        pos_top = int(pos + sys_offset)
+        pos_bot = int(pos)
         if self.debug:
             print(f"Moving A to {pos_top}")
         self.rtop.instrument.move_abs(pos_top)
