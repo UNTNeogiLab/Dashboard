@@ -19,11 +19,13 @@ plotly = "^5.0.0"
 zarr = "^2.3"
 k10cr1 = { git = 'https://github.com/QuantumQuadrate/k10cr1' }
 elliptec = { git = 'https://github.com/UNTNeogiLab/TL-rotation-control' }
+stellarnet = { git = "git@github.com:UNTNeogiLab/stellarnet.git", branch = "main"}
+pyvcam = { git ="git@github.com:UNTNeogiLab/pyvcam.git", branch = "master", optional = true}
 typing-extensions = "^3.10.0"
 scipy = "^1.7.0"
 numba = "^0.53.1"
 netCDF4 = "^1.5.7"
-neogiinstruments = "^2.1.0"
+neogiinstruments = "^2.4.0"
 matplotlib = "^3.4.2"
 simple-pid = "^1.0.1"
 
