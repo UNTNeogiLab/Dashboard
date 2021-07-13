@@ -28,6 +28,8 @@ netCDF4 = "^1.5.7"
 neogiinstruments = "^2.4.0"
 matplotlib = "^3.4.2"
 simple-pid = "^1.0.1"
+[tool.poetry.extras]
+pyvcam = ["pyvcam"]
 
 [tool.poetry.scripts]
 dashboard = "dashboard.combined:main"
