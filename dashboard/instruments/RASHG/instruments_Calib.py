@@ -36,7 +36,7 @@ class instruments(instruments_base):
 
     def __init__(self):
         super().__init__()
-        self.param["filename"].default = "calib/WavelengthPowerCalib"
+        self.param["filename"].default = "calib/WavelengthPowerCalib.zarr"
         self.rotator = neogiinstruments.rotator("rotator")
         self.MaiTai = neogiinstruments.MaiTai()
         self.PowerMeter = neogiinstruments.PowerMeter()

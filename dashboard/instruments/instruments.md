@@ -20,7 +20,7 @@ You can also specify several optional variables
 5. datasets - dasets to write to, array. Default is ["ds1"]
 6. live - render a live view. Default is true
 7. gather - allow user to gather data. Default is true
-
+8. filename - default filename, recommended to use param
 ### Memory
 
 The program will store the data then write to file every change of the first dimension

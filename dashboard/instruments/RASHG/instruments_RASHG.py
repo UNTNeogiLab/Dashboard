@@ -2,6 +2,8 @@ import math
 import holoviews as hv
 import numpy as np
 import neogiinstruments
+import xarray
+
 from dashboard.instruments.instruments_base import instruments_base
 import time
 import param
@@ -10,6 +12,36 @@ import panel as pn
 name = "RASHG"
 
 hv.extension('bokeh')
+
+
+def InvSinSqr(y, mag, xoffset, yoffset):
+    return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - yoffset) / mag))) + xoffset), 180)
+
+
+def PCFit(file):
+    # pc = np.load(file, allow_pickle=True)
+    wavelengths = pc[:, 0]
+    PC = []
+    PCcov = []
+    Angles = []
+    xx = np.arange(2, 21, 1)
+    XX = np.linspace(0, 30, 100)
+
+    for i in range(0, len(pc), 1):
+        params, cov = PowerFit(pc[i, 1][0], pc[i, 1][1])
+        PC.append(params)
+        PCcov.append(cov)
+        analyticsin = InvSinSqr(XX, *params)
+        interpangles = interp1d(XX, analyticsin)
+        angles = interpangles(xx)
+        Angs = dict(zip(xx, angles))
+        Angles.append(Angs)
+    PC = np.asarray(PC)
+    PCcov = np.asarray(PCcov)
+    # Angles = np.asarray(Angles)
+    WavPowAng = dict(zip(wavelengths, Angles))
+
+    return PC, PCcov, WavPowAng, pc
 
 
 class instruments(instruments_base):
@@ -39,6 +71,7 @@ class instruments(instruments_base):
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     cap_coords = ["x", "y"]
     loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
+    calibration_file = param.String(default="calib/WavelengthPowerCalib.zarr")
 
     def start(self):
         print("Gathering Data, Get Out")
@@ -66,7 +99,7 @@ class instruments(instruments_base):
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
                            "values": self.wavelength, "function": self.wav_step},
             "power": {"name": "Power", "unit": "milliwatts", "dimension": "power", "values": self.pwr,
-                      "function": "none"},
+                      "function": self.pow_step},
             "degrees": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
                         "values": self.Polarization, "function": "none"},
             "Polarization": {"name": "Polarization", "unit": "pixels", "dimension": "Polarization",
@@ -78,6 +111,8 @@ class instruments(instruments_base):
             "Orientation": {"name": "Orientation", "unit": "?", "dimension": "Orientation", "values": self.Orientation,
                             "function": "none"},
         }
+        self.pc = xarray.open_dataset(self.calibration_file, engine="zarr")
+        # self.PC, self.PCcov, self.WavPowAng, self.pc = PCFit(self.calibration_file)
 
     def init_vars(self):
         self.x = self.x2 - self.x1
@@ -116,6 +151,12 @@ class instruments(instruments_base):
             print(f"Capturing frame")
         self.cache = self.live()
         return {"ds1": self.cache}
+
+    def pow_step(self, xs):
+        pw = xs[1]
+        w = xs[0]
+        atten_pos = RASHG.InvSinSqr(pw, *self.PC[int((w - 780) / 2)])
+        self.atten.instrument.move_abs(atten_pos)
 
     def graph(self, live=False):
         if live:
