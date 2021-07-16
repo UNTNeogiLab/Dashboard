@@ -6,9 +6,11 @@ from dashboard.instruments.instruments_base import instruments_base
 import time
 import param
 import panel as pn
+
 name = "RASHG"
 
 hv.extension('bokeh')
+
 
 class instruments(instruments_base):
     x1 = param.Integer(default=0, bounds=(0, 2047))
@@ -31,6 +33,7 @@ class instruments(instruments_base):
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     cam = neogiinstruments.camera("Camera")
     rbot, rtop, atten = [neogiinstruments.rotator(name) for name in ["rbot", "rtop", "atten"]]
+    MaiTai = neogiinstruments.MaiTai("MaiTai")
     type = name
     data = "RASHG"
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
@@ -127,9 +130,10 @@ class instruments(instruments_base):
 
     def wav_step(self, xs):
         time.sleep(self.wavwait)
+        self.MaiTai.instrument.Set_Wavelength(xs[0])
 
     def widgets(self):
         if self.initialized:
-            return pn.Column(self.atten.view,self.rbot.view,self.rtop.view,self.cam.view)
+            return pn.Column(self.atten.view, self.rbot.view, self.rtop.view, self.cam.view, self.MaiTai.view)
         else:
             return None
