@@ -44,10 +44,12 @@ class gui(param.Parameterized):
     def initialize(self, instruments):
         self.instruments = instruments
         self.init_vars()
-        self.button.disabled = False
+        if self.instruments.gather:
+            self.button.disabled = False
         self.button.on_click(self.gather_data)
-        self.live = True
-        pn.state.add_periodic_callback(self.live_view, period=self.live_refresh * 1000)
+        if self.instruments.live:
+            self.live = True
+            pn.state.add_periodic_callback(self.live_view, period=self.live_refresh * 1000)
         exclude = ["cPol", "live"]
         for param in self.param:
             if not param in exclude:
@@ -62,7 +64,7 @@ class gui(param.Parameterized):
             "sample": self.sample,
             "source": self.instruments.type,
             "data_type": self.instruments.data,
-            "time": time.time(),
+            "time": time.strftime('%a, %d %b %Y %H:%M:%S', time.localtime()),
             "fit_version": 0,
             "data_version": 2
         }

@@ -5,28 +5,29 @@ from . import types
 from . import utils
 
 
-
-
 class Viewer(param.Parameterized):
-    files = utils.getDir(types)
-    if len(files) == 0:
-        raise Exception("must have at least one file")
-    filename = param.ObjectSelector(objects=files.keys(),default=list(files.keys())[0])
+    filename = param.ObjectSelector()
 
     def __init__(self, filename=None):
         super().__init__()
         self.client = Client()
         if not filename == None:
             self.filename = filename
+        self.reload_files()
+        self.filename = self.files[0]
         self.load()
 
     def reload_files(self):
-        self.param["filename"].objects = utils.getDir(types)
+        self.file_dict = utils.getDir(types)
+        if len(self.file_dict) == 0:
+            raise Exception("must have at least one file")
+        self.files = list(self.file_dict.keys())
+        self.param["filename"].objects = self.files
 
     @param.depends('filename', watch=True)
     def load(self):
         self.reload_files()  # temp solution
-        visualizer = self.files[self.filename].grapher
+        visualizer = self.file_dict[self.filename].grapher
         self.grapher = visualizer(self.filename, self.client)
 
     @param.depends('filename')

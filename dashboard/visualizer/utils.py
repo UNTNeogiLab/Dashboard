@@ -6,7 +6,7 @@ import xarray as xr
 
 def getDir(extensions):
     # parses directories for valid files
-    files = list(Path(".").rglob("*.zarr"))
+    files = list(Path("").rglob("*.zarr"))
     file_dict = {}
     for file in files:
         try:

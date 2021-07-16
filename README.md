@@ -15,6 +15,7 @@ Debian/Ubuntu Pip or pipenv may be broken
 The best option is to install [pyenv](https://github.com/pyenv/pyenv) with its build dependencies
 ### Linux data aqusition/PyVcam  
 You'll need [PyVcam](https://github.com/Photometrics/PyVCAM) and the accompanying SDK first
+For internal use, run `poetry install -E pyvcam`with PVCAM (not the SDK) installed
 ### Windows
 Data aqusition is unsupported on windows but fully possible  
 Substitute thorpy with thorlabs-apt
@@ -28,7 +29,12 @@ there's some placeholder scanimage code for now
 
 ## Running
 
-`poetry run python combined.py` (runs visualization script)
+`poetry run dashboard` (runs visualization script)
+or
+```shell
+poetry shell
+dashboard
+```
 ## Development environment
 You'll need to run pipenv shell to get into the pipenv virtual environment  
 The better option is to use fish and [fish-poetry](https://github.com/ryoppippi/fish-poetry)

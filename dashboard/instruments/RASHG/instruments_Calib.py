@@ -1,12 +1,10 @@
 import numpy as np
 import time
 
-from instruments.instruments_base import instruments_base
+from dashboard.instruments.instruments_base import instruments_base
 import param
-from neogiinstruments.MaiTai import MaiTai
-from neogiinstruments.Photodiode import Photodiode
-from neogiinstruments.PowerMeter import PowerMeter
-from rotator import rotator
+import neogiinstruments
+import panel as pn
 
 name = "WavelengthPoweredCalib"
 
@@ -20,30 +18,39 @@ class instruments(instruments_base):
     pstep = param.Number(default=0.5)
     pwait = param.Integer(default=1)
     mai_time = param.Integer(default=30)
-    dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     type = name
     data = "WavelengthPoweredCalib"
     dimensions = ["wavelength", "Polarization"]
     cap_coords = []
     loop_coords = ["wavelength", "Polarization"]
     datasets = ["Pwr", "Pwrstd", "Vol", "Volstd"]
+    debug = param.Boolean(default=False)
+    live = False
+
+    # button = pn.widgets.Button(name="Power On")
+    # def start(self):
+    #    self.MaiTai.instrument.On()
 
     def stop(self):
-        self.MaiTai.MaiTai.write('OFF')
+        self.MaiTai.instrument.MaiTai.write('OFF')
 
     def __init__(self):
         super().__init__()
-        self.param["filename"].default = "calib/WavelengthPowerCalib"
+        self.param["filename"].default = "calib/WavelengthPowerCalib.zarr"
+        self.rotator = neogiinstruments.rotator("rotator")
+        self.MaiTai = neogiinstruments.MaiTai()
+        self.PowerMeter = neogiinstruments.PowerMeter()
+        self.Photodiode = neogiinstruments.Photodiode()
 
     def wav_step(self, xs):
-        self.MaiTai.MoveWav(xs[0])
+        self.MaiTai.instrument.Set_Wavelength(xs[0])
         print(f'moving to {xs[0]}')
         time.sleep(self.mai_time)
-        self.MaiTai.Shutter(1)
+        self.MaiTai.instrument.Shutter(1)
         print(f'starting loop at {xs[0]}')
-        self.pol_step(self.pstart - self.pstep)
+        self.pol_step([xs[0], self.pstart - self.pstep])
         print("Homing")
-        self.rotator.home()
+        self.rotator.instrument.home()
         time.sleep(5)
         print('Homing finished')
 
@@ -53,9 +60,7 @@ class instruments(instruments_base):
         for param in self.param:
             if not param in exclude:
                 self.param[param].constant = True
-        self.MaiTai = MaiTai()
-        self.PowerMeter = PowerMeter()
-        self.rotator = rotator("DK0AHAJZ", type="elliptec")
+
         self.init_vars()
         self.coords = {
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
@@ -70,12 +75,22 @@ class instruments(instruments_base):
 
     def pol_step(self, xs):
         pol = xs[1]
-        self.rotator.move_abs(pol)
+        self.rotator.instrument.move_abs(pol)
         time.sleep(self.pwait)
 
     def get_frame(self, xs):
-        p = self.PowerMeter.PowAvg()
+        if self.debug:
+            print("Gathering power data")
+        p = self.PowerMeter.instrument.PowAvg()
         Pwr = p[0]
         Pwrstd = p[1]
-        V, Vstd = Photodiode()
+        if self.debug:
+            print("Gathering Photodiode data")
+        V, Vstd = self.Photodiode.instrument.gather_data()
         return {"Pwr": Pwr, "Pwrstd": Pwrstd, "Vol": V, "Volstd": Vstd}
+
+    def widgets(self):
+        if self.initialized:
+            return pn.Column(self.rotator.view, self.PowerMeter.view, self.Photodiode.view, self.MaiTai.view)
+        else:
+            return None

@@ -15,3 +15,4 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                     print(f"{file} import failed")
                 else:
                     types[module.type] = module
+from .visualizer import Viewer

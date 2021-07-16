@@ -1,13 +1,12 @@
 import holoviews as hv
 import param
 import panel as pn
-from visualizer.utils import *
+from . import visualizer
 import argparse
 import time
 import socket
 import sys
-import visualizer.visualizer as Viewer
-import instruments
+from . import instruments
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -20,8 +19,6 @@ pbar.register()
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
-
-
 
 
 # wrapper around viewer class to interface with instrumental class
@@ -37,7 +34,7 @@ class combined(param.Parameterized):
     @param.depends('applets', watch=True)
     def load(self):
         if self.applets == "viewer":
-            self.applet = Viewer.Viewer()
+            self.applet = visualizer.Viewer()
         elif self.applets == "instrumental":
 
             self.applet = instruments.dashboard.instrumental()
@@ -74,7 +71,7 @@ def server(reload=False):
     view.view().show(port=5006, open=False)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(prog='combined', description='Deploys and runs panel server')
     parser.add_argument('-server', dest='server', help='Runs the panel server for multiple clients',
                         action='store_const', const=True, default=False)
@@ -82,8 +79,6 @@ if __name__ == '__main__':
                         const=True, default=False)
     parser.add_argument('--fit', dest='filename', help='fits datafile and saves to file from command line',
                         action='store', default=False)
-    parser.add_argument('--Polar', dest='Polar', help='filename, X, Y Plots all polar plots across wavelength for',
-                        action='store', default=False, nargs=3)  # TODO: add subparsers
     args = parser.parse_args()
     if args.server:
         server()
@@ -94,28 +89,10 @@ if __name__ == '__main__':
         view = Viewer(filename=Path(args.filename))  # use port 8787 to view stats
         end = time.time()
         print(end - start)
-    elif not args.Polar == False:
-        start = time.time()
-        Filename, X, Y = args.Polar
-        view = Viewer(filename=Path(Filename))  # use port 8787 to view stats
-        view.grapher.x0 = int(X)
-        view.grapher.y0 = int(Y)
-        view.grapher.x1 = int(X) + 0.06  # get at least 1 pixel
-        view.grapher.y1 = int(Y) + 0.06  # get at least 1 pixel
-        view.grapher.selected = True
-        wavelengths = view.grapher.ds1.coords['wavelength'].values.tolist()
-        Orientations = view.grapher.ds1.coords['Orientation'].values.tolist()
-        Folder = Filename.replace(f".{extension(Filename)}", '')
-        if not os.path.isdir(Folder):
-            os.mkdir(Folder)
-        for Orientation in Orientations:
-            view.grapher.Orientation = Orientation
-            for wavelength in wavelengths:
-                view.grapher.wavelength = wavelength
-                view.grapher.Polar().write_image(f"{Folder}/Polar_X{X}Y{Y}O{Orientation}W{wavelength}.png")
-        # view = viewer(filename=Path(args.filename)) #use port 8787 to view stats
-        end = time.time()
-        print(end - start)
     else:
         print("Defaulting to local server")
         local()
+
+
+if __name__ == '__main__':
+    main()
