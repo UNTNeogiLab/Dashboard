@@ -2,8 +2,8 @@ import math
 import holoviews as hv
 import numpy as np
 import neogiinstruments
-import xarray
-
+import xarray as xr
+from scipy.interpolate import interp1d
 from dashboard.instruments.instruments_base import instruments_base
 import time
 import param
@@ -18,30 +18,9 @@ def InvSinSqr(y, mag, xoffset, yoffset):
     return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - yoffset) / mag))) + xoffset), 180)
 
 
-def PCFit(file):
-    # pc = np.load(file, allow_pickle=True)
-    wavelengths = pc[:, 0]
-    PC = []
-    PCcov = []
-    Angles = []
-    xx = np.arange(2, 21, 1)
-    XX = np.linspace(0, 30, 100)
-
-    for i in range(0, len(pc), 1):
-        params, cov = PowerFit(pc[i, 1][0], pc[i, 1][1])
-        PC.append(params)
-        PCcov.append(cov)
-        analyticsin = InvSinSqr(XX, *params)
-        interpangles = interp1d(XX, analyticsin)
-        angles = interpangles(xx)
-        Angs = dict(zip(xx, angles))
-        Angles.append(Angs)
-    PC = np.asarray(PC)
-    PCcov = np.asarray(PCcov)
-    # Angles = np.asarray(Angles)
-    WavPowAng = dict(zip(wavelengths, Angles))
-
-    return PC, PCcov, WavPowAng, pc
+def interp(y, pol, pwr):
+    f = interp1d(y, pol, fill_value="extrapolate")
+    return f(pwr)
 
 
 class instruments(instruments_base):
@@ -99,7 +78,7 @@ class instruments(instruments_base):
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
                            "values": self.wavelength, "function": self.wav_step},
             "power": {"name": "Power", "unit": "milliwatts", "dimension": "power", "values": self.pwr,
-                      "function": self.pow_step},
+                      "function": self.pow_step_func},
             "degrees": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
                         "values": self.Polarization, "function": "none"},
             "Polarization": {"name": "Polarization", "unit": "pixels", "dimension": "Polarization",
@@ -111,7 +90,6 @@ class instruments(instruments_base):
             "Orientation": {"name": "Orientation", "unit": "?", "dimension": "Orientation", "values": self.Orientation,
                             "function": "none"},
         }
-        self.pc = xarray.open_dataset(self.calibration_file, engine="zarr")
         # self.PC, self.PCcov, self.WavPowAng, self.pc = PCFit(self.calibration_file)
 
     def init_vars(self):
@@ -130,6 +108,10 @@ class instruments(instruments_base):
         self.Polarization = np.arange(0, 360, self.pol_step, dtype=np.uint16)
         self.Polarization_radians = np.arange(0, 360, self.pol_step, dtype=np.uint16) * math.pi / 180
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
+        self.pc = xr.open_dataset(self.calibration_file, engine="zarr")
+        pc_pol = self.pc.coords["polarzation"]
+        self.pc_reverse = xr.apply_ufunc(interp, self.pc, input_core_dims=[["polarization"]], vectorize=True,
+                                         output_core_dims=[["power"]], kwargs={"pwr": self.pwr, "pol": pc_pol})
 
     def get_frame(self, xs):
         o = xs[2]
@@ -152,10 +134,10 @@ class instruments(instruments_base):
         self.cache = self.live()
         return {"ds1": self.cache}
 
-    def pow_step(self, xs):
+    def pow_step_func(self, xs):
         pw = xs[1]
         w = xs[0]
-        atten_pos = RASHG.InvSinSqr(pw, *self.PC[int((w - 780) / 2)])
+        atten_pos = self.pc_reverse.sel(wavelength=w, power=pw) #technically can interp here again but don't need to
         self.atten.instrument.move_abs(atten_pos)
 
     def graph(self, live=False):
