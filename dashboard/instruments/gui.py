@@ -143,7 +143,10 @@ class gui(param.Parameterized):
             else:
                 data = self.instruments.get_frame(xs)
                 for dataset in self.instruments.datasets:
-                    self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset], dims=self.instruments.cap_coords)
+                    if self.instruments.cap_coords == []:
+                        self.data[dataset].loc[self.mask] = data[dataset]
+                    else:
+                        self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset], dims=self.instruments.cap_coords)
             if self.GUIupdate:
                 self.cPol += 1  # refresh the GUI
             if not (dim_num == 0 and First == 1):
