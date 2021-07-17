@@ -32,6 +32,6 @@ class instruments(instruments_RASHG.instruments):
 
     def widgets(self):
         if self.initialized:
-            return pn.Column(super().view()) #todo include the additonal instruments
+            return pn.Column(super().widgets) #todo include the additonal instruments
         else:
             return None
