@@ -83,6 +83,11 @@ class gui(param.Parameterized):
         zero_array = [self.instruments.coords[coord]["values"].size for coord in self.instruments.dimensions]
         zero_array[0] = 1
         self.zeros = xr.DataArray(np.zeros(zero_array), dims=self.instruments.dimensions)
+        self.datasets = {}
+        self.encoders = {}
+        for dataset in self.instruments.datasets:
+            self.datasets[dataset] = (self.instruments.dimensions, self.zeros, self.attrs)
+            self.encoders[dataset] = {"compressor": compressor}
         # Get filename
         fname = self.instruments.filename
         i = 2
@@ -123,17 +128,16 @@ class gui(param.Parameterized):
                 if First == 0:
                     First = 1
                 elif First == 1:
-                    self.data.to_zarr(self.instruments.filename, encoding={"ds1": {"compressor": compressor}},
-                                      consolidated=True)
+                    self.data.to_zarr(self.instruments.filename, encoding=self.encoders, consolidated=True)
                     First += 1
                 else:
                     self.data.to_zarr(self.instruments.filename, append_dim=self.instruments.loop_coords[0])
                 self.coords[self.instruments.loop_coords[0]] = ([dim], [xs[0]])  # update 1st coord after saving
-            self.data = xr.Dataset(
-                data_vars={"ds1": (self.instruments.dimensions, self.zeros, self.attrs)},
-                coords=self.coords,
-                attrs=self.attrs
-            )
+                self.data = xr.Dataset(
+                    data_vars=self.datasets,
+                    coords=self.coords,
+                    attrs=self.attrs
+                )
             self.mask[dim] = xs[dim_num]
             function = self.instruments.coords[dim]["function"]
             if not function == "none":
@@ -146,7 +150,8 @@ class gui(param.Parameterized):
                     if self.instruments.cap_coords == []:
                         self.data[dataset].loc[self.mask] = data[dataset]
                     else:
-                        self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset], dims=self.instruments.cap_coords)
+                        self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset],
+                                                                         dims=self.instruments.cap_coords)
             if self.GUIupdate:
                 self.cPol += 1  # refresh the GUI
             if not (dim_num == 0 and First == 1):
