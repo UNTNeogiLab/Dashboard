@@ -32,11 +32,11 @@ class instruments(instruments_base):
     #    self.MaiTai.instrument.On()
 
     def stop(self):
-        self.MaiTai.instrument.MaiTai.write('OFF')
+        self.MaiTai.instrument.Off()
 
     def __init__(self):
         super().__init__()
-        self.param["filename"] = "calib/WavelengthPowerCalib.zarr"
+        self.filename = "calib/WavelengthPowerCalib.zarr"
         self.rotator = neogiinstruments.rotator("rotator")
         self.MaiTai = neogiinstruments.MaiTai()
         self.PowerMeter = neogiinstruments.PowerMeter()
@@ -44,15 +44,20 @@ class instruments(instruments_base):
 
     def wav_step(self, xs):
         self.MaiTai.instrument.Set_Wavelength(xs[0])
-        print(f'moving to {xs[0]}')
+        if self.debug:
+            print(f'moving to {xs[0]}')
         time.sleep(self.mai_time)
         self.MaiTai.instrument.Shutter(1)
-        print(f'starting loop at {xs[0]}')
+        if self.debug:
+            print(f'starting loop at {xs[0]}')
         self.pol_step([xs[0], self.pstart - self.pstep])
-        print("Homing")
+        if self.debug:
+            print("Homing")
         self.rotator.instrument.home()
-        time.sleep(5)
-        print('Homing finished')
+        if not self.debug:
+            time.sleep(5)
+        if self.debug:
+            print('Homing finished')
 
     def initialize(self):
         self.initialized = True
@@ -87,6 +92,8 @@ class instruments(instruments_base):
         if self.debug:
             print("Gathering Photodiode data")
         V, Vstd = self.Photodiode.instrument.gather_data()
+        if self.debug:
+            print(f"Pwr: {Pwr}, Pwrstd: {Pwrstd}, Vol: {V}, Volstd: {Vstd}")
         return {"Pwr": Pwr, "Pwrstd": Pwrstd, "Vol": V, "Volstd": Vstd}
 
     def widgets(self):

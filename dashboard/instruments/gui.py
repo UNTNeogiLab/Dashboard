@@ -21,7 +21,6 @@ def compare(xs, dim_cache):
 
 class gui(param.Parameterized):
     cPol = param.Number(default=0, precedence=-1)
-    wavwait = param.Number(default=5)  # value is in seconds
     institution = param.String(default="University of North Texas")
     sample = param.String(default="MoS2")
     GUIupdate = param.Boolean(default=True)
@@ -86,7 +85,7 @@ class gui(param.Parameterized):
         self.datasets = {}
         self.encoders = {}
         for dataset in self.instruments.datasets:
-            self.datasets[dataset] = (self.instruments.dimensions, self.zeros, self.attrs)
+            self.datasets[dataset] = (self.instruments.dimensions, self.zeros.copy(deep=True), self.attrs)
             self.encoders[dataset] = {"compressor": compressor}
         # Get filename
         fname = self.instruments.filename
@@ -144,14 +143,10 @@ class gui(param.Parameterized):
                 function(xs)
             if not dim_num == len(xs) - 1:  # reset for all but the last dimension
                 self.bars[dim_num + 1].reset()
-            else:
-                data = self.instruments.get_frame(xs)
-                for dataset in self.instruments.datasets:
-                    if self.instruments.cap_coords == []:
-                        self.data[dataset].loc[self.mask] = data[dataset]
-                    else:
-                        self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset],
-                                                                         dims=self.instruments.cap_coords)
+            data = self.instruments.get_frame(xs)
+            for dataset in self.instruments.datasets:
+                self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset],
+                                                                     dims=self.instruments.cap_coords)
             if self.GUIupdate:
                 self.cPol += 1  # refresh the GUI
             if not (dim_num == 0 and First == 1):

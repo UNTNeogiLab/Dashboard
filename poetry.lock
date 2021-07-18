@@ -826,7 +826,7 @@ test = ["check-manifest", "fastjsonschema", "testpath", "pytest", "pytest-cov"]
 
 [[package]]
 name = "neogiinstruments"
-version = "2.4.5"
+version = "2.4.6"
 description = "Communication and helper functions for lab equipment"
 category = "main"
 optional = false
