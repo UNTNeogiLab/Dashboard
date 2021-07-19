@@ -50,7 +50,6 @@ class instruments(instruments_base):
         self.MaiTai.instrument.Shutter(1)
         if self.debug:
             print(f'starting loop at {xs[0]}')
-        self.pol_step([xs[0], self.pstart - self.pstep])
         if self.debug:
             print("Homing")
         self.rotator.instrument.home()
@@ -76,7 +75,7 @@ class instruments(instruments_base):
 
     def init_vars(self):
         self.wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
-        self.Polarization = np.arange(self.pstart, self.pstop + self.pstep, self.pstep)
+        self.Polarization = np.arange(self.pstart, self.pstop , self.pstep)
 
     def pol_step(self, xs):
         pol = xs[1]
