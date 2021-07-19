@@ -97,7 +97,7 @@ class gui(param.Parameterized):
             print(f"Zarr store exists, trying {self.instruments.filename}")
             self.instruments.param["filename"].constant = True
         try:
-            os.mkdir(self.instruments.filename)
+            os.makedirs(self.instruments.filename)
         except:
             raise Exception("folder to create zarr store does not exist")
 
