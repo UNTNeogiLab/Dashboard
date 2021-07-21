@@ -1,5 +1,5 @@
 from datetime import timedelta
-from numba import njit
+from numba import vectorize, float32, float64, int64, int32
 import pandas as pd
 import param
 import plotly.express as px
@@ -11,21 +11,37 @@ import time
 import numpy as np
 import os
 from pathlib import Path
+from .. import utils
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-from dashboard.visualizer import utils
 
-type = "RASHG"
+data_type = "RASHG"
 name = "sixD"
 
 
-@njit(cache=True)
-def function(phi, delta, A, B, theta, C):
-    return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
+@vectorize([float64(float64, float64, float64, float64, float64, float64)])
+def function(phi: float64, delta: float64, A: float64, B: float64, theta: float64, C: float64) -> float64:
+    """
+    Function to fit to, accelerated using numba
 
-
-def functionN(phi, delta, A, B, theta, C):
+    :return:
+    :rtype:
+    :param phi:
+    :type phi:
+    :param delta:
+    :type delta:
+    :param A:
+    :type A:
+    :param B:
+    :type B:
+    :param theta:
+    :type theta:
+    :param C:
+    :type C:
+    :return:
+    :rtype:
+    """
     return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
 
 
@@ -61,8 +77,9 @@ class grapher(param.Parameterized):
             self.ds["navigation"] = self.ds["ds1"].mean(dim='Polarization').compute()  # chunked for navigation
             self.ds["heatmap_all"] = self.ds["ds1"].mean(dim=['x', 'y']).compute()  # chunked for heatmap all
             self.ds = self.ds.merge(self.ds["heatmap_all"].curvefit(["Polarization"], function,
-                                                                    kwargs={"maxfev": 1000000, "xtol": 10 ** -9,
-                                                                            "ftol": 10 ** -9}).compute())
+                                                                    param_names=["delta", "A", "B", "theta", "C"]
+                                                                    , kwargs={"maxfev": 1000000, "xtol": 10 ** -9,
+                                                                              "ftol": 10 ** -9}).compute())
             self.ds.attrs["fit_version"] = current_fit_version
             self.ds = self.ds.rename({"curvefit_coefficients": "fitted", "curvefit_covariance": "covariance"})
             self.ds.to_zarr(self.filename, mode="a", compute=True)
@@ -90,7 +107,8 @@ class grapher(param.Parameterized):
                 x=slice(self.x0, self.x1), y=slice(self.y0, self.y1))
         else:
             output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power)
-        pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"])
+        pf = output.curvefit(["Polarization"], function, reduce_dims=["x", "y"],
+                             param_names=["delta", "A", "B", "theta", "C"])
         curvefit_coefficients = pf.curvefit_coefficients  # idk what to do with the covars
         return curvefit_coefficients.values
 
@@ -180,7 +198,7 @@ class grapher(param.Parameterized):
                                         x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
             df = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-            fitted = functionN(thetaRadians, *self.fit())
+            fitted = function(thetaRadians, *self.fit())
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to selected points", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
             df = df.append(df2)
@@ -190,7 +208,7 @@ class grapher(param.Parameterized):
                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
             params = self.ds["fitted"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
                                            power=self.power).values
-            fitted = functionN(thetaRadians, *params)
+            fitted = function(thetaRadians, *params)
             df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
                                columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
             df = df.append(df2)
@@ -230,7 +248,7 @@ class grapher(param.Parameterized):
         print(end - start)
 
     def xarray(self):
-        return pn.panel(self.ds, width=700)
+        return pn.panel(self.ds)
 
     def view(self):
         return pn.Column(self.title, pn.Row(self.nav, self.heatMap), pn.Row(self.Polar, self.xarray))

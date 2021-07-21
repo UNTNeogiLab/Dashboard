@@ -1,23 +1,37 @@
 from dask.distributed import Client
 import param
 import panel as pn
+
 from . import types
 from . import utils
 
 
 class Viewer(param.Parameterized):
-    filename = param.ObjectSelector()
+    filename: str = param.ObjectSelector()
 
-    def __init__(self, filename=None):
+    def __init__(self, filename: str = None):
+        """
+
+        :param filename: specify default filename, otherwise choose files
+        :type filename: str
+        :rtype: Viewer
+        """
         super().__init__()
         self.client = Client()
-        if not filename == None:
-            self.filename = filename
         self.reload_files()
-        self.filename = self.files[0]
+        if filename is None:
+            self.filename = self.files[0]
+        else:
+            self.filename = filename
         self.load()
 
-    def reload_files(self):
+    def reload_files(self) -> None:
+        """
+        Checks for files with given extensions
+
+        :rtype: None
+
+        """
         self.file_dict = utils.getDir(types)
         if len(self.file_dict) == 0:
             raise Exception("must have at least one file")
@@ -25,7 +39,10 @@ class Viewer(param.Parameterized):
         self.param["filename"].objects = self.files
 
     @param.depends('filename', watch=True)
-    def load(self):
+    def load(self) -> None:
+        """
+        Loads currently selected file
+        """
         self.reload_files()  # temp solution
         visualizer = self.file_dict[self.filename].grapher
         self.grapher = visualizer(self.filename, self.client)

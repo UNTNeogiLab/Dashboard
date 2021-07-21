@@ -13,6 +13,6 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                 except ImportError:
                     print(f"{file} import failed")
                 else:
-                    types[module.type] = module
+                    types[module.data_type] = module
 from .visualizer import Viewer
 from . import utils
