@@ -1,5 +1,4 @@
 import os
-from pkgutil import iter_modules
 from pathlib import Path
 from importlib import import_module
 
@@ -16,3 +15,4 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                 else:
                     types[module.type] = module
 from .visualizer import Viewer
+from . import utils

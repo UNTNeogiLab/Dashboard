@@ -39,6 +39,7 @@ converter = "converter.converter:main"
 [tool.poetry.dev-dependencies]
 bpytop = "^1.0.67"
 pip-licenses = "^3.4.0"
+Sphinx = "^4.1.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
