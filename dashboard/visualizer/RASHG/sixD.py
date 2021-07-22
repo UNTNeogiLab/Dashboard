@@ -1,5 +1,5 @@
 from datetime import timedelta
-from numba import vectorize, float32, float64, int64, int32
+from numba import vectorize, float64
 import pandas as pd
 import param
 import plotly.express as px
@@ -14,7 +14,7 @@ from pathlib import Path
 from .. import utils
 
 pn.extension('plotly')
-hv.extension('bokeh', 'plotly')
+hv.extension('bokeh')
 
 data_type = "RASHG"
 name = "sixD"
@@ -24,9 +24,6 @@ name = "sixD"
 def function(phi: float64, delta: float64, A: float64, B: float64, theta: float64, C: float64) -> float64:
     """
     Function to fit to, accelerated using numba
-
-    :return:
-    :rtype:
     :param phi:
     :type phi:
     :param delta:
@@ -40,7 +37,8 @@ def function(phi: float64, delta: float64, A: float64, B: float64, theta: float6
     :param C:
     :type C:
     :return:
-    :rtype:
+    :rtype: float64
+
     """
     return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
 
@@ -54,7 +52,7 @@ class grapher(param.Parameterized):
     y0 = param.Number(default=0, precedence=-1)
     y1 = param.Number(default=1, precedence=-1)
     selected = param.Boolean(default=False, precedence=-1)
-    colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
+    colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.list_cmaps())
     button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
 
     def _update_dataset(self):
