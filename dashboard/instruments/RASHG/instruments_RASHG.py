@@ -108,10 +108,11 @@ class instruments(instruments_base):
         self.Polarization = np.arange(0, 360, self.pol_step, dtype=np.uint16)
         self.Polarization_radians = np.arange(0, 360, self.pol_step, dtype=np.uint16) * math.pi / 180
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
-        self.pc = xr.open_dataset(self.calibration_file, engine="zarr")
-        pc_pol = self.pc.coords["polarzation"]
-        self.pc_reverse = xr.apply_ufunc(interp, self.pc, input_core_dims=[["polarization"]], vectorize=True,
+        pc = xr.open_dataset(self.calibration_file, engine="zarr")["Pwr"]
+        pc_pol = self.pc.coords["Polarization"]
+        self.pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
                                          output_core_dims=[["power"]], kwargs={"pwr": self.pwr, "pol": pc_pol})
+        self.pc_reverse.coords["power"] = self.pwr
 
     def get_frame(self, xs):
         o = xs[2]
@@ -137,7 +138,7 @@ class instruments(instruments_base):
     def pow_step_func(self, xs):
         pw = xs[1]
         w = xs[0]
-        atten_pos = self.pc_reverse.sel(wavelength=w, power=pw) #technically can interp here again but don't need to
+        atten_pos = self.pc_reverse.sel(wavelength=w, power=pw)  # technically can interp here again but don't need to
         self.atten.instrument.move_abs(atten_pos)
 
     def graph(self, live=False):
