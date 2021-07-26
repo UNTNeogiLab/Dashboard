@@ -24,6 +24,15 @@ def interp(y, pol, pwr):
     return f(pwr)
 
 
+def interpolate(filename, pwr=np.arrange(0, 100, 5)):
+    pc = xr.open_dataset(filename, engine="zarr")["Pwr"]
+    pc_pol = pc.coords["Polarization"]
+    pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
+                                output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
+    pc_reverse.coords["power"] = pwr
+    return pc_reverse
+
+
 def get_calibs() -> list:
     """
     Scans for calibration files
@@ -61,7 +70,7 @@ class instruments(instruments_base):
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     cap_coords = ["x", "y"]
     loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
-    calibration_file = param.ObjectSelector(objects=get_calibs(),default=get_calibs()[1])
+    calibration_file = param.ObjectSelector(objects=get_calibs(), default=get_calibs()[1])
 
     def start(self):
         print("Gathering Data, Get Out")
@@ -119,11 +128,7 @@ class instruments(instruments_base):
         self.Polarization = np.arange(0, 360, self.pol_step, dtype=np.uint16)
         self.Polarization_radians = np.arange(0, 360, self.pol_step, dtype=np.uint16) * math.pi / 180
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
-        pc = xr.open_dataset(self.calibration_file, engine="zarr")["Pwr"]
-        pc_pol = pc.coords["Polarization"]
-        self.pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
-                                         output_core_dims=[["power"]], kwargs={"pwr": self.pwr, "pol": pc_pol})
-        self.pc_reverse.coords["power"] = self.pwr
+        self.pc_reverse = interpolate(self.calibration_file, self.pwr)
 
     def get_frame(self, xs):
         o = xs[2]

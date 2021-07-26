@@ -27,10 +27,6 @@ class instruments(instruments_base):
     debug = param.Boolean(default=False)
     live = False
 
-    # button = pn.widgets.Button(name="Power On")
-    # def start(self):
-    #    self.MaiTai.instrument.On()
-
     def __init__(self):
         super().__init__()
         self.filename = "calib/WavelengthPowerCalib.zarr"
