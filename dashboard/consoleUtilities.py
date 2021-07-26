@@ -1,6 +1,9 @@
+import os
+
 import zarr
 from pathlib import Path
 import xarray as xr
+from zarr.errors import GroupNotFoundError
 
 from dashboard.visualizer import utils
 
@@ -30,6 +33,16 @@ def main():
             print(data)
             data.to_zarr(filename, encoding={"ds1": {"compressor": compressor}}, consolidated=True, compute=True)
 
+
+def clean():
+    """cleans all your empty files"""
+    files = list(Path("").rglob("*.zarr"))
+    for file in files:
+        try:
+            ds = xr.open_dataset(file, engine="zarr")
+            ds.close()
+        except GroupNotFoundError:
+            os.removedirs(file)
 
 if __name__ == '__main__':
     main()
