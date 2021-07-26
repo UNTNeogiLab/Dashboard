@@ -501,7 +501,7 @@ python-versions = "*"
 
 [[package]]
 name = "neogiinstruments"
-version = "2.4.6"
+version = "2.4.11"
 description = "Communication and helper functions for lab equipment"
 category = "main"
 optional = false
@@ -1580,8 +1580,8 @@ msgpack = [
     {file = "msgpack-1.0.2.tar.gz", hash = "sha256:fae04496f5bc150eefad4e9571d1a76c55d021325dcd484ce45065ebbdd00984"},
 ]
 neogiinstruments = [
-    {file = "NeogiInstruments-2.4.6-py3-none-any.whl", hash = "sha256:cc60bf761a289352c003bb8a301ff14491ae73421e54405cca6864787a75d62d"},
-    {file = "NeogiInstruments-2.4.6.tar.gz", hash = "sha256:86efd9a8a6f86d625e9e35b45a0e29378b92e240eb0697476f234f5b3f5e12fd"},
+    {file = "NeogiInstruments-2.4.11-py3-none-any.whl", hash = "sha256:0219e5f214e756e939c6a82067456e02d6f047f132c667ad4b5651edfa19c9c8"},
+    {file = "NeogiInstruments-2.4.11.tar.gz", hash = "sha256:263bcc155febe9982f45b445d9be7a80fee8401a2cc193684c9ff8bbac1fa4c8"},
 ]
 netcdf4 = [
     {file = "netCDF4-1.5.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6b0c6ae9f9a050e9878f700e87405044fb2ee9a730559d6feb87f2361b361c6"},

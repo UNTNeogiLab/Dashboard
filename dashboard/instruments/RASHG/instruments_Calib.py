@@ -31,9 +31,6 @@ class instruments(instruments_base):
     # def start(self):
     #    self.MaiTai.instrument.On()
 
-    def stop(self):
-        self.MaiTai.instrument.Off()
-
     def __init__(self):
         super().__init__()
         self.filename = "calib/WavelengthPowerCalib.zarr"
@@ -75,7 +72,7 @@ class instruments(instruments_base):
 
     def init_vars(self):
         self.wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
-        self.Polarization = np.arange(self.pstart, self.pstop , self.pstep)
+        self.Polarization = np.arange(self.pstart, self.pstop, self.pstep)
 
     def pol_step(self, xs):
         pol = xs[1]
