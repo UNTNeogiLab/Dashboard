@@ -72,7 +72,6 @@ class gui(param.Parameterized):
             values = self.instruments.coords[coord]
             self.attrs[coord] = values["unit"]
             self.coords[coord] = ([values["dimension"]], values["values"])
-        print(self.attrs)
         self.bars = [tqdm(desc=self.instruments.coords[coord]["name"]) for coord in self.instruments.loop_coords]
         # data.date = str(datetime.date.today()) #out of date
         # create variables; in this case, the only dependent variable is 'shg',
@@ -120,7 +119,6 @@ class gui(param.Parameterized):
             self.bars[i].reset(total=len(self.instruments.coords[dim]["values"]))
             self.mask[dim] = min(self.instruments.coords[dim]["values"])
             i += 1
-        print(self.zeros)
         for xs in product(*ranges):
             dim, dim_num = self.find_dim(xs)
             if dim_num == 0:
