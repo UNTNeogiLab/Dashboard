@@ -8,6 +8,7 @@ from dashboard.instruments.instruments_base import instruments_base
 import time
 import param
 import panel as pn
+from ...visualizer import utils
 
 name = "RASHG"
 
@@ -21,6 +22,16 @@ def InvSinSqr(y, mag, xoffset, yoffset):
 def interp(y, pol, pwr):
     f = interp1d(y, pol, fill_value="extrapolate")
     return f(pwr)
+
+
+def get_calibs() -> list:
+    """
+    Scans for calibration files
+
+    :return: list of all calibration files
+    :rtype: list of PosixPath
+    """
+    return list(utils.getDir({"WavelengthPoweredCalib": None}).keys())
 
 
 class instruments(instruments_base):
@@ -50,7 +61,7 @@ class instruments(instruments_base):
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     cap_coords = ["x", "y"]
     loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
-    calibration_file = param.String(default="calib/WavelengthPowerCalib.zarr")
+    calibration_file = param.ObjectSelector(objects=get_calibs(),default=get_calibs()[1])
 
     def start(self):
         print("Gathering Data, Get Out")
