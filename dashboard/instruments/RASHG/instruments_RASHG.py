@@ -120,7 +120,7 @@ class instruments(instruments_base):
         self.Polarization_radians = np.arange(0, 360, self.pol_step, dtype=np.uint16) * math.pi / 180
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
         pc = xr.open_dataset(self.calibration_file, engine="zarr")["Pwr"]
-        pc_pol = self.pc.coords["Polarization"]
+        pc_pol = pc.coords["Polarization"]
         self.pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
                                          output_core_dims=[["power"]], kwargs={"pwr": self.pwr, "pol": pc_pol})
         self.pc_reverse.coords["power"] = self.pwr
