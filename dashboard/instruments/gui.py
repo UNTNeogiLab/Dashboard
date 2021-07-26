@@ -4,7 +4,6 @@ import numpy as np
 import panel as pn
 import param
 from numba import njit
-from tqdm.notebook import tqdm
 import os
 import zarr
 from tqdm.contrib.itertools import product
@@ -26,14 +25,10 @@ class gui(param.Parameterized):
     GUIupdate = param.Boolean(default=True)
     button = pn.widgets.Button(name='Gather Data', button_type='primary')
     button2 = pn.widgets.Button(name='refresh', button_type='primary')
-    live = param.Boolean(default=True, precedence=-1)
+    live = param.Boolean(default=False, precedence=-1)
     refresh = 5  # refresh every 5 seconds #make it a parameter
     live_refresh = param.Integer(default=5)
     dim_cache = np.array([0, 0, 0, 0])
-
-    @param.depends('cPol')
-    def progressBar(self):
-        return pn.Column(*self.bars)
 
     def __init__(self):
         super().__init__()
@@ -72,7 +67,6 @@ class gui(param.Parameterized):
             values = self.instruments.coords[coord]
             self.attrs[coord] = values["unit"]
             self.coords[coord] = ([values["dimension"]], values["values"])
-        self.bars = [tqdm(desc=self.instruments.coords[coord]["name"]) for coord in self.instruments.loop_coords]
         # data.date = str(datetime.date.today()) #out of date
         # create variables; in this case, the only dependent variable is 'shg',
         # which is the shg intensity along the specified dimensions
@@ -116,7 +110,6 @@ class gui(param.Parameterized):
         '''
         i = 0
         for dim in self.instruments.loop_coords:
-            self.bars[i].reset(total=len(self.instruments.coords[dim]["values"]))
             self.mask[dim] = min(self.instruments.coords[dim]["values"])
             i += 1
         for xs in product(*ranges):
@@ -139,18 +132,13 @@ class gui(param.Parameterized):
             function = self.instruments.coords[dim]["function"]
             if not function == "none":
                 function(xs)
-            if not dim_num == len(xs) - 1:  # reset for all but the last dimension
-                self.bars[dim_num + 1].reset()
             data = self.instruments.get_frame(xs)
             for dataset in self.instruments.datasets:
                 self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset],
                                                                      dims=self.instruments.cap_coords)
             if self.GUIupdate:
                 self.cPol += 1  # refresh the GUI
-            if not (dim_num == 0 and First == 1):
-                self.bars[dim_num].update()  # don't update the first run ever
         self.data.to_zarr(self.instruments.filename, append_dim=self.instruments.loop_coords[0])
-        self.bars[0].update()
         self.instruments.stop()
         print("Finished")
         self.cPol = self.cPol + 1
@@ -176,8 +164,9 @@ class gui(param.Parameterized):
         return pn.Column(self.button)
 
     def output(self):
-
-        return pn.Row(self.progressBar, self.graph)
-
+        if self.instruments.live:
+            return self.graph
+        else:
+            return None
     def stop(self):
         print("shutting down live view")  # doesn't currently  work
