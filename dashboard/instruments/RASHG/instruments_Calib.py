@@ -79,6 +79,8 @@ class instruments(instruments_base):
 
     def pol_step(self, xs):
         pol = xs[1]
+        if self.debug:
+            print(f"moving to {pol}")
         self.rotator.instrument.move_abs(pol)
         time.sleep(self.pwait)
 
