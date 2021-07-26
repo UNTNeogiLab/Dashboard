@@ -24,7 +24,7 @@ def interp(y, pol, pwr):
     return f(pwr)
 
 
-def interpolate(filename, pwr=np.arrange(0, 100, 5)):
+def interpolate(filename, pwr=np.arange(0, 100, 5)):
     pc = xr.open_dataset(filename, engine="zarr")["Pwr"]
     pc_pol = pc.coords["Polarization"]
     pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
