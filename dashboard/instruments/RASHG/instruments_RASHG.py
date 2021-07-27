@@ -70,7 +70,10 @@ class instruments(instruments_base):
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     cap_coords = ["x", "y"]
     loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
-    calibration_file = param.ObjectSelector(objects=get_calibs(), default=get_calibs()[1])
+    files = get_calibs()
+    if len(files) is 0:
+        print("Needs calibration file ")
+    calibration_file = param.ObjectSelector(objects=files, default=files[0])
 
     def start(self):
         print("Gathering Data, Get Out")
