@@ -6,7 +6,7 @@ import plotly.express as px
 import xarray as xr
 import holoviews as hv
 import panel as pn
-from holoviews import streams
+from holoviews import streams, Dimension
 import time
 import numpy as np
 import os
@@ -44,6 +44,7 @@ def function(phi: float64, delta: float64, A: float64, B: float64, theta: float6
 
 
 class grapher(param.Parameterized):
+    zdim: Dimension
     Orientation = param.Integer(default=0, bounds=(0, 1))
     wavelength = param.Selector()
     power = param.Selector()
@@ -186,62 +187,67 @@ class grapher(param.Parameterized):
 
     @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def Polar(self, dataset="Polarization"):
-        thetaVals = self.coords[dataset].values
-        thetaRadians = self.coords['Polarization'].values
+        theta_values = self.coords[dataset].values
+        theta_radians = self.coords['Polarization'].values
         overall = self.ds["heatmap_all"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
                                              power=self.power)
         if self.selected:
             title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
             output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power,
                                         x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
-            df = pd.DataFrame(np.vstack((output, thetaVals, np.tile("Raw Data, over selected region", 180))).T,
-                              columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
-            fitted = function(thetaRadians, *self.fit())
-            df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to selected points", 180))).T,
-                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
+            df = pd.DataFrame(np.vstack((output, theta_values, np.tile("Raw Data, over selected region", 180))).T,
+                              columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
+            fitted = function(theta_radians, *self.fit())
+            df2 = pd.DataFrame(np.vstack((fitted, theta_values, np.tile("Fitted Data, to selected points", 180))).T,
+                               columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
             df = df.append(df2)
         else:
             title = f'''{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points'''
-            df = pd.DataFrame(np.vstack((overall, thetaVals, np.tile("Raw Data, over all points", 180))).T,
-                              columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
+            df = pd.DataFrame(np.vstack((overall, theta_values, np.tile("Raw Data, over all points", 180))).T,
+                              columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
             params = self.ds["fitted"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
                                            power=self.power).values
-            fitted = function(thetaRadians, *params)
-            df2 = pd.DataFrame(np.vstack((fitted, thetaVals, np.tile("Fitted Data, to all points", 180))).T,
-                               columns=['Intensity', 'Polarization', 'Data'], index=thetaVals)
+            fitted = function(theta_radians, *params)
+            df2 = pd.DataFrame(np.vstack((fitted, theta_values, np.tile("Fitted Data, to all points", 180))).T,
+                               columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
             df = df.append(df2)
         df = df.astype({'Polarization': 'float', 'Intensity': "float", "Data": "string"})
         return px.scatter_polar(df, theta="Polarization", r='Intensity', color='Data', title=title, start_angle=0,
                                 direction="counterclockwise",
                                 range_r=(df['Intensity'].min() * 0.8, df['Intensity'].max() * 1.2), )
 
-    def PolarsToFile(self, event=None):
+    def polars_to_file(self, event=None):
         start = time.time()
-        ori_Wavelength, ori_Orientation = self.wavelength, self.Orientation
+        ori_wavelength, ori_orientation, ori_power = self.wavelength, self.Orientation, self.power
         self.param["Orientation"].precedence = -1
         self.param["wavelength"].precedence = -1
+        self.param["power"].precedence = -1
         wavelengths = self.ds["ds1"].coords['wavelength'].values.tolist()
-        Orientations = self.ds["ds1"].coords['Orientation'].values.tolist()
-        Folder = str(self.filename).replace(f".{utils.extension(self.filename)}", '')
-        if not os.path.isdir(Folder):
-            os.mkdir(Folder)
-        for Orientation in Orientations:
-            selected = self.selected
-            self.Orientation = Orientation
-            self.selected = selected
-            for wavelength in wavelengths:
+        orientations = self.ds["ds1"].coords['Orientation'].values.tolist()
+        powers = self.ds["ds1"].coords['power'].values.tolist()
+        folder = str(self.filename).replace(f".{utils.extension(self.filename)}", '')
+        if not os.path.isdir(folder):
+            os.mkdir(folder)
+        for power in powers:
+            self.power = power
+            for Orientation in orientations:
                 selected = self.selected
-                self.wavelength = wavelength
-                self.selected = selected  # prevent it resetting like it should
-                if self.selected:
-                    title = f"{Folder}/Polar_X{self.x0}:{self.x1}Y{self.y0}:{self.y1},O{Orientation}W{wavelength}.png"
-                else:
-                    title = f"{Folder}/Polar_O{Orientation}W{wavelength}.png"
-                self.Polar("degrees").write_image(title)
+                self.Orientation = Orientation
+                self.selected = selected
+                for wavelength in wavelengths:
+                    selected = self.selected
+                    self.wavelength = wavelength
+                    self.selected = selected  # prevent it resetting like it should
+                    if self.selected:
+                        title = f"{folder}/Polar_X{self.x0}:{self.x1}Y{self.y0}:{self.y1},O{Orientation}W{wavelength}P{power}.png"
+                    else:
+                        title = f"{folder}/Polar_O{Orientation}W{wavelength}.png"
+                    self.Polar("degrees").write_image(title)
         self.nav()
         self.param["Orientation"].precedence = 1
         self.param["wavelength"].precedence = 1
-        self.wavelength, self.Orientation = ori_Wavelength, ori_Orientation
+        self.param["power"].precedence = 1
+        self.wavelength, self.Orientation, self.power = ori_wavelength, ori_orientation, self.power
         end = time.time()
         print(end - start)
 
@@ -251,14 +257,15 @@ class grapher(param.Parameterized):
     def view(self):
         return pn.Column(self.title, pn.Row(self.nav, self.heatMap), pn.Row(self.Polar, self.xarray))
 
-    def sidebar(self):
+    @staticmethod
+    def sidebar():
         return pn.pane.Markdown(f'''
         ##NOTES
         TBD probably will move to README
         ''')
 
     def widgets(self):
-        self.button.on_click(self.PolarsToFile)
+        self.button.on_click(self.polars_to_file)
         if self.ds["ds1"].coords["power"].size > 1:
             widgets = {"wavelength": pn.widgets.DiscreteSlider, "power": pn.widgets.DiscreteSlider}
         else:
