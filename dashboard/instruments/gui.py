@@ -163,9 +163,9 @@ class gui(param.Parameterized):
     def widgets(self):
         return pn.Column(self.button)
 
-    def output(self):
+    def output(self) -> pn.Pane:
         if self.instruments.live:
-            return self.graph
+            return pn.Pane(self.graph)
         else:
             return None
     def stop(self):

@@ -1,5 +1,7 @@
+from typing import Union
+
 import param
-from. import gui, instruments
+from . import gui, instruments
 import panel as pn
 import holoviews as hv
 from dask.diagnostics import ProgressBar
@@ -10,14 +12,18 @@ pbar = ProgressBar()
 pbar.register()
 
 
-class instrumental(param.Parameterized):
+class Instrumental(param.Parameterized):
     instrument_classes = instruments
     instruments = list(instruments.keys())
-    instruments = param.ObjectSelector(default=instruments[0], objects=instruments) #us
+    instruments = param.ObjectSelector(default=instruments[0], objects=instruments)  # us
     confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
 
     def __init__(self):
+        """
+
+        :rtype: object
+        """
         super().__init__()
         self.load()
         self.gui = gui.gui()
@@ -29,9 +35,10 @@ class instrumental(param.Parameterized):
         self.instrument = self.instrument_classes[self.instruments].instruments()
 
     @param.depends('instruments', 'confirmed')
-    def widgets(self):
+    def widgets(self) -> pn.Row:
         self.button.on_click(self.initialize)
-        return pn.Row(pn.Column(self.param, self.gui.param, self.button, self.gui.widgets),self.instrument.param,self.instrument.widgets)
+        return pn.Row(pn.Column(self.param, self.gui.param, self.button, self.gui.widgets), self.instrument.param,
+                      self.instrument.widgets)
 
     def initialize(self, event=None):
         self.instrument.initialize()
@@ -41,10 +48,10 @@ class instrumental(param.Parameterized):
         self.gui.live_view()  # start live view immediately
 
     @param.depends('instruments', 'confirmed')
-    def gView(self):
+    def gView(self) -> Union[None, pn.Row]:
         # more complicated due to instruments and gui relationship
         if self.confirmed:
-            return self.gui.output
+            return pn.Row(self.gui.output)
         else:
             pass
 

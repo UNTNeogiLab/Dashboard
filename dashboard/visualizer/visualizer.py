@@ -1,3 +1,5 @@
+from typing import Union
+
 from dask.distributed import Client
 import param
 import panel as pn
@@ -48,11 +50,11 @@ class Viewer(param.Parameterized):
         self.grapher = visualizer(self.filename, self.client)
 
     @param.depends('filename')
-    def widgets(self):
+    def widgets(self) -> pn.Column:
         return pn.Column(self.param, self.grapher.widgets(), self.dask)
 
     @param.depends('filename')
-    def gView(self):
+    def gView(self) -> Union[pn.Row, pn.Column]:
         return self.grapher.view()
 
     def dask(self):

@@ -1,6 +1,8 @@
 import holoviews as hv
 import param
 import panel as pn
+
+from dashboard.instruments.dashboard import Instrumental
 from . import visualizer
 from .visualizer import utils
 import argparse
@@ -8,6 +10,7 @@ import time
 import socket
 import sys
 from . import instruments
+from typing import Union, Optional
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -24,6 +27,7 @@ def is_port_in_use(port):
 
 # wrapper around viewer class to interface with instrumental class
 class combined(param.Parameterized):
+    applet: Union[Instrumental, visualizer.Viewer]
     applets = ["viewer", "instrumental"]
     applets = param.ObjectSelector(default="instrumental", objects=applets)
     button = pn.widgets.Button(name="STOP", button_type='primary')
@@ -34,7 +38,7 @@ class combined(param.Parameterized):
         :rtype: None
         """
         super().__init__()
-        self.load()
+        self.applet = instruments.dashboard.Instrumental()
 
     @param.depends('applets', watch=True)
     def load(self) -> None:
@@ -47,10 +51,10 @@ class combined(param.Parameterized):
             self.applet = visualizer.Viewer()
         elif self.applets == "instrumental":
 
-            self.applet = instruments.dashboard.instrumental()
+            self.applet = instruments.dashboard.Instrumental()
 
     @param.depends('applets')
-    def widgets(self) -> pn.Column:
+    def widgets(self) -> Union[pn.Row, pn.Column]:
         """
         Renders widgets from the applet
         
@@ -60,7 +64,7 @@ class combined(param.Parameterized):
         return self.applet.widgets
 
     @param.depends('applets')
-    def applet_view(self) -> pn.Column:
+    def applet_view(self) -> Union[Optional[pn.Row], pn.Column]:
         """
         wraps applet view
 
