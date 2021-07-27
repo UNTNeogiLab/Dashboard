@@ -252,7 +252,7 @@ class grapher(param.Parameterized):
         print(end - start)
 
     def xarray(self):
-        return pn.panel(self.ds)
+        return pn.panel(self.ds, width=700)
 
     def view(self):
         return pn.Column(self.title, pn.Row(self.nav, self.heatMap), pn.Row(self.Polar, self.xarray))
