@@ -134,9 +134,10 @@ def main() -> None:
         serve(open_browser=False)
     elif args.local:
         serve()
-    elif not args.filename == False:
+    elif args.filename:
         start = time.time()
-        view = visualizer.Viewer(filename=utils.Path(args.filename))  # use port 8787 to view stats
+        view = visualizer.Viewer(filename=args.filename)  # use port 8787 to view stats
+        view.view().show()
         end = time.time()
         print(end - start)
     else:
