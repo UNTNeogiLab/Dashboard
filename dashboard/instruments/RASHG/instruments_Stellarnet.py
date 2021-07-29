@@ -58,7 +58,7 @@ class instruments(instruments_base):
             "power": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
                       "values": self.power, "function": self.pow_step},
         }
-        pc_reverse = utils.interpolate()
+        self.pc_reverse = utils.interpolate(self.calibration_file, pwr=self.power)
 
     def init_vars(self):
         self.wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
@@ -66,15 +66,16 @@ class instruments(instruments_base):
 
     def pow_step(self, xs):
         pow = xs[1]
-        pol = pc_reverse
+        wav = None
+        pol = self.pc_reverse.sel(power=pow, wavelength=wav).values
         if self.debug:
             print(f"moving to {pol}")
         self.rotator.instrument.move_abs(pol)
         time.sleep(self.pwait)
 
     def get_frame(self, xs):
-        data = self.StellarNet
-        return {"ds1"}
+        data = self.StellarNet.GetSpec()
+        return {"ds1":data}
 
     def widgets(self):
         if self.initialized:
