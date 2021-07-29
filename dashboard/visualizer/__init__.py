@@ -15,4 +15,3 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                 else:
                     types[module.data_type] = module
 from .visualizer import Viewer
-from . import utils

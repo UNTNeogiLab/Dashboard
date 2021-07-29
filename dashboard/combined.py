@@ -4,7 +4,6 @@ import panel as pn
 
 from dashboard.instruments.dashboard import Instrumental
 from . import visualizer
-from .visualizer import utils
 import argparse
 import time
 import socket

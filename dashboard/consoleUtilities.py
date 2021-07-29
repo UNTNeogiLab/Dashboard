@@ -5,7 +5,7 @@ from pathlib import Path
 import xarray as xr
 from zarr.errors import GroupNotFoundError
 
-from dashboard.visualizer import utils
+from dashboard import utils
 
 compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 

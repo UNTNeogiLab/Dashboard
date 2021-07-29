@@ -3,34 +3,18 @@ import holoviews as hv
 import numpy as np
 import neogiinstruments
 import xarray as xr
-from scipy.interpolate import interp1d
 from dashboard.instruments.instruments_base import instruments_base
 import time
 import param
 import panel as pn
-from ...visualizer import utils
+from ... import utils
 
 name = "RASHG"
 
 hv.extension('bokeh')
 
 
-def InvSinSqr(y, mag, xoffset, yoffset):
-    return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - yoffset) / mag))) + xoffset), 180)
 
-
-def interp(y, pol, pwr):
-    f = interp1d(y, pol, fill_value="extrapolate")
-    return f(pwr)
-
-
-def interpolate(filename, pwr=np.arange(0, 100, 5)):
-    pc = xr.open_dataset(filename, engine="zarr")["Pwr"]
-    pc_pol = pc.coords["Polarization"]
-    pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
-                                output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
-    pc_reverse.coords["power"] = pwr
-    return pc_reverse
 
 
 def get_calibs() -> list:
@@ -131,7 +115,7 @@ class instruments(instruments_base):
         self.Polarization = np.arange(0, 360, self.pol_step, dtype=np.uint16)
         self.Polarization_radians = np.arange(0, 360, self.pol_step, dtype=np.uint16) * math.pi / 180
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
-        self.pc_reverse = interpolate(self.calibration_file, self.pwr)
+        self.pc_reverse = utils.interpolate(self.calibration_file, self.pwr)
 
     def get_frame(self, xs):
         o = xs[2]

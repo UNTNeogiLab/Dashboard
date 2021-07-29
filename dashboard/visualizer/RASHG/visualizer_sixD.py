@@ -11,7 +11,7 @@ import time
 import numpy as np
 import os
 from pathlib import Path
-from .. import utils
+from ... import utils
 
 pn.extension('plotly')
 hv.extension('bokeh')

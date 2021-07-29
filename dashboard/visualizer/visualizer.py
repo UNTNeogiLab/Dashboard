@@ -5,7 +5,7 @@ import param
 import panel as pn
 
 from . import types
-from . import utils
+from .. import utils
 
 
 class Viewer(param.Parameterized):

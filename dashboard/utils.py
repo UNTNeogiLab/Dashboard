@@ -3,6 +3,25 @@ import time
 import os
 from pathlib import Path
 import xarray as xr
+from scipy.interpolate import interp1d
+
+
+def InvSinSqr(y, mag, xoffset, yoffset):
+    return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - yoffset) / mag))) + xoffset), 180)
+
+
+def interp(y, pol, pwr):
+    f = interp1d(y, pol, fill_value="extrapolate")
+    return f(pwr)
+
+
+def interpolate(filename, pwr=np.arange(0, 100, 5)):
+    pc = xr.open_dataset(filename, engine="zarr")["Pwr"]
+    pc_pol = pc.coords["Polarization"]
+    pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
+                                output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
+    pc_reverse.coords["power"] = pwr
+    return pc_reverse
 
 
 def getDir(extensions: dict) -> dict:
@@ -91,6 +110,3 @@ def convert(seconds):
     :rtype:
     """
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
-
-
-
