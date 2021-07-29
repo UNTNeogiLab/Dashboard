@@ -26,6 +26,8 @@ class instruments(instruments_base):
     pstart = param.Integer(default=0)
     pstop = param.Integer(default=10)
     pstep = param.Number(default=0.5)
+    mai_time = param.Integer(default=30)
+    pwait = param.Integer(default=1)
     type = name
     data = "Stellarnet"
     dimensions = ["power"]
@@ -42,7 +44,24 @@ class instruments(instruments_base):
         super().__init__()
         self.filename = "calib/WavelengthPowerCalib.zarr"
         self.rotator = neogiinstruments.rotator("rotator")
+        self.MaiTai = neogiinstruments.MaiTai()
         self.StellarNet = neogiinstruments.StellarNet()
+
+    def wav_step(self, xs):
+        self.MaiTai.instrument.Set_Wavelength(xs[0])
+        if self.debug:
+            print(f'moving to {xs[0]}')
+        time.sleep(self.mai_time)
+        self.MaiTai.instrument.Shutter(1)
+        if self.debug:
+            print(f'starting loop at {xs[0]}')
+        if self.debug:
+            print("Homing")
+        self.pow_step(xs)
+        if not self.debug:
+            time.sleep(5)
+        if self.debug:
+            print('Homing finished')
 
     def initialize(self):
         self.initialized = True
@@ -54,7 +73,7 @@ class instruments(instruments_base):
         self.init_vars()
         self.coords = {
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
-                           "values": self.wavelength, "function": "none"},
+                           "values": self.wavelength, "function": self.wav_step},
             "power": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
                       "values": self.power, "function": self.pow_step},
         }
@@ -66,7 +85,7 @@ class instruments(instruments_base):
 
     def pow_step(self, xs):
         pow = xs[1]
-        wav = None
+        wav = xs[0]
         pol = self.pc_reverse.sel(power=pow, wavelength=wav).values
         if self.debug:
             print(f"moving to {pol}")
@@ -74,11 +93,11 @@ class instruments(instruments_base):
         time.sleep(self.pwait)
 
     def get_frame(self, xs):
-        data = self.StellarNet.GetSpec()
-        return {"ds1":data}
+        data = self.StellarNet.GetSpec()[1]
+        return {"ds1": data}
 
     def widgets(self):
         if self.initialized:
-            return pn.Column(self.rotator.view, self.PowerMeter.view, self.Photodiode.view, self.MaiTai.view)
+            return pn.Column(self.rotator.view, self.StellarNet.view, self.MaiTai.view)
         else:
             return None
