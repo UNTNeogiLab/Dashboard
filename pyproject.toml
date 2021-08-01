@@ -18,7 +18,7 @@ colorcet = "^2.0.6"
 plotly = "^5.0.0"
 zarr = "^2.3"
 k10cr1 = { git = 'https://github.com/QuantumQuadrate/k10cr1' }
-elliptec = { git = 'https://github.com/UNTNeogiLab/TL-rotation-control' }
+elliptec = { git = 'https://github.com/UNTNeogiLab/TL-rotation-control', rev = "0c4bd0a9a577a8e90ea709522e3c20c967b5b264"}
 stellarnet = { git = "git@github.com:UNTNeogiLab/stellarnet.git", branch = "main"}
 pyvcam = { git ="git@github.com:UNTNeogiLab/pyvcam.git", branch = "master", optional = true}
 typing-extensions = "^3.10.0"
