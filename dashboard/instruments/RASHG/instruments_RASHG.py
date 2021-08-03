@@ -42,6 +42,7 @@ class instruments(instruments_base):
     escape_delay = param.Integer(default=120)  # should beep at 45
     wavwait = param.Number(default=5)
     debug = param.Boolean(default=False)
+    live = param.Boolean(default=True)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     cam = neogiinstruments.camera("Camera")
     rbot, rtop, atten = [neogiinstruments.rotator(name) for name in ["rbot", "rtop", "atten"]]
@@ -55,7 +56,6 @@ class instruments(instruments_base):
     if len(files) == 0:
         print("Needs calibration file ")
     calibration_file = param.ObjectSelector(objects=files, default=files[0])
-    live = param.Boolean(default=False)
     @param.depends("debug", watch=True)
     def no_wait(self):
         if self.debug:
@@ -110,7 +110,7 @@ class instruments(instruments_base):
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
         x = int((self.x2 - self.x1) / self.xbin)
         y = int((self.y2 - self.y1) / self.ybin)
-        self.cache = self.live()
+        self.cache = self.live_call()
         self.x_coords = np.arange(x, dtype=np.uint16)
         self.x_mm = np.arange(x, dtype=np.uint16) * 0.05338  # magic
         self.y_coords = np.arange(y, dtype=np.uint16)
@@ -139,7 +139,7 @@ class instruments(instruments_base):
         self.rbot.instrument.move_abs(pos_bot)
         if self.debug:
             print(f"Capturing frame")
-        self.cache = self.live()
+        self.cache = self.live_call()
         return {"ds1": self.cache}
 
     def pow_step_func(self, xs):
@@ -150,13 +150,13 @@ class instruments(instruments_base):
 
     def graph(self, live=False):
         if live:
-            self.cache = self.live()
+            self.cache = self.live_call()
         output = self.cache
         self.zdim = hv.Dimension('Intensity', range=(output.min(), output.max()))
         opts = [hv.opts.Image(colorbar=True, cmap=self.colorMap, tools=['hover'], framewise=True, logz=True)]
         return hv.Image(output, vdims=self.zdim).opts(opts).redim(x=self.xDim, y=self.yDim)
 
-    def live(self):
+    def live_call(self):
         return self.cam.instrument.get_frame(exp_time=self.exp_time)
 
     def wav_step(self, xs):

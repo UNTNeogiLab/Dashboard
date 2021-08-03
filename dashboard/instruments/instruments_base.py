@@ -18,7 +18,7 @@ class instruments_base(param.Parameterized):
     def get_frame(self, xs):
         pass
 
-    def live(self):
+    def live_call(self):
         pass
 
     def widgets(self):
