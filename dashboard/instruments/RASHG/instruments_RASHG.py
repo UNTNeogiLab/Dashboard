@@ -14,9 +14,6 @@ name = "RASHG"
 hv.extension('bokeh')
 
 
-
-
-
 def get_calibs() -> list:
     """
     Scans for calibration files
@@ -44,7 +41,7 @@ class instruments(instruments_base):
     exp_time = param.Number(default=10000)
     escape_delay = param.Integer(default=120)  # should beep at 45
     wavwait = param.Number(default=5)
-    debug = param.Boolean(default=True)
+    debug = param.Boolean(default=False)
     colorMap = param.ObjectSelector(default="fire", objects=hv.plotting.util.list_cmaps())
     cam = neogiinstruments.camera("Camera")
     rbot, rtop, atten = [neogiinstruments.rotator(name) for name in ["rbot", "rtop", "atten"]]
@@ -55,9 +52,16 @@ class instruments(instruments_base):
     cap_coords = ["x", "y"]
     loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
     files = get_calibs()
-    if len(files) is 0:
+    if len(files) == 0:
         print("Needs calibration file ")
     calibration_file = param.ObjectSelector(objects=files, default=files[0])
+    live = param.Boolean(default=False)
+    @param.depends("debug", watch=True)
+    def no_wait(self):
+        if self.debug:
+            self.wavwait = 0
+            self.escape_delay = 0
+            self.exp_time = 0
 
     def start(self):
         print("Gathering Data, Get Out")
@@ -113,7 +117,7 @@ class instruments(instruments_base):
         self.y_mm = np.arange(y, dtype=np.uint16) * 0.05338  # magic
         self.Orientation = np.arange(0, 2)
         self.Polarization = np.arange(0, 360, self.pol_step, dtype=np.uint16)
-        self.Polarization_radians = np.arange(0, 360, self.pol_step, dtype=np.uint16) * math.pi / 180
+        self.Polarization_radians = np.arange(0, 360, self.pol_step, dtype=np.uint16) * np.pi / 180
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
         self.pc_reverse = utils.interpolate(self.calibration_file, self.pwr)
 
