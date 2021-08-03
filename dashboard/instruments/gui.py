@@ -108,10 +108,8 @@ class gui(param.Parameterized):
         memory limits nonwithstanding
         The generator should be lazy and not overflow your memory. Theoretically.
         '''
-        i = 0
         for dim in self.instruments.loop_coords:
             self.mask[dim] = min(self.instruments.coords[dim]["values"])
-            i += 1
         for xs in product(*ranges):
             dim, dim_num = self.find_dim(xs)
             if dim_num == 0:
