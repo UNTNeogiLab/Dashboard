@@ -162,7 +162,7 @@ class gui(param.Parameterized):
         return pn.Column(self.button)
 
     def output(self) -> pn.Pane:
-        if self.instruments.live:
+        if self.instruments.live_call:
             return pn.Pane(self.graph)
         else:
             return None
