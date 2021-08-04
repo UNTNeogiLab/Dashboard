@@ -43,7 +43,7 @@ class gui(param.Parameterized):
         self.button.on_click(self.gather_data)
         if self.instruments.live:
             self.live = True
-            pn.state.add_periodic_callback(self.live_view, period=self.live_refresh * 1000)
+            self.callback = pn.state.add_periodic_callback(self.live_view, period=self.live_refresh * 1000)
         exclude = ["cPol", "live"]
         for param in self.param:
             if not param in exclude:
@@ -95,6 +95,8 @@ class gui(param.Parameterized):
             raise Exception("folder to create zarr store does not exist")
 
     def gather_data(self, event=None):
+        if self.instruments.live:
+            self.callback.stop()
         self.button.disabled = True
         self.button2.disabled = True
         self.live = False
@@ -133,7 +135,7 @@ class gui(param.Parameterized):
             data = self.instruments.get_frame(xs)
             for dataset in self.instruments.datasets:
                 self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset],
-                                                                     dims=self.instruments.cap_coords)
+                                                                 dims=self.instruments.cap_coords)
             if self.GUIupdate:
                 self.cPol += 1  # refresh the GUI
         self.data.to_zarr(self.instruments.filename, append_dim=self.instruments.loop_coords[0])
@@ -151,7 +153,8 @@ class gui(param.Parameterized):
 
     def live_view(self):
         if self.live:
-            print("Updating live view")
+            if self.instruments.debug:
+                print("Updating live view")
             self.cPol = self.cPol + 1
 
     @param.depends('cPol')
@@ -162,9 +165,12 @@ class gui(param.Parameterized):
         return pn.Column(self.button)
 
     def output(self) -> pn.Pane:
-        if self.instruments.live_call:
+        if self.instruments.live:
             return pn.Pane(self.graph)
         else:
             return None
+
     def stop(self):
+        if self.instruments.live:
+            self.callback.stop()
         print("shutting down live view")  # doesn't currently  work
