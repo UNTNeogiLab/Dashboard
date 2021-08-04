@@ -67,14 +67,13 @@ class instruments(instruments_base):
             pass
 
     def __init__(self):
-        super().__init__()
-        self.xDim = hv.Dimension('x', unit="micrometers")
-        self.yDim = hv.Dimension('y', unit="micrometers")
         files = get_calibs()
         if len(files) == 0:
             print("Needs calibration file ")
         self.calibration_file = param.ObjectSelector(objects=files, default=files[0])
-
+        super().__init__()
+        self.xDim = hv.Dimension('x', unit="micrometers")
+        self.yDim = hv.Dimension('y', unit="micrometers")
     def initialize(self):
         self.initialized = True
         exclude = []
