@@ -52,6 +52,7 @@ class instruments(instruments_base):
     dimensions = ["wavelength", "power", "Orientation", "Polarization", "x", "y"]
     cap_coords = ["x", "y"]
     loop_coords = ["wavelength", "power", "Orientation", "Polarization"]
+    calibration_file = param.ObjectSelector()
 
     @param.depends("debug", watch=True)
     def no_wait(self):
@@ -63,17 +64,19 @@ class instruments(instruments_base):
     def start(self):
         print("Gathering Data, Get Out")
         if not self.debug:
-            #time.sleep(120)
+            # time.sleep(120)
             pass
 
     def __init__(self):
         files = get_calibs()
         if len(files) == 0:
             print("Needs calibration file ")
-        self.calibration_file = param.ObjectSelector(objects=files, default=files[0])
+        self.param["calibration_file"].objects = files
+        self.param["calibration_file"].default = files[0]
         super().__init__()
         self.xDim = hv.Dimension('x', unit="micrometers")
         self.yDim = hv.Dimension('y', unit="micrometers")
+
     def initialize(self):
         self.initialized = True
         exclude = []
