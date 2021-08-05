@@ -20,4 +20,3 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                         print(f"{file} import failed. Exception {Exception}")
                     else:
                         instruments[module.name] = module
-
