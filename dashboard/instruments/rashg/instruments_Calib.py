@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-from dashboard.instruments.instruments_base import instruments_base
+from ..instrumentsbase import InstrumentsBase
 import param
 import neogiinstruments
 import panel as pn
@@ -9,7 +9,7 @@ import panel as pn
 name = "WavelengthPoweredCalib"
 
 
-class instruments(instruments_base):
+class instruments(InstrumentsBase):
     wavstart = param.Integer(default=780)
     wavend = param.Integer(default=800)
     wavstep = param.Integer(default=2)

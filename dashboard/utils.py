@@ -1,33 +1,62 @@
-import numpy as np
+"""
+Utilities for various components. Aims to contain any resuable functions needed elsewhere
+"""
+import pathlib
 import time
 import os
 from pathlib import Path
+import numpy as np
 import xarray as xr
+import zarr.errors
 from scipy.interpolate import interp1d
 
 
-def InvSinSqr(y, mag, xoffset, yoffset):
-    return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - yoffset) / mag))) + xoffset), 180)
+def inv_sin_sqr(y, mag, x_offset, y_offset):
+    """Function to transform calibration. Superseded by interpolation
+    :param y:
+    :param mag:
+    :param x_offset:
+    :param y_offset:
+    :return:
+    """
+    return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - y_offset) / mag))) + x_offset), 180)
 
 
-def interp(y, pol, pwr):
+def interp(y, pol, pwr) -> np.array:
+    """
+    Interpolates a set of powers for polarization values to generate a new set of polarizations for given power
+    :param y: original power values
+    :param pol: polarization values
+    :param pwr: new power values
+    :return: list of polarizations for the new power values
+    """
     f = interp1d(y, pol, fill_value="extrapolate")
     return f(pwr)
 
 
-def interpolate(filename, pwr=np.arange(0, 100, 5)):
-    pc = xr.open_dataset(filename, engine="zarr")["Pwr"]
-    pc_pol = pc.coords["Polarization"]
-    pc_reverse = xr.apply_ufunc(interp, pc, input_core_dims=[["Polarization"]], vectorize=True,
+def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5)) -> xr.DataArray:
+    """
+    Interpolates a calibration file to get Polarizations for given powers and wavelength
+    :param filename: calibration file to interpolate from
+    :type filename: pathlib.PosixPath
+    :param pwr: powers to interpolate to
+    :type pwr: np.array
+    :return: Reversed calibration
+    :rtype: xr.DataArray
+    """
+    power_calibration = xr.open_dataset(filename, engine="zarr")["Pwr"]
+    pc_pol = power_calibration.coords["Polarization"]
+    pc_reverse = xr.apply_ufunc(interp, power_calibration, input_core_dims=[["Polarization"]], vectorize=True,
                                 output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
     pc_reverse.coords["power"] = pwr
     return pc_reverse
 
 
-def getDir(extensions: dict) -> dict:
+def scan_directory(extensions: dict) -> dict:
     """
     Scans for readable files
 
+    :return:
     :param extensions: A mapping from data types to modules
     :type extensions: dict
     :return: Mapping from files to modules
@@ -38,13 +67,13 @@ def getDir(extensions: dict) -> dict:
     file_dict = {}
     for file in files:
         try:
-            ds = xr.open_dataset(file, engine="zarr")
-            data_type = ds.attrs["data_type"]
-            ds.close()
+            dataset = xr.open_dataset(file, engine="zarr")
+            data_type = dataset.attrs["data_type"]
+            dataset.close()
             if data_type in extensions:
                 file_dict[file] = extensions[data_type]
-        except Exception as ex:
-            print(f"{file} open failed. Exception: {ex} Skipping")
+        except zarr.errors.GroupNotFoundError:
+            print(f"{file} open failed. No data in folder")
     return file_dict
 
 
@@ -69,25 +98,32 @@ def fname(file) -> str:
     :return: just the filename with no extension
     :rtype: str
     """
-    fname = os.path.basename(file)
-    return fname.replace(extension(fname), '')
+    file_name = os.path.basename(file)
+    return file_name.replace(extension(file_name), '')
 
 
-def hotfix(ds):
-    ds.coords['wavelength'] = ds.coords['wavelength'] * 2 + 780
-    ds.coords['Polarization'] = np.arange(0, 180, 1) / 90 * np.pi
-    ds.coords['degrees'] = ("Polarization", np.arange(0, 360, 2))
-    ds.coords['x_pixels'] = ("x", ds.coords['x'].values)
-    ds.coords['y_pixels'] = ("y", ds.coords['y'].values)
-    ds.coords['x'] = ds.coords['x'] * 0.05338  # TODO fix incorrect magic numbers
-    ds.coords['y'] = ds.coords['y'] * 0.05338  # TODO fix incorrect magic numbers
-    ds.attrs['x'] = "micrometers"
-    ds.attrs['y'] = "micrometers"
-    ds.attrs['Polarization'] = "radians"
-    return ds
+def hotfix(dataset):
+    """
+    Fixes older datasets by adding coordinates and atttributes. DO NOT USE
+    :param dataset:
+    :type dataset: xr.Dataset
+    :return: fixed dataset
+    :rtype: xr.Dataset
+    """
+    dataset.coords['wavelength'] = dataset.coords['wavelength'] * 2 + 780
+    dataset.coords['Polarization'] = np.arange(0, 180, 1) / 90 * np.pi
+    dataset.coords['degrees'] = ("Polarization", np.arange(0, 360, 2))
+    dataset.coords['x_pixels'] = ("x", dataset.coords['x'].values)
+    dataset.coords['y_pixels'] = ("y", dataset.coords['y'].values)
+    dataset.coords['x'] = dataset.coords['x'] * 0.05338  # TODO fix incorrect magic numbers
+    dataset.coords['y'] = dataset.coords['y'] * 0.05338  # TODO fix incorrect magic numbers
+    dataset.attrs['x'] = "micrometers"
+    dataset.attrs['y'] = "micrometers"
+    dataset.attrs['Polarization'] = "radians"
+    return dataset
 
 
-def getRange(dim: str, coords: xr.core.coordinates.DataArrayCoordinates) -> tuple[np.float64, np.float64]:
+def get_range(dim: str, coords: xr.core.coordinates.DataArrayCoordinates) -> tuple[np.float64, np.float64]:
     """
     Gets maximum and minimum on a set of coordinates
 

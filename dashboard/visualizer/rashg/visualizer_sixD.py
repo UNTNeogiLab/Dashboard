@@ -174,9 +174,9 @@ class grapher(param.Parameterized):
                         self.y1)).mean(
                 dim=['x', 'y'])
             title = f'''{self.fname}: Orientation: {self.Orientation}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
-        self.PolarizationDim = hv.Dimension('Polarization', range=utils.getRange('Polarization', self.coords),
+        self.PolarizationDim = hv.Dimension('Polarization', range=utils.get_range('Polarization', self.coords),
                                             unit=self.attrs['Polarization'])
-        self.wavelengthDim = hv.Dimension('wavelength', range=utils.getRange('wavelength', self.coords),
+        self.wavelengthDim = hv.Dimension('wavelength', range=utils.get_range('wavelength', self.coords),
                                           unit=self.attrs['wavelength'])
         line = hv.HLine(self.wavelength).opts(line_width=600 / self.coords['wavelength'].values.size, alpha=0.6)
         opts = [

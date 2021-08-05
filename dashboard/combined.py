@@ -1,32 +1,44 @@
-import holoviews as hv
-import param
-import panel as pn
-
-from dashboard.instruments.dashboard import Instrumental
-from .visualizer import types, Viewer
+"""
+Wraps visualizer and instruments to serve dashboard. Also includes command line parsing
+"""
+from typing import Union, Optional
 import argparse
 import time
 import socket
 import sys
+import holoviews as hv
+import param
+import panel as pn
+from dask.diagnostics import ProgressBar
+from .visualizer import types, Viewer
 from .instruments import instruments, dashboard
-from typing import Union, Optional
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-from dask.diagnostics import ProgressBar
 
 pbar = ProgressBar()
 pbar.register()
 
 
 def is_port_in_use(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+    """
+    Checks if port is in use
+
+    :param port: port to check
+    :type port: int
+    :return: if port is in use
+    :rtype: bool
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_to_check:
+        return socket_to_check.connect_ex(('localhost', port)) == 0
 
 
 # wrapper around viewer class to interface with instrumental class
-class combined(param.Parameterized):
-    applet: Union[Instrumental, Viewer]
+class Combined(param.Parameterized):
+    """
+    Combined viewer for Visualizer and Instruments
+    """
+    applet: Union[dashboard.Instrumental, Viewer]
     applets = ["viewer", "instrumental"]
     applets = param.ObjectSelector(default="instrumental", objects=applets)
     button = pn.widgets.Button(name="STOP", button_type='primary')
@@ -107,13 +119,14 @@ def serve(port: int = 5006, open_browser: bool = True) -> None:
     :param port: default port number to use
     :type port: int
     """
-    view = combined()
+    view = Combined()
     if is_port_in_use(port):
         view.view().show(open=open_browser)
     else:
         view.view().show(
             port=port,
-            open=open_browser)  # if you need to change this, change this on your own or implement ports yourself. It isn't very hard
+            open=open_browser)  # if you need to change this, change this on your own or implement ports yourself. It
+        # isn't very hard
 
 
 def main() -> None:
@@ -135,7 +148,7 @@ def main() -> None:
         serve()
     elif args.filename:
         start = time.time()
-        view = Viewer(filename=args.filename)  # use port 8787 to view stats
+        view = Viewer(filename=args.filename, types=types)  # use port 8787 to view stats
         view.view().show()
         end = time.time()
         print(end - start)

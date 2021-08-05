@@ -2,7 +2,7 @@ import math
 import holoviews as hv
 import numpy as np
 import neogiinstruments
-from dashboard.instruments.instruments_base import instruments_base
+from dashboard.instruments.instrumentsbase import InstrumentsBase
 import simple_pid
 import time
 import param

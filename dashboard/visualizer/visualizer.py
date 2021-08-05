@@ -34,7 +34,7 @@ class Viewer(param.Parameterized):
         :rtype: None
 
         """
-        self.file_dict = utils.getDir(self.types)
+        self.file_dict = utils.scan_directory(self.types)
         if len(self.file_dict) == 0:
             raise Exception("must have at least one file")
         self.files = list(self.file_dict.keys())

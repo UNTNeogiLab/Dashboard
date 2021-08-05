@@ -1,16 +1,19 @@
+"""
+Various Utilities for command line. Formerly converter.py
+"""
 import os
-
-import zarr
 from pathlib import Path
+import zarr
 import xarray as xr
 from zarr.errors import GroupNotFoundError
-
 from dashboard import utils
 
 compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 
 
-def main():
+def convert():
+    """Converts all avalible files to zarr files and fills in missing attributes. Only to be used to update legacy
+    files. """
     # client = Client()
     for file in list(Path("..").rglob("*.zarr")):
         print(file)
@@ -20,12 +23,12 @@ def main():
             ds1.to_zarr(file, mode="w", compute=True)
     for file in list(Path("..").rglob("*.5nc")):
         filename = str(file).replace(f".{utils.extension(file)}", '.zarr')
-        if not filename in list(Path("..").rglob("*.zarr")):
-            ds = utils.hotfix(xr.open_dataarray(file, engine="netcdf4"))
-            coords = ds.coords
-            ds_coords = ds.assign_coords(power=0).expand_dims("power")
+        if filename not in list(Path("..").rglob("*.zarr")):
+            dataset = utils.hotfix(xr.open_dataarray(file, engine="netcdf4"))
+            coords = dataset.coords
+            ds_coords = dataset.assign_coords(power=0).expand_dims("power")
             data = xr.Dataset(data_vars={"ds1": ds_coords},
-                              attrs=ds.attrs,
+                              attrs=dataset.attrs,
                               coords=coords)
             data.attrs["data_type"] = "RASHG"
             data.attrs["title"] = "RASHG"
@@ -39,10 +42,11 @@ def clean():
     files = list(Path("").rglob("*.zarr"))
     for file in files:
         try:
-            ds = xr.open_dataset(file, engine="zarr")
-            ds.close()
+            dataset = xr.open_dataset(file, engine="zarr")
+            dataset.close()
         except GroupNotFoundError:
             os.removedirs(file)
 
+
 if __name__ == '__main__':
-    main()
+    convert()

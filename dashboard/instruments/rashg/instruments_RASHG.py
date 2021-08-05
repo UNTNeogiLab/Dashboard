@@ -3,7 +3,7 @@ import holoviews as hv
 import numpy as np
 import neogiinstruments
 import xarray as xr
-from dashboard.instruments.instruments_base import instruments_base
+from ..instrumentsbase import InstrumentsBase
 import time
 import param
 import panel as pn
@@ -21,10 +21,10 @@ def get_calibs() -> list:
     :return: list of all calibration files
     :rtype: list of PosixPath
     """
-    return list(utils.getDir({"WavelengthPoweredCalib": None}).keys())
+    return list(utils.scan_directory({"WavelengthPoweredCalib": None}).keys())
 
 
-class instruments(instruments_base):
+class instruments(InstrumentsBase):
     x1 = param.Integer(default=0, bounds=(0, 2047))
     x2 = param.Integer(default=100, bounds=(0, 2047))
     y1 = param.Integer(default=0, bounds=(0, 2047))

@@ -2,7 +2,6 @@
 Provides collections of instruments for gathering data
 """
 import os
-from pkgutil import iter_modules
 from pathlib import Path
 from importlib import import_module
 from . import gui

@@ -34,8 +34,8 @@ pyvcam = ["pyvcam"]
 
 [tool.poetry.scripts]
 dashboard = "dashboard.combined:main"
-converter = "dashboard.consoleUtilities:main"
-clean = "dashboard.consoleUtilities:clean"
+converter = "dashboard.console_utilities:convert"
+clean = "dashboard.console_utilities:clean"
 [tool.poetry.dev-dependencies]
 bpytop = "^1.0.67"
 pip-licenses = "^3.4.0"

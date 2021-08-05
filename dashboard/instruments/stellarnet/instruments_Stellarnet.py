@@ -1,7 +1,7 @@
 import numpy as np
 import time
 from ... import utils
-from dashboard.instruments.instruments_base import instruments_base
+from ..instrumentsbase import InstrumentsBase
 import param
 import neogiinstruments
 import panel as pn
@@ -16,10 +16,10 @@ def get_calibs() -> list:
     :return: list of all calibration files
     :rtype: list of PosixPath
     """
-    return list(utils.getDir({"WavelengthPoweredCalib": None}).keys())
+    return list(utils.scan_directory({"WavelengthPoweredCalib": None}).keys())
 
 
-class instruments(instruments_base):
+class instruments(InstrumentsBase):
     wavstart = param.Integer(default=780)
     wavend = param.Integer(default=800)
     wavstep = param.Integer(default=2)

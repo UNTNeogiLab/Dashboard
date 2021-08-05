@@ -1,7 +1,13 @@
+"""
+Specifies base class
+"""
 import param
 
 
-class instruments_base(param.Parameterized):
+class InstrumentsBase(param.Parameterized):
+    """
+    Base class for all instruments. Other instrument groups should inherit from this
+    """
     initialized = param.Boolean(default=False, precedence=-1)  # dummy variable to make code work
     type = "base"
     title = param.String(default="Power/Wavelength dependent RASHG")
