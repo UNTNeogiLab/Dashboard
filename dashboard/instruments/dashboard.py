@@ -55,7 +55,7 @@ class Instrumental(param.Parameterized):
         """
         self.confirmed = False
         self.button.disabled = False
-        self.instrument = self.instrument_classes[self.instruments].instruments()
+        self.instrument = self.instrument_classes[self.instruments].Ensemble()
 
     @param.depends('instruments', 'confirmed')
     def widgets(self) -> pn.Row:

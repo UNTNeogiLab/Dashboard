@@ -1,39 +1,51 @@
 import numpy as np
 import time
-
-from ..instrumentsbase import InstrumentsBase
+from ... import utils
+from ..ensemblebase import EnsembleBase
 import param
 import neogiinstruments
 import panel as pn
 
-name = "WavelengthPoweredCalib"
+name = "stellarnet"
 
 
-class instruments(InstrumentsBase):
+def get_calibs() -> list:
+    """
+    Scans for calibration files
+
+    :return: list of all calibration files
+    :rtype: list of PosixPath
+    """
+    return list(utils.scan_directory({"WavelengthPoweredCalib": None}).keys())
+
+
+class Ensemble(EnsembleBase):
     wavstart = param.Integer(default=780)
     wavend = param.Integer(default=800)
     wavstep = param.Integer(default=2)
     pstart = param.Integer(default=0)
     pstop = param.Integer(default=10)
     pstep = param.Number(default=0.5)
-    pwait = param.Integer(default=1)
     mai_time = param.Integer(default=30)
+    pwait = param.Integer(default=1)
     type = name
-    data = "WavelengthPoweredCalib"
-    dimensions = ["wavelength", "Polarization"]
+    data = "stellarnet"
+    dimensions = ["power"]
     cap_coords = []
-    loop_coords = ["wavelength", "Polarization"]
-    datasets = ["Pwr", "Pwrstd", "Vol", "Volstd"]
+    loop_coords = ["wavelength", "power"]
     debug = param.Boolean(default=False)
     live = False
+    files = get_calibs()
+    if len(files) is 0:
+        print("Needs calibration file ")
+    calibration_file = param.ObjectSelector(objects=files, default=files[0])
 
     def __init__(self):
         super().__init__()
         self.filename = "calib/WavelengthPowerCalib.zarr"
         self.rotator = neogiinstruments.rotator("rotator")
         self.MaiTai = neogiinstruments.MaiTai()
-        self.PowerMeter = neogiinstruments.PowerMeter()
-        self.Photodiode = neogiinstruments.Photodiode()
+        self.StellarNet = neogiinstruments.StellarNet()
 
     def wav_step(self, xs):
         self.MaiTai.instrument.Set_Wavelength(xs[0])
@@ -45,7 +57,7 @@ class instruments(InstrumentsBase):
             print(f'starting loop at {xs[0]}')
         if self.debug:
             print("Homing")
-        self.rotator.instrument.home()
+        self.pow_step(xs)
         if not self.debug:
             time.sleep(5)
         if self.debug:
@@ -62,36 +74,30 @@ class instruments(InstrumentsBase):
         self.coords = {
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
                            "values": self.wavelength, "function": self.wav_step},
-            "Polarization": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
-                             "values": self.Polarization, "function": self.pol_step},
+            "power": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
+                      "values": self.power, "function": self.pow_step},
         }
+        self.pc_reverse = utils.interpolate(self.calibration_file, pwr=self.power)
 
     def init_vars(self):
         self.wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
-        self.Polarization = np.arange(self.pstart, self.pstop, self.pstep)
+        self.power = np.arange(self.pstart, self.pstop, self.pstep)
 
-    def pol_step(self, xs):
-        pol = xs[1]
+    def pow_step(self, xs):
+        pow = xs[1]
+        wav = xs[0]
+        pol = self.pc_reverse.sel(power=pow, wavelength=wav).values
         if self.debug:
             print(f"moving to {pol}")
         self.rotator.instrument.move_abs(pol)
         time.sleep(self.pwait)
 
     def get_frame(self, xs):
-        if self.debug:
-            print("Gathering power data")
-        p = self.PowerMeter.instrument.PowAvg()
-        Pwr = p[0]
-        Pwrstd = p[1]
-        if self.debug:
-            print("Gathering Photodiode data")
-        V, Vstd = self.Photodiode.instrument.gather_data()
-        if self.debug:
-            print(f"Pwr: {Pwr}, Pwrstd: {Pwrstd}, Vol: {V}, Volstd: {Vstd}")
-        return {"Pwr": Pwr, "Pwrstd": Pwrstd, "Vol": V, "Volstd": Vstd}
+        data = self.StellarNet.GetSpec()[1]
+        return {"ds1": data}
 
     def widgets(self):
         if self.initialized:
-            return pn.Column(self.rotator.view, self.PowerMeter.view, self.Photodiode.view, self.MaiTai.view)
+            return pn.Column(self.rotator.view, self.StellarNet.view, self.MaiTai.view)
         else:
             return None

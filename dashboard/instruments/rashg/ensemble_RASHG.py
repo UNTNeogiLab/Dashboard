@@ -3,7 +3,7 @@ import holoviews as hv
 import numpy as np
 import neogiinstruments
 import xarray as xr
-from ..instrumentsbase import InstrumentsBase
+from ..ensemblebase import EnsembleBase
 import time
 import param
 import panel as pn
@@ -24,7 +24,7 @@ def get_calibs() -> list:
     return list(utils.scan_directory({"WavelengthPoweredCalib": None}).keys())
 
 
-class instruments(InstrumentsBase):
+class ensemble(EnsembleBase):
     x1 = param.Integer(default=0, bounds=(0, 2047))
     x2 = param.Integer(default=100, bounds=(0, 2047))
     y1 = param.Integer(default=0, bounds=(0, 2047))
@@ -63,6 +63,9 @@ class instruments(InstrumentsBase):
 
     def start(self):
         print("Gathering Data, Get Out")
+        self.r_bot.home()
+        self.r_top.home()
+        self.atten.home()
         if not self.debug:
             # time.sleep(120)
             pass
@@ -166,6 +169,7 @@ class instruments(InstrumentsBase):
     def wav_step(self, xs):
         time.sleep(self.wavwait)
         self.MaiTai.instrument.Set_Wavelength(xs[0])
+        self.pow_step_func(xs[1])
 
     def widgets(self):
         if self.initialized:

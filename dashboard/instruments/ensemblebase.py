@@ -4,7 +4,7 @@ Specifies base class
 import param
 
 
-class InstrumentsBase(param.Parameterized):
+class EnsembleBase(param.Parameterized):
     """
     Base class for all instruments. Other instrument groups should inherit from this
     """

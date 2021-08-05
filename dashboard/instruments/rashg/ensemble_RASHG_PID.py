@@ -2,19 +2,19 @@ import math
 import holoviews as hv
 import numpy as np
 import neogiinstruments
-from dashboard.instruments.instrumentsbase import InstrumentsBase
+from dashboard.instruments.ensemblebase import EnsembleBase
 import simple_pid
 import time
 import param
 import panel as pn
-from . import instruments_RASHG
+from . import ensemble_RASHG
 
 name = "RASHG_PID"
 
 hv.extension('bokeh')
 
 
-class instruments(instruments_RASHG.instruments):
+class Ensemble(ensemble_RASHG.ensemble):
     pid_time = param.Number(default=1)
     pid = simple_pid.PID()
 
