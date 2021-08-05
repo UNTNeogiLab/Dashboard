@@ -4,14 +4,14 @@ from dask.distributed import Client
 import param
 import panel as pn
 
-from . import types
 from .. import utils
 
 
 class Viewer(param.Parameterized):
     filename: str = param.ObjectSelector()
 
-    def __init__(self, filename: str = None):
+    def __init__(self, types, filename: str = None):
+        self.types = types
         """
 
         :param filename: specify default filename, otherwise choose files
@@ -34,7 +34,7 @@ class Viewer(param.Parameterized):
         :rtype: None
 
         """
-        self.file_dict = utils.getDir(types)
+        self.file_dict = utils.getDir(self.types)
         if len(self.file_dict) == 0:
             raise Exception("must have at least one file")
         self.files = list(self.file_dict.keys())

@@ -1,7 +1,7 @@
 from typing import Union
 
 import param
-from . import gui, instruments
+from . import gui
 import panel as pn
 import holoviews as hv
 from dask.diagnostics import ProgressBar
@@ -13,13 +13,15 @@ pbar.register()
 
 
 class Instrumental(param.Parameterized):
-    instrument_classes = instruments
-    instruments = list(instruments.keys())
-    instruments = param.ObjectSelector(default=instruments[0], objects=instruments)  # us
+    instruments = param.ObjectSelector()  # us
     confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
 
-    def __init__(self):
+    def __init__(self, instruments):
+        self.instrument_classes = instruments
+        instruments = list(instruments.keys())
+        self.param["instruments"].default = instruments[0]
+        self.param["instruments"].objects = instruments
         """
 
         :rtype: object

@@ -1,9 +1,12 @@
+"""
+Provides collections of instruments for gathering data
+"""
 import os
 from pkgutil import iter_modules
 from pathlib import Path
 from importlib import import_module
 from . import gui
-
+from . import dashboard
 instruments = {}
 for directory in os.scandir(str(Path(__file__).resolve().parent)):
     if directory.is_dir():
@@ -17,4 +20,4 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                         print(f"{file} import failed. Exception {Exception}")
                     else:
                         instruments[module.name] = module
-from . import dashboard
+

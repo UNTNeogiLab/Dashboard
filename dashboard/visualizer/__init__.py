@@ -1,6 +1,10 @@
+"""
+Visualizer for various data types
+"""
 import os
 from pathlib import Path
 from importlib import import_module
+from .visualizer import Viewer
 
 types = {}
 for directory in os.scandir(str(Path(__file__).resolve().parent)):
@@ -14,4 +18,3 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                     print(f"{file} import failed")
                 else:
                     types[module.data_type] = module
-from .visualizer import Viewer

@@ -3,12 +3,12 @@ import param
 import panel as pn
 
 from dashboard.instruments.dashboard import Instrumental
-from . import visualizer
+from .visualizer import types, Viewer
 import argparse
 import time
 import socket
 import sys
-from . import instruments
+from .instruments import instruments, dashboard
 from typing import Union, Optional
 
 pn.extension('plotly')
@@ -26,7 +26,7 @@ def is_port_in_use(port):
 
 # wrapper around viewer class to interface with instrumental class
 class combined(param.Parameterized):
-    applet: Union[Instrumental, visualizer.Viewer]
+    applet: Union[Instrumental, Viewer]
     applets = ["viewer", "instrumental"]
     applets = param.ObjectSelector(default="instrumental", objects=applets)
     button = pn.widgets.Button(name="STOP", button_type='primary')
@@ -37,7 +37,7 @@ class combined(param.Parameterized):
         :rtype: None
         """
         super().__init__()
-        self.applet = instruments.dashboard.Instrumental()
+        self.applet = dashboard.Instrumental(instruments)
 
     @param.depends('applets', watch=True)
     def load(self) -> None:
@@ -47,16 +47,16 @@ class combined(param.Parameterized):
         :rtype: None
         """
         if self.applets == "viewer":
-            self.applet = visualizer.Viewer()
+            self.applet = Viewer(types)
         elif self.applets == "instrumental":
 
-            self.applet = instruments.dashboard.Instrumental()
+            self.applet = dashboard.Instrumental(instruments)
 
     @param.depends('applets')
     def widgets(self) -> Union[pn.Row, pn.Column]:
         """
         Renders widgets from the applet
-        
+
         :return: widgets
         :rtype: pn.Column
         """
@@ -135,7 +135,7 @@ def main() -> None:
         serve()
     elif args.filename:
         start = time.time()
-        view = visualizer.Viewer(filename=args.filename)  # use port 8787 to view stats
+        view = Viewer(filename=args.filename)  # use port 8787 to view stats
         view.view().show()
         end = time.time()
         print(end - start)
