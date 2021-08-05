@@ -27,6 +27,6 @@ class Ensemble(ensemble_RASHG.Ensemble):
 
     def widgets(self):
         if self.initialized:
-            return pn.Column(super().widgets) 
+            return pn.Column(super().widgets)
         else:
             return None

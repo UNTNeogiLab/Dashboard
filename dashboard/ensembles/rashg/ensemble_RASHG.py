@@ -63,8 +63,8 @@ class Ensemble(EnsembleBase):
 
     def start(self):
         print("Gathering Data, Get Out")
-        self.r_bot.home()
-        self.r_top.home()
+        self.rbot.home()
+        self.rtop.home()
         self.atten.home()
         if not self.debug:
             # time.sleep(120)
