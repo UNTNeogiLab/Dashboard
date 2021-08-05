@@ -1,5 +1,5 @@
 """
-Provides collections of instruments for gathering data
+Provides collections of ensembles for gathering data
 """
 import os
 from pathlib import Path

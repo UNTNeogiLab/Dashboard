@@ -112,7 +112,11 @@ class gui(param.Parameterized):
         The generator should be lazy and not overflow your memory. Theoretically.
         '''
         for dim in self.instruments.loop_coords:
-            self.mask[dim] = min(self.instruments.coords[dim]["values"])
+            try:
+                self.mask[dim] = min(self.instruments.coords[dim]["values"])
+            except ValueError:
+                print(f"Empty list or 0 pol step. Check your parameters")
+                sys.exit()
         for xs in product(*ranges):
             dim, dim_num = self.find_dim(xs)
             if dim_num == 0:

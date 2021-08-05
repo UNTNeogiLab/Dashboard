@@ -6,7 +6,7 @@ import param
 
 class EnsembleBase(param.Parameterized):
     """
-    Base class for all instruments. Other instrument groups should inherit from this
+    Base class for all ensembles. Other instrument groups should inherit from this
     """
     initialized = param.Boolean(default=False, precedence=-1)  # dummy variable to make code work
     type = "base"
