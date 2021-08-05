@@ -82,7 +82,7 @@ class Combined(param.Parameterized):
         :return: applet view
         :rtype: pn.Column
         """
-        return self.applet.gView
+        return self.applet.graph
 
     def quit(self, event: tuple = None) -> None:
         """

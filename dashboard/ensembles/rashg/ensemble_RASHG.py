@@ -169,7 +169,7 @@ class Ensemble(EnsembleBase):
     def wav_step(self, xs):
         time.sleep(self.wavwait)
         self.MaiTai.instrument.Set_Wavelength(xs[0])
-        self.pow_step_func(xs[1])
+        self.pow_step_func(xs)
 
     def widgets(self):
         if self.initialized:

@@ -1,6 +1,6 @@
 """
 Renders a dashboard using a selected ensembles file and gui.py
-Main function is to select the instrument
+Main function is to select the ensemble
 """
 from typing import Union
 import param
@@ -20,25 +20,25 @@ pbar.register()
 class Ensembles(param.Parameterized):
     """
     Renders a dashboard using a selected ensembles file and gui.py
-    Main function is to select the instrument
+    Main function is to select the ensemble
     """
     ensembles = param.ObjectSelector()  # us
     confirmed = param.Boolean(default=False, precedence=-1)
     button = pn.widgets.Button(name='Confirm', button_type='primary')
 
-    def __init__(self, instruments):
-        self.instrument_classes = instruments
-        instruments = list(instruments.keys())
+    def __init__(self, ensembles):
+        self.ensemble_classes = ensembles
+        ensembles = list(ensembles.keys())
         i = 0
-        while i < len(instruments):
+        while i < len(ensembles):
             try:
-                self.param["ensembles"].default = instruments[i]
+                self.param["ensembles"].default = ensembles[i]
             except stellarnet.stellarnet.NotFoundError:
                 print("Skipping stellarnet due to lack of stellarnet")
             except:
-                print(f"{instruments[i]} failed")
+                print(f"{ensembles[i]} failed")
             i += 1
-        self.param["ensembles"].objects = instruments
+        self.param["ensembles"].objects = ensembles
         """
 
         :rtype: object
@@ -50,12 +50,12 @@ class Ensembles(param.Parameterized):
     @param.depends('ensembles', watch=True)
     def load(self) -> None:
         """
-        Loads selected instrument
+        Loads selected ensemble
         :rtype: None
         """
         self.confirmed = False
         self.button.disabled = False
-        self.ensemble = self.instrument_classes[self.ensembles].Ensemble()
+        self.ensemble = self.ensemble_classes[self.ensembles].Ensemble()
 
     @param.depends('ensembles', 'confirmed')
     def widgets(self) -> pn.Row:
@@ -68,6 +68,11 @@ class Ensembles(param.Parameterized):
                       self.ensemble.widgets)
 
     def initialize(self, event=None):
+        """
+        Initializes the gui with the selected ensemble
+        :param event:
+        :return:
+        """
         self.ensemble.initialize()
         self.gui.initialize(self.ensemble)  # initialize the GUI with the ensembles
         self.button.disabled = True
@@ -75,7 +80,7 @@ class Ensembles(param.Parameterized):
         self.gui.live_view()  # start live view immediately
 
     @param.depends('ensembles', 'confirmed')
-    def gView(self) -> Union[None, pn.Row]:
+    def graph(self) -> Union[None, pn.Row]:
         # more complicated due to ensembles and gui relationship
         if self.confirmed:
             return pn.Row(self.gui.output)

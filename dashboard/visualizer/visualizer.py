@@ -1,3 +1,6 @@
+"""
+Contains Viewer class
+"""
 from typing import Union
 
 from dask.distributed import Client
@@ -8,6 +11,9 @@ from .. import utils
 
 
 class Viewer(param.Parameterized):
+    """
+    Allows user to select file and loads appropriate visualizer for file
+    """
     filename: str = param.ObjectSelector()
 
     def __init__(self, types, filename: str = None):
@@ -54,14 +60,14 @@ class Viewer(param.Parameterized):
         return pn.Column(self.param, self.grapher.widgets(), self.dask)
 
     @param.depends('filename')
-    def gView(self) -> Union[pn.Row, pn.Column]:
+    def graph(self) -> Union[pn.Row, pn.Column]:
         return self.grapher.view()
 
     def dask(self):
         return self.client
 
     def view(self):
-        return pn.Row(self.widgets, self.gview)
+        return pn.Row(self.widgets, self.graph)
 
     def stop(self):
         pass
