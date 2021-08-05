@@ -1,3 +1,4 @@
+import sys
 import time
 import xarray as xr
 import numpy as np
@@ -143,7 +144,7 @@ class gui(param.Parameterized):
         print("Finished")
         self.cPol = self.cPol + 1
         self.data.close()
-        quit()
+        sys.exit()
 
     def find_dim(self, xs):
         typed_a = np.array(xs, dtype=np.float64)

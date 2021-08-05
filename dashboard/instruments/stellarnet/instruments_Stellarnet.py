@@ -6,7 +6,7 @@ import param
 import neogiinstruments
 import panel as pn
 
-name = "Stellarnet"
+name = "stellarnet"
 
 
 def get_calibs() -> list:
@@ -29,7 +29,7 @@ class instruments(instruments_base):
     mai_time = param.Integer(default=30)
     pwait = param.Integer(default=1)
     type = name
-    data = "Stellarnet"
+    data = "stellarnet"
     dimensions = ["power"]
     cap_coords = []
     loop_coords = ["wavelength", "power"]
