@@ -92,7 +92,7 @@ class Ensemble(EnsembleBase):
         self.rotator.instrument.move_abs(pol)
         time.sleep(self.pwait)
 
-    def get_frame(self, xs):
+    def get_frame(self, coords):
         data = self.StellarNet.GetSpec()[1]
         return {"ds1": data}
 

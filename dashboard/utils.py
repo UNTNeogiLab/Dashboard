@@ -30,8 +30,8 @@ def interp(y, pol, pwr) -> np.array:
     :param pwr: new power values
     :return: list of polarizations for the new power values
     """
-    f = interp1d(y, pol, fill_value="extrapolate")
-    return f(pwr)
+    function = interp1d(y, pol, fill_value="extrapolate")
+    return function(pwr)
 
 
 def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5)) -> xr.DataArray:

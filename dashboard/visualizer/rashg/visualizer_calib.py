@@ -14,6 +14,7 @@ DATA_TYPE = "WavelengthPoweredCalib"
 
 
 class Grapher(param.Parameterized):
+    """visualizer for calibration files"""
     dataset = param.ObjectSelector(objects=["Pwr", "Pwrstd", "Vol", "Volstd"], default="Pwr")
     wavelength = param.Selector()
 
@@ -21,9 +22,9 @@ class Grapher(param.Parameterized):
         """
         Opens selected dataset
         """
-        self.ds = xr.open_zarr(self.filename)
-        self.param['wavelength'].objects = self.ds["Pwr"].coords['wavelength'].values.tolist()
-        self.wavelength = self.ds["Pwr"].coords["wavelength"].min().values
+        self.dataset = xr.open_zarr(self.filename)
+        self.param['wavelength'].objects = self.dataset["Pwr"].coords['wavelength'].values.tolist()
+        self.wavelength = self.dataset["Pwr"].coords["wavelength"].min().values
 
     def __init__(self, filename, client_input):
         """
@@ -41,7 +42,7 @@ class Grapher(param.Parameterized):
         Navigation graph
         :return:
         """
-        output = self.ds[self.dataset].sel(wavelength=self.wavelength)
+        output = self.dataset[self.dataset].sel(wavelength=self.wavelength)
         opts = [hv.opts.Image(colorbar=True, height=600,
                               title=f"Wavelength: {self.wavelength}",
                               tools=['hover'], framewise=True, logz=True)]

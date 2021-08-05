@@ -88,4 +88,8 @@ class Ensembles(param.Parameterized):
             pass
 
     def stop(self):
+        """
+        stops the GUI if possible
+        :return: None
+        """
         self.gui.stop()

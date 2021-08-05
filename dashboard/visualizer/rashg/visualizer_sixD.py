@@ -1,3 +1,6 @@
+"""
+Visualizer for RASHG data
+"""
 from datetime import timedelta
 from numba import vectorize, float64
 import pandas as pd
@@ -43,6 +46,9 @@ def function(phi: float64, delta: float64, A: float64, B: float64, theta: float6
 
 
 class Grapher(param.Parameterized):
+    """
+    Visualizer for RASHG data
+    """
     zdim: Dimension
     Orientation = param.Integer(default=0, bounds=(0, 1))
     wavelength = param.Selector()
@@ -154,11 +160,13 @@ class Grapher(param.Parameterized):
     def title(self):
         if self.selected:
             return pn.pane.Markdown(
-                f'''##{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, power: {self.power},x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}''',
+                f'''##{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, power: {self.power},
+                x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}''',
                 width=1800)
         else:
             return pn.pane.Markdown(
-                f'''##{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, power: {self.power}, Average across all points''',
+                f'''##{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, power: {self.power}, 
+                Average across all points''',
                 width=1800)
 
     @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
@@ -172,17 +180,18 @@ class Grapher(param.Parameterized):
                 y=slice(self.y0,
                         self.y1)).mean(
                 dim=['x', 'y'])
-            title = f'''{self.fname}: Orientation: {self.Orientation}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
-        self.PolarizationDim = hv.Dimension('Polarization', range=utils.get_range('Polarization', self.coords),
-                                            unit=self.attrs['Polarization'])
-        self.wavelengthDim = hv.Dimension('wavelength', range=utils.get_range('wavelength', self.coords),
-                                          unit=self.attrs['wavelength'])
+            title = f'''{self.fname}: Orientation: {self.Orientation}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: 
+                    {self.y1}'''
+        self.polarization_dim = hv.Dimension('Polarization', range=utils.get_range('Polarization', self.coords),
+                                             unit=self.attrs['Polarization'])
+        self.wavelength_dim = hv.Dimension('wavelength', range=utils.get_range('wavelength', self.coords),
+                                           unit=self.attrs['wavelength'])
         line = hv.HLine(self.wavelength).opts(line_width=600 / self.coords['wavelength'].values.size, alpha=0.6)
         opts = [
             hv.opts.Image(cmap=self.colorMap, height=600, width=900, colorbar=True, title=title, tools=['hover'],
                           framewise=True, logz=True)]
-        return hv.Image(output).opts(opts).redim(wavelength=self.wavelengthDim,
-                                                 Polarization=self.PolarizationDim) * line
+        return hv.Image(output).opts(opts).redim(wavelength=self.wavelength_dim,
+                                                 Polarization=self.polarization_dim) * line
 
     @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def Polar(self, dataset="Polarization"):
@@ -191,29 +200,34 @@ class Grapher(param.Parameterized):
         overall = self.ds["heatmap_all"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
                                              power=self.power)
         if self.selected:
-            title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}'''
+            title = f'''{self.fname}: Orientation: {self.Orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: 
+            {self.x1}, y0: {self.y0}, y1: {self.y1} '''
             output = self.ds["ds1"].sel(Orientation=self.Orientation, wavelength=self.wavelength, power=self.power,
                                         x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
-            df = pd.DataFrame(np.vstack((output, theta_values, np.tile("Raw Data, over selected region", 180))).T,
-                              columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
+            data_frame = pd.DataFrame(
+                np.vstack((output, theta_values, np.tile("Raw Data, over selected region", 180))).T,
+                columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
             fitted = function(theta_radians, *self.fit())
-            df2 = pd.DataFrame(np.vstack((fitted, theta_values, np.tile("Fitted Data, to selected points", 180))).T,
-                               columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
-            df = df.append(df2)
+            data_frame2 = pd.DataFrame(
+                np.vstack((fitted, theta_values, np.tile("Fitted Data, to selected points", 180))).T,
+                columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
+            data_frame = data_frame.append(data_frame2)
         else:
-            title = f'''{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across all points'''
-            df = pd.DataFrame(np.vstack((overall, theta_values, np.tile("Raw Data, over all points", 180))).T,
-                              columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
+            title = f'''{self.fname}: Orientation: {self.Orientation},wavelength: {self.wavelength}, Average across 
+            all points '''
+            data_frame = pd.DataFrame(np.vstack((overall, theta_values, np.tile("Raw Data, over all points", 180))).T,
+                                      columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
             params = self.ds["fitted"].sel(Orientation=self.Orientation, wavelength=self.wavelength,
                                            power=self.power).values
             fitted = function(theta_radians, *params)
-            df2 = pd.DataFrame(np.vstack((fitted, theta_values, np.tile("Fitted Data, to all points", 180))).T,
-                               columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
-            df = df.append(df2)
-        df = df.astype({'Polarization': 'float', 'Intensity': "float", "Data": "string"})
-        return px.scatter_polar(df, theta="Polarization", r='Intensity', color='Data', title=title, start_angle=0,
+            data_frame2 = pd.DataFrame(np.vstack((fitted, theta_values, np.tile("Fitted Data, to all points", 180))).T,
+                                       columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
+            data_frame = data_frame.append(data_frame2)
+        data_frame = data_frame.astype({'Polarization': 'float', 'Intensity': "float", "Data": "string"})
+        return px.scatter_polar(data_frame, theta="Polarization", r='Intensity', color='Data', title=title,
+                                start_angle=0,
                                 direction="counterclockwise",
-                                range_r=(df['Intensity'].min() * 0.8, df['Intensity'].max() * 1.2), )
+                                range_r=(data_frame['Intensity'].min() * 0.8, data_frame['Intensity'].max() * 1.2), )
 
     def polars_to_file(self, event=None):
         start = time.time()
@@ -229,18 +243,19 @@ class Grapher(param.Parameterized):
             os.mkdir(folder)
         for power in powers:
             self.power = power
-            for Orientation in orientations:
+            for orientation in orientations:
                 selected = self.selected
-                self.Orientation = Orientation
+                self.Orientation = orientation
                 self.selected = selected
                 for wavelength in wavelengths:
                     selected = self.selected
                     self.wavelength = wavelength
                     self.selected = selected  # prevent it resetting like it should
                     if self.selected:
-                        title = f"{folder}/Polar_X{self.x0}:{self.x1}Y{self.y0}:{self.y1},O{Orientation}W{wavelength}P{power}.png"
+                        title = f"{folder}/Polar_X{self.x0}:{self.x1}Y{self.y0}:{self.y1},O{orientation}W{wavelength}" \
+                                f"P{power}.png "
                     else:
-                        title = f"{folder}/Polar_O{Orientation}W{wavelength}.png"
+                        title = f"{folder}/Polar_O{orientation}W{wavelength}.png"
                     self.Polar("degrees").write_image(title)
         self.nav()
         self.param["Orientation"].precedence = 1

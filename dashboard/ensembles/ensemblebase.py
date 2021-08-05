@@ -17,22 +17,46 @@ class EnsembleBase(param.Parameterized):
     gather = True
 
     def initialize(self):
+        """
+        Initializes the instrument. Runs when you hit confirm
+        :return:
+        """
         pass
 
-    def get_frame(self, xs):
-        pass
-
-    def live_call(self):
+    def get_frame(self, coords):
+        """
+        Captures the frame
+        :param coords: list of data in order of loop_coords
+        :return: data
+        """
         pass
 
     def widgets(self):
+        """
+        Widgets to pass to dashboard
+        :return:
+        """
         return self.param
 
     def start(self):
+        """
+        Any functions to run at start
+        :return:
+        """
         pass
 
     def stop(self):
+        """
+        Any functions to run at stop
+        :return:
+        """
         pass
 
     def graph(self, live=False):
+        """
+        returns a graph
+        :param live: whether or not it is a live view
+        :type live: bool
+        :return:
+        """
         return None

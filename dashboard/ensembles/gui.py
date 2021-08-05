@@ -1,3 +1,6 @@
+"""
+houses gui class
+"""
 import sys
 import time
 import xarray as xr
@@ -13,13 +16,23 @@ compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 
 
 @njit(cache=True)
-def compare(xs, dim_cache):
-    for i in range(0, len(xs)):
-        if xs[i] > dim_cache[i]:
+def compare(coords, dim_cache):
+    """
+    Get first different dimension
+    :param coords: new coordinates
+    :param dim_cache: old coordinates
+    :return: index of changed coordinate
+    """
+    for i in range(0, len(coords)):
+        if coords[i] > dim_cache[i]:
             return i
 
 
 class gui(param.Parameterized):
+    """
+    Essentially the backbone of the data collection
+    Loops through dimensions
+    """
     cPol = param.Number(default=0, precedence=-1)
     institution = param.String(default="University of North Texas")
     sample = param.String(default="MoS2")
@@ -33,6 +46,7 @@ class gui(param.Parameterized):
 
     def __init__(self):
         super().__init__()
+        self.callback = pn.state.add_periodic_callback(self.live_view, period=self.live_refresh * 1000,start=False)
         self.button.disabled = True
         self.button2.disabled = True
 
@@ -44,7 +58,7 @@ class gui(param.Parameterized):
         self.button.on_click(self.gather_data)
         if self.instruments.live:
             self.live = True
-            self.callback = pn.state.add_periodic_callback(self.live_view, period=self.live_refresh * 1000)
+            self.callback.start()
         exclude = ["cPol", "live"]
         for param in self.param:
             if not param in exclude:

@@ -128,9 +128,9 @@ class Ensemble(EnsembleBase):
         self.pwr = np.arange(self.pow_start, self.pow_stop, self.pow_step, dtype=np.uint16)
         self.pc_reverse = utils.interpolate(self.calibration_file, self.pwr)
 
-    def get_frame(self, xs):
-        o = xs[2]
-        p = xs[3]
+    def get_frame(self, coords):
+        o = coords[2]
+        p = coords[3]
         if o == 1:
             sys_offset = 45
         else:
@@ -138,6 +138,7 @@ class Ensemble(EnsembleBase):
         pos = p * 180 / np.pi
         pos_top = int(pos + sys_offset)
         pos_bot = int(pos)
+        time.sleep()
         if self.debug:
             print(f"Moving A to {pos_top}")
         self.rtop.instrument.move_abs(pos_top)
