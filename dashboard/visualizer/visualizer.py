@@ -18,10 +18,11 @@ class Viewer(param.Parameterized):
 
     def __init__(self, types, filename: str = None):
         self.types = types
-        """
-
+        """        
         :param filename: specify default filename, otherwise choose files
         :type filename: str
+        :param types: dictionary matching datatypes to modules to open them
+        :type types: dict
         :rtype: Viewer
         """
         super().__init__()
@@ -52,22 +53,44 @@ class Viewer(param.Parameterized):
         Loads currently selected file
         """
         self.reload_files()  # temp solution
-        visualizer = self.file_dict[self.filename].grapher
+        visualizer = self.file_dict[self.filename].Grapher
         self.grapher = visualizer(self.filename, self.client)
 
     @param.depends('filename')
     def widgets(self) -> pn.Column:
+        """
+        Renders widgets for selected visualizer
+        :return: pn.Column
+        """
         return pn.Column(self.param, self.grapher.widgets(), self.dask)
 
     @param.depends('filename')
     def graph(self) -> Union[pn.Row, pn.Column]:
+        """
+        Returns graph from the visualizer
+        :return:
+        """
         return self.grapher.view()
 
     def dask(self):
+        """
+        Displays dask client
+        :return:
+        """
         return self.client
 
-    def view(self):
+    def view(self) -> Union[pn.Row, pn.Column]:
+        """
+        Combines the widgets and graph to form a view
+        :return: view
+        :rtype: Union[pn.Row, pn.Column]
+        """
         return pn.Row(self.widgets, self.graph)
 
     def stop(self):
+        """
+        Tries to stop the visualizer
+        Currently doesn't do anything
+        :return:
+        """
         pass

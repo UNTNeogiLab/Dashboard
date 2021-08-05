@@ -17,4 +17,4 @@ for directory in os.scandir(str(Path(__file__).resolve().parent)):
                 except ImportError:
                     print(f"{file} import failed")
                 else:
-                    types[module.data_type] = module
+                    types[module.DATA_TYPE] = module

@@ -16,8 +16,7 @@ from ... import utils
 pn.extension('plotly')
 hv.extension('bokeh')
 
-data_type = "RASHG"
-name = "sixD"
+DATA_TYPE = "RASHG"
 
 
 @vectorize([float64(float64, float64, float64, float64, float64, float64)])
@@ -43,7 +42,7 @@ def function(phi: float64, delta: float64, A: float64, B: float64, theta: float6
     return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
 
 
-class grapher(param.Parameterized):
+class Grapher(param.Parameterized):
     zdim: Dimension
     Orientation = param.Integer(default=0, bounds=(0, 1))
     wavelength = param.Selector()

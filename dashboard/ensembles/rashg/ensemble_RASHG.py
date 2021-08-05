@@ -135,7 +135,7 @@ class Ensemble(EnsembleBase):
             sys_offset = 45
         else:
             sys_offset = 0
-        pos = p * 90 / np.pi
+        pos = p * 180 / np.pi
         pos_top = int(pos + sys_offset)
         pos_bot = int(pos)
         if self.debug:

@@ -15,8 +15,6 @@ class EnsembleBase(param.Parameterized):
     datasets = ["ds1"]
     live = True
     gather = True
-    def __init__(self):
-        super().__init__()
 
     def initialize(self):
         pass
