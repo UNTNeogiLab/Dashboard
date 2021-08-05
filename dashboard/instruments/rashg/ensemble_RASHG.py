@@ -24,7 +24,7 @@ def get_calibs() -> list:
     return list(utils.scan_directory({"WavelengthPoweredCalib": None}).keys())
 
 
-class ensemble(EnsembleBase):
+class Ensemble(EnsembleBase):
     x1 = param.Integer(default=0, bounds=(0, 2047))
     x2 = param.Integer(default=100, bounds=(0, 2047))
     y1 = param.Integer(default=0, bounds=(0, 2047))
