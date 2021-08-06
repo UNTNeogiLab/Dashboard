@@ -34,9 +34,11 @@ def interp(y, pol, pwr) -> np.array:
     return function(pwr)
 
 
-def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5)) -> xr.DataArray:
+def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5), throw: int = 0) -> xr.DataArray:
     """
     Interpolates a calibration file to get Polarizations for given powers and wavelength
+    :param throw: throw everything at this polarization and lower
+    :type throw: int
     :param filename: calibration file to interpolate from
     :type filename: pathlib.PosixPath
     :param pwr: powers to interpolate to
@@ -45,6 +47,7 @@ def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5
     :rtype: xr.DataArray
     """
     power_calibration = xr.open_dataset(filename, engine="zarr")["Pwr"]
+    power_calibration = power_calibration.where(power_calibration.Polarization > throw)
     pc_pol = power_calibration.coords["Polarization"]
     pc_reverse = xr.apply_ufunc(interp, power_calibration, input_core_dims=[["Polarization"]], vectorize=True,
                                 output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
