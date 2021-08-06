@@ -11,7 +11,7 @@ import param
 import panel as pn
 from dask.diagnostics import ProgressBar
 from .visualizer import types, Viewer
-from .ensembles import instruments, dashboard
+from .ensembles import instruments, gui
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
@@ -38,7 +38,7 @@ class Combined(param.Parameterized):
     """
     Combined viewer for Visualizer and Instruments
     """
-    applet: Union[dashboard.Ensembles, Viewer]
+    applet: Union[gui.Gui, Viewer]
     applets = ["viewer", "instrumental"]
     applets = param.ObjectSelector(default="instrumental", objects=applets)
     button = pn.widgets.Button(name="STOP", button_type='primary')
@@ -49,7 +49,7 @@ class Combined(param.Parameterized):
         :rtype: None
         """
         super().__init__()
-        self.applet = dashboard.Ensembles(instruments)
+        self.applet = gui.Gui(instruments)
 
     @param.depends('applets', watch=True)
     def load(self) -> None:
@@ -62,7 +62,7 @@ class Combined(param.Parameterized):
             self.applet = Viewer(types)
         elif self.applets == "instrumental":
 
-            self.applet = dashboard.Ensembles(instruments)
+            self.applet = gui.Gui(instruments)
 
     @param.depends('applets')
     def widgets(self) -> Union[pn.Row, pn.Column]:

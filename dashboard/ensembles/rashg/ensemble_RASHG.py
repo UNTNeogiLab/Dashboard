@@ -138,7 +138,6 @@ class Ensemble(EnsembleBase):
         pos = p * 180 / np.pi
         pos_top = int(pos + sys_offset)
         pos_bot = int(pos)
-        time.sleep()
         if self.debug:
             print(f"Moving A to {pos_top}")
         self.rtop.instrument.move_abs(pos_top)

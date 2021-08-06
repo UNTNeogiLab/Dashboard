@@ -11,6 +11,7 @@ from numba import njit
 import os
 import zarr
 from tqdm.contrib.itertools import product
+import stellarnet
 
 compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 
@@ -39,35 +40,60 @@ class Gui(param.Parameterized):
     sample = param.String(default="MoS2")
     GUIupdate = param.Boolean(default=True)
     button = pn.widgets.Button(name='Gather Data', button_type='primary')
-    button2 = pn.widgets.Button(name='refresh', button_type='primary')
     live = param.Boolean(default=False, precedence=-1)
     refresh = 5  # refresh every 5 seconds #make it a parameter
     live_refresh = param.Integer(default=5)
     dim_cache = np.array([0, 0, 0, 0])
+    ensembles = param.ObjectSelector()  # Initializes a blank object selector, fills it in later
+    confirmed = param.Boolean(default=False, precedence=-1)
+    button2 = pn.widgets.Button(name='Confirm', button_type='primary')
 
-    def __init__(self):
+    def __init__(self, ensembles):
+        self.ensemble_classes = ensembles
+        ensembles = list(ensembles.keys())
+        i = 0
+        while i < len(ensembles):
+            try:
+                self.param["ensembles"].default = ensembles[i]
+            except stellarnet.stellarnet.NotFoundError:
+                print("Skipping stellarnet due to lack of stellarnet")
+            except:
+                print(f"{ensembles[i]} failed")
+            i += 1
+        self.param["ensembles"].objects = ensembles
         super().__init__()
         self.callback = pn.state.add_periodic_callback(self.live_view, period=self.live_refresh * 1000, start=False)
         self.button.disabled = True
-        self.button2.disabled = True
+        self.load()
+        self.button2.on_click(self.initialize)
 
-    def initialize(self, ensemble):
+    @param.depends('ensembles', watch=True)
+    def load(self) -> None:
+        """
+        Loads selected ensemble
+        :rtype: None
+        """
+        self.confirmed = False
+        self.ensemble = self.ensemble_classes[self.ensembles].Ensemble()
+
+    def initialize(self, event=None):
         """
         Initializes the GUI. Sets all parameters to constant and allows the user to start the expirement. If the live
         view is enabled, start the callback.
 
-        :param ensemble:
         :return: None
         """
-        self.ensemble = ensemble
+        self.ensemble.initialize()
         self.init_vars()
+        self.button2.disabled = True
+        self.confirmed = True
         if self.ensemble.gather:
             self.button.disabled = False
         self.button.on_click(self.gather_data)
         if self.ensemble.live:
             self.live = True
             self.callback.start()
-        exclude = ["cPol", "live"]
+        exclude = ["c_pol", "live"]
         for parameter in self.param:
             if not parameter in exclude:
                 self.param[parameter].constant = True
@@ -194,31 +220,24 @@ class Gui(param.Parameterized):
                 print("Updating live view")
             self.c_pol = self.c_pol + 1
 
-    @param.depends('cPol')
-    def graph(self):
+    @param.depends('c_pol')
+    def graph(self) -> pn.Row():
         """
         returns the graph from the ensemble
 
         :return:
         """
-        return self.ensemble.graph(live=self.live)
+        if self.confirmed and self.ensemble.live:
+            return self.ensemble.graph(live=self.live)
+        return pn.Row()
 
-    def widgets(self) -> pn.Column:
+    def widgets(self) -> pn.Row:
         """
-        All this does now is display the Gather Data button
+        Renders everything but the graph
         :return:
         """
-        return pn.Column(self.button)
-
-    def output(self) -> pn.Pane:
-        """
-        Returns the graph from the ensemble
-        :return:
-        """
-        if self.ensemble.live:
-            return pn.Pane(self.graph)
-        else:
-            return None
+        return pn.Row(pn.Column(self.param, self.button2, self.button), self.ensemble.param,
+                      self.ensemble.widgets)
 
     def stop(self):
         """
