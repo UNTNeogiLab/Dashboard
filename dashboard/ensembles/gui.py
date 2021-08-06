@@ -123,11 +123,18 @@ class Gui(param.Parameterized):
         # create variables; in this case, the only dependent variable is 'shg',
         # which is the shg intensity along the specified dimensions
         # populate coordinate dimensions
-
-        zero_array = [self.ensemble.coords[coord]["values"].size for coord in self.ensemble.dimensions]
-        zero_array[0] = 1
-        self.zeros = xr.DataArray(np.zeros(zero_array), dims=self.ensemble.dimensions)
-        self.datasets = {dataset: (self.ensemble.dimensions, self.zeros.copy(deep=True), self.attrs) for dataset in
+        dimensions = self.ensemble.dimensions
+        if type(dimensions) is list:
+            dimensions = {dataset: dimensions for dataset in self.ensemble.datasets}
+        self.cap_coords = self.ensemble.cap_coords
+        if type(self.cap_coords) is list:
+            self.cap_coords = {dataset: self.cap_coords for dataset in self.ensemble.datasets}
+        zeros = {}
+        for dataset in self.ensemble.datasets:
+            zero_array = [self.ensemble.coords[coord]["values"].size for coord in dimensions[dataset]]
+            zero_array[0] = 1
+            zeros[dataset] = xr.DataArray(np.zeros(zero_array), dims=dimensions[dataset])
+        self.datasets = {dataset: (dimensions[dataset], zeros[dataset], self.attrs) for dataset in
                          self.ensemble.datasets}
         self.encoders = {dataset: {"compressor": compressor} for dataset in self.ensemble.datasets}
         # Get filename
@@ -172,7 +179,7 @@ class Gui(param.Parameterized):
                 if first == 0:
                     first = 1
                 elif first == 1:
-                    self.data.to_zarr(self.ensemble.filename, encoding=self.encoders, consolidated=True)
+                    self.data.to_zarr(self.ensemble.filename, encoding=self.encoders)
                     first += 1
                 else:
                     self.data.to_zarr(self.ensemble.filename, append_dim=self.ensemble.loop_coords[0])
@@ -189,7 +196,7 @@ class Gui(param.Parameterized):
             data = self.ensemble.get_frame(coords)
             for dataset in self.ensemble.datasets:
                 self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset],
-                                                                 dims=self.ensemble.cap_coords)
+                                                                 dims=self.cap_coords[dataset])
             if self.GUIupdate:
                 self.c_pol += 1  # refresh the GUI
         self.data.to_zarr(self.ensemble.filename, append_dim=self.ensemble.loop_coords[0])

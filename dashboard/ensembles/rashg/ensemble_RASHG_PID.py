@@ -7,6 +7,7 @@ from . import ensemble_RASHG
 name = "RASHG_PID"
 
 hv.extension('bokeh')
+raise Exception("This code doesn't even work why are you using it???")
 
 
 class Ensemble(ensemble_RASHG.Ensemble):

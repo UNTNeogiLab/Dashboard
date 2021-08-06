@@ -1,10 +1,12 @@
-import numpy as np
 import time
-from ... import utils
-from ..ensemblebase import EnsembleBase
-import param
+
 import neogiinstruments
+import numpy as np
 import panel as pn
+import param
+
+from ..ensemblebase import EnsembleBase
+from ... import utils
 
 name = "stellarnet"
 
@@ -31,17 +33,20 @@ class Ensemble(EnsembleBase):
     type = name
     data = "stellarnet"
     datasets = ["Stellarnet", "V", "Vstd"]
-    dimensions = ["wavelength", "power", "emission_wavelength"]
-    cap_coords = ["emission_wavelength"]
+    dimensions = {"Stellarnet": ["wavelength", "power", "emission_wavelength"], "V": ["wavelength", "power"],
+                  "Vstd": ["wavelength", "power"]}
+    cap_coords = {"Stellarnet": ["emission_wavelength"], "V": [], "Vstd": []}
     loop_coords = ["wavelength", "power"]
     debug = param.Boolean(default=False)
     live = False
-    files = get_calibs()
-    if len(files) is 0:
-        print("Needs calibration file ")
-    calibration_file = param.ObjectSelector(objects=files, default=files[0])
+    calibration_file = param.ObjectSelector()
 
     def __init__(self):
+        files = get_calibs()
+        if len(files) is 0:
+            print("Needs calibration file ")
+        self.param["calibration_file"].objects = files
+        self.param["calibration_file"].default = files[0]
         super().__init__()
         self.filename = "data/stellarnet.zarr"
         self.rotator = neogiinstruments.rotator("rotator")
@@ -105,9 +110,7 @@ class Ensemble(EnsembleBase):
     def get_frame(self, coords):
         data = self.StellarNet.instrument.GetSpec()[1]
         V, Vstd = self.Photodiode.instrument.gather_data()
-        v_tile = np.tile(V, self.emission_length)
-        v_std_tile = np.tile(Vstd, self.emission_length)
-        return {"Stellarnet": data, "V": v_tile, "Vstd": v_std_tile}
+        return {"Stellarnet": data, "V": V, "Vstd": Vstd}
 
     def widgets(self):
         if self.initialized:
