@@ -93,7 +93,7 @@ class Ensemble(EnsembleBase):
         time.sleep(self.pwait)
 
     def get_frame(self, coords):
-        data = self.StellarNet.GetSpec()[1]
+        data = self.StellarNet.instrument.GetSpec()[1]
         return {"ds1": data}
 
     def widgets(self):
