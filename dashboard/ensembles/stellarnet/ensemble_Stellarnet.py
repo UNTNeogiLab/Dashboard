@@ -30,6 +30,7 @@ class Ensemble(EnsembleBase):
     pwait = param.Integer(default=1)
     type = name
     data = "stellarnet"
+    datasets = ["Stellarnet", "V", "Vstd"]
     dimensions = ["wavelength", "power", "emission_wavelength"]
     cap_coords = ["emission_wavelength"]
     loop_coords = ["wavelength", "power"]
@@ -46,6 +47,7 @@ class Ensemble(EnsembleBase):
         self.rotator = neogiinstruments.rotator("rotator")
         self.MaiTai = neogiinstruments.MaiTai()
         self.StellarNet = neogiinstruments.StellarNet()
+        self.Photodiode = neogiinstruments.Photodiode()
 
     def wav_step(self, xs):
         self.MaiTai.instrument.Set_Wavelength(xs[0])
@@ -79,6 +81,7 @@ class Ensemble(EnsembleBase):
         wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
         power = np.arange(self.pstart, self.pstop, self.pstep)
         emission_wavelength = self.StellarNet.instrument.GetSpec()[0]
+        self.emission_length = len(emission_wavelength)
         self.coords = {
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
                            "values": wavelength, "function": self.wav_step},
@@ -101,10 +104,13 @@ class Ensemble(EnsembleBase):
 
     def get_frame(self, coords):
         data = self.StellarNet.instrument.GetSpec()[1]
-        return {"ds1": data}
+        V, Vstd = self.Photodiode.instrument.gather_data()
+        v_tile = np.tile(V, self.emission_length)
+        v_std_tile = np.tile(Vstd, self.emission_length)
+        return {"Stellarnet": data, "V": v_tile, "Vstd": v_std_tile}
 
     def widgets(self):
         if self.initialized:
-            return pn.Column(self.rotator.view, self.StellarNet.view, self.MaiTai.view)
+            return pn.Column(self.rotator.view, self.StellarNet.view, self.MaiTai.view, self.Photodiode.view)
         else:
             return None
