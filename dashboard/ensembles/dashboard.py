@@ -2,7 +2,6 @@
 Renders a dashboard using a selected ensembles file and gui.py
 Main function is to select the ensemble
 """
-from typing import Union
 import param
 import stellarnet
 import panel as pn
@@ -45,7 +44,7 @@ class Ensembles(param.Parameterized):
         """
         super().__init__()
         self.load()
-        self.gui = gui.gui()
+        self.gui = gui.Gui()
 
     @param.depends('ensembles', watch=True)
     def load(self) -> None:
@@ -80,7 +79,7 @@ class Ensembles(param.Parameterized):
         self.gui.live_view()  # start live view immediately
 
     @param.depends('ensembles', 'confirmed')
-    def graph(self) -> Union[None, pn.Row]:
+    def graph(self) -> pn.Row:
         """
         If confirmed, return the graph from the GUI
         :return:
@@ -88,7 +87,7 @@ class Ensembles(param.Parameterized):
         # more complicated due to ensembles and gui relationship
         if self.confirmed:
             return pn.Row(self.gui.output)
-        pass
+        return pn.Row()
 
     def stop(self):
         """
