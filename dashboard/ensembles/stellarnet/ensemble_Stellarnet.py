@@ -30,7 +30,7 @@ class Ensemble(EnsembleBase):
     pwait = param.Integer(default=1)
     type = name
     data = "stellarnet"
-    dimensions = ["power"]
+    dimensions = ["wavelength", "power"]
     cap_coords = []
     loop_coords = ["wavelength", "power"]
     debug = param.Boolean(default=False)
@@ -71,17 +71,17 @@ class Ensemble(EnsembleBase):
                 self.param[param].constant = True
 
         self.init_vars()
-        self.coords = {
-            "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
-                           "values": self.wavelength, "function": self.wav_step},
-            "power": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
-                      "values": self.power, "function": self.pow_step},
-        }
-        self.pc_reverse = utils.interpolate(self.calibration_file, pwr=self.power)
 
     def init_vars(self):
-        self.wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
-        self.power = np.arange(self.pstart, self.pstop, self.pstep)
+        wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
+        power = np.arange(self.pstart, self.pstop, self.pstep)
+        self.coords = {
+            "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
+                           "values": wavelength, "function": self.wav_step},
+            "power": {"name": "power", "unit": "degrees", "dimension": "power",
+                      "values": power, "function": self.pow_step},
+        }
+        self.pc_reverse = utils.interpolate(self.calibration_file, pwr=power)
 
     def pow_step(self, xs):
         pow = xs[1]
