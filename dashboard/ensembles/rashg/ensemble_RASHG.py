@@ -151,7 +151,8 @@ class Ensemble(EnsembleBase):
         pw = xs[1]
         w = xs[0]
         atten_pos = self.pc_reverse.sel(wavelength=w, power=pw)  # technically can interp here again but don't need to
-        self.atten.instrument.move_abs(atten_pos)
+        if -360 < atten_pos < 360:
+            self.atten.instrument.move_abs(atten_pos)
 
     def graph(self, live=False):
         if live:

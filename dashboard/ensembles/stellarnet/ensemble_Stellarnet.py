@@ -104,7 +104,8 @@ class Ensemble(EnsembleBase):
         pol = self.pc_reverse.sel(power=pow, wavelength=wav).values
         if self.debug:
             print(f"moving to {pol}")
-        self.rotator.instrument.move_abs(pol)
+        if -360 < pol < 360:
+            self.rotator.instrument.move_abs(pol)
         time.sleep(self.pwait)
 
     def get_frame(self, coords):
