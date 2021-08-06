@@ -49,8 +49,16 @@ class Grapher(param.Parameterized):
         return hv.Curve(output).opts(opts)
 
     def view(self):
+        """
+        wraps nav
+        :return: navigation
+        """
         return pn.Pane(self.nav)
 
     def widgets(self):
+        """
+        returns widgets
+        :return: widgets
+        """
         widgets = {"wavelength": pn.widgets.DiscreteSlider}
         return pn.Param(self.param, widgets=widgets)
