@@ -3,12 +3,12 @@ houses gui class
 """
 import sys
 import time
+import os
 import xarray as xr
 import numpy as np
 import panel as pn
 import param
 from numba import njit
-import os
 import zarr
 from tqdm.contrib.itertools import product
 import stellarnet

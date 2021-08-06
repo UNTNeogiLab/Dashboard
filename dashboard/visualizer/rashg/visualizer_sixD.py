@@ -4,8 +4,8 @@ Visualizer for RASHG data
 import time
 import os
 from pathlib import Path
-import numpy as np
 from datetime import timedelta
+import numpy as np
 from numba import vectorize, float64
 import pandas as pd
 import param
