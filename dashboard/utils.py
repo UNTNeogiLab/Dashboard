@@ -22,16 +22,16 @@ def inv_sin_sqr(y, mag, x_offset, y_offset):
     return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - y_offset) / mag))) + x_offset), 180)
 
 
-def interp(y, pol, pwr) -> np.array:
+def interp(old, pol, new) -> np.array:
     """
     Interpolates a set of powers for polarization values to generate a new set of polarizations for given power
-    :param y: original power values
+    :param old: original power values
     :param pol: polarization values
-    :param pwr: new power values
+    :param new: new power values
     :return: list of polarizations for the new power values
     """
-    function = interp1d(y, pol, fill_value="extrapolate")
-    return function(pwr)
+    function = interp1d(old, pol, fill_value="extrapolate")
+    return function(new)
 
 
 def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5), throw: int = 0) -> xr.DataArray:
