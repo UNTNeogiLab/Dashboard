@@ -22,16 +22,16 @@ def inv_sin_sqr(y, mag, x_offset, y_offset):
     return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - y_offset) / mag))) + x_offset), 180)
 
 
-def interp(old, pol, new) -> np.array:
+def interp(old, pol, pwr) -> np.array:
     """
     Interpolates a set of powers for polarization values to generate a new set of polarizations for given power
     :param old: original power values
     :param pol: polarization values
-    :param new: new power values
+    :param pwr: new power values
     :return: list of polarizations for the new power values
     """
     function = interp1d(old, pol, fill_value="extrapolate")
-    return function(new)
+    return function(pwr)
 
 
 def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5), throw: int = 0) -> xr.DataArray:
@@ -48,7 +48,7 @@ def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5
     """
     power_calibration = xr.open_dataset(filename, engine="zarr")["Pwr"]
     power_calibration = power_calibration.where(power_calibration.Polarization > throw)
-    pc_pol = power_calibration.coords["Polarization"]
+    pc_pol = power_calibration.coords["Polarization"].values
     pc_reverse = xr.apply_ufunc(interp, power_calibration, input_core_dims=[["Polarization"]], vectorize=True,
                                 output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
     pc_reverse.coords["power"] = pwr
