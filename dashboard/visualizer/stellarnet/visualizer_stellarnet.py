@@ -40,20 +40,17 @@ class Grapher(param.Parameterized):
         :return:
         """
 
-        output = self.data["Stellarnet"].sel(wavelength=self.wavelength)
-        powers = output.coords["power"].values.tolist()
-        values = [output.sel(power=power).sortby(["emission_wavelength"]).coords["emission_wavelength"].values[0] for
-                  power in powers]
+        output = self.data["Stellarnet"].sel(wavelength=self.wavelength).idxmax("emission_wavelength")
         opts = [hv.opts.Curve(title=f"Wavelength: {self.wavelength}",
                               tools=['hover'], framewise=True)]
-        return hv.Curve((powers, values), "power", "emission wavelength for maximum intensity").opts(opts)
+        return hv.Curve(output, "power", "emission wavelength for maximum intensity").opts(opts)
 
     @param.depends("wavelength")
     def integrated(self):
         output = self.data["Stellarnet"].sel(wavelength=self.wavelength).sum(dim="emission_wavelength")
         opts = [hv.opts.Curve(title=f"Wavelength: {self.wavelength}",
                               tools=['hover'], framewise=True)]
-        return hv.Curve(output, self.power_dim, "summed maximum intensity").opts(opts)
+        return hv.Curve(output, self.power_dim, "summed intensity").opts(opts)
 
     @param.depends("wavelength")
     def overall(self):
