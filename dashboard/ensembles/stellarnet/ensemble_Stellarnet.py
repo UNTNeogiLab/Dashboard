@@ -21,7 +21,7 @@ def get_calibs() -> list:
 
 class Ensemble(EnsembleBase):
     wavstart = param.Integer(default=780)
-    wavend = param.Integer(default=800)
+    wavend = param.Integer(default=900)
     wavstep = param.Integer(default=2)
     pstart = param.Integer(default=0)
     pstop = param.Integer(default=10)
