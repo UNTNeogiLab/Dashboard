@@ -42,7 +42,7 @@ class Ensemble(EnsembleBase):
 
     def __init__(self):
         super().__init__()
-        self.filename = "calib/WavelengthPowerCalib.zarr"
+        self.filename = "data/stellarnet.zarr"
         self.rotator = neogiinstruments.rotator("rotator")
         self.MaiTai = neogiinstruments.MaiTai()
         self.StellarNet = neogiinstruments.StellarNet()
