@@ -74,8 +74,10 @@ class Gui(param.Parameterized):
         :rtype: None
         """
         self.confirmed = False
-        self.ensemble = self.ensemble_classes[self.ensembles].Ensemble()
-
+        try:
+            self.ensemble = self.ensemble_classes[self.ensembles].Ensemble()
+        except stellarnet.NotFoundError:
+            print("You can't run stellarnet without stellarnet")
     def initialize(self, event=None):
         """
         Initializes the GUI. Sets all parameters to constant and allows the user to start the expirement. If the live

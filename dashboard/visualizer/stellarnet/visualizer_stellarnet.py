@@ -59,7 +59,7 @@ class Grapher(param.Parameterized):
     def overall(self):
         output = self.data["Stellarnet"].sel(wavelength=self.wavelength)
         opts = [hv.opts.QuadMesh(colorbar=True, tools=['hover'], framewise=True, logz=True, width=600)]
-        return hv.QuadMesh(output, [self.power_dim, "emission wavelength"]).opts(opts)
+        return hv.QuadMesh(output, [self.power_dim, "emission_wavelength"]).opts(opts)
 
     def view(self):
         """
