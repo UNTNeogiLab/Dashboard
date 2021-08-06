@@ -120,13 +120,12 @@ def serve(port: int = 5006, open_browser: bool = True) -> None:
     :type port: int
     """
     view = Combined()
-    if is_port_in_use(port):
-        view.view().show(open=open_browser)
-    else:
-        view.view().show(
-            port=port,
-            open=open_browser)  # if you need to change this, change this on your own or implement ports yourself. It
+    while is_port_in_use(port):
+        port += 1
+    view.view().show(port=port, open=open_browser)
+    # if you need to change this, change this on your own or implement ports yourself. It
         # isn't very hard
+
 
 
 def main() -> None:
