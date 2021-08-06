@@ -5,6 +5,9 @@ import panel as pn
 import param
 import xarray as xr
 
+from dashboard import utils
+
+hv.extension("bokeh")
 DATA_TYPE = "stellarnet"
 
 
@@ -18,6 +21,7 @@ class Grapher(param.Parameterized):
         self.data = xr.open_zarr(self.filename)
         self.param['wavelength'].objects = self.data["Stellarnet"].coords['wavelength'].values.tolist()
         self.wavelength = self.data["Stellarnet"].coords["wavelength"].min().values
+        self.power_dim = hv.Dimension("power", range=utils.get_range("power", self.data["Stellarnet"].coords))
 
     def __init__(self, filename, client_input):
         """
@@ -38,26 +42,31 @@ class Grapher(param.Parameterized):
 
         output = self.data["Stellarnet"].sel(wavelength=self.wavelength)
         powers = output.coords["power"].values.tolist()
-        values = [output.sel(power=power).sortby(["emission_wavelength"]).coords["emission_wavelength"].values[0] for power in
-                  powers]
-
+        values = [output.sel(power=power).sortby(["emission_wavelength"]).coords["emission_wavelength"].values[0] for
+                  power in powers]
         opts = [hv.opts.Curve(title=f"Wavelength: {self.wavelength}",
                               tools=['hover'], framewise=True)]
-        return hv.Curve(values, "power", "emission_wavelength for maximum intensity").opts(opts)
+        return hv.Curve((powers, values), "power", "emission wavelength for maximum intensity").opts(opts)
 
     @param.depends("wavelength")
     def integrated(self):
         output = self.data["Stellarnet"].sel(wavelength=self.wavelength).sum(dim="emission_wavelength")
         opts = [hv.opts.Curve(title=f"Wavelength: {self.wavelength}",
                               tools=['hover'], framewise=True)]
-        return hv.Curve(output, "power", "summed maximum intensity").opts(opts)
+        return hv.Curve(output, self.power_dim, "summed maximum intensity").opts(opts)
+
+    @param.depends("wavelength")
+    def overall(self):
+        output = self.data["Stellarnet"].sel(wavelength=self.wavelength)
+        opts = [hv.opts.QuadMesh(colorbar=True, tools=['hover'], framewise=True, logz=True, width=600)]
+        return hv.QuadMesh(output, [self.power_dim, "emission wavelength"]).opts(opts)
 
     def view(self):
         """
         wraps nav
         :return: navigation
         """
-        return pn.Row(self.integrated, self.maximum)
+        return pn.Column(pn.Row(self.integrated, self.maximum), self.overall)
 
     def widgets(self):
         """
@@ -66,3 +75,9 @@ class Grapher(param.Parameterized):
         """
         widgets = {"wavelength": pn.widgets.DiscreteSlider}
         return pn.Param(self.param, widgets=widgets)
+
+
+if __name__ == "__main__":
+    viewer = Grapher("data/realtest.zarr", None)
+    viewer.view().show()
+    # print(viewer.power_dim)
