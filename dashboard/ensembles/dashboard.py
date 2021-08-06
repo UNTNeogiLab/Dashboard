@@ -81,11 +81,14 @@ class Ensembles(param.Parameterized):
 
     @param.depends('ensembles', 'confirmed')
     def graph(self) -> Union[None, pn.Row]:
+        """
+        If confirmed, return the graph from the GUI
+        :return:
+        """
         # more complicated due to ensembles and gui relationship
         if self.confirmed:
             return pn.Row(self.gui.output)
-        else:
-            pass
+        pass
 
     def stop(self):
         """

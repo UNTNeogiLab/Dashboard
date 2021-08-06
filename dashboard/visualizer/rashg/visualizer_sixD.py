@@ -1,6 +1,10 @@
 """
 Visualizer for RASHG data
 """
+import time
+import os
+from pathlib import Path
+import numpy as np
 from datetime import timedelta
 from numba import vectorize, float64
 import pandas as pd
@@ -10,10 +14,6 @@ import xarray as xr
 import holoviews as hv
 import panel as pn
 from holoviews import streams, Dimension
-import time
-import numpy as np
-import os
-from pathlib import Path
 from ... import utils
 
 pn.extension('plotly')
@@ -160,8 +160,7 @@ class Grapher(param.Parameterized):
             width = self.x1 - self.x0
             height = self.y1 - self.y0
             return hv.Polygons([hv.Box(avg_x, avg_y, (width, height))]).opts(fill_alpha=0.2, line_color='white')
-        else:
-            return hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
+        return hv.Polygons([]).opts(fill_alpha=0.2, line_color='white')
 
     def tracker(self, data):
         """
@@ -190,8 +189,7 @@ class Grapher(param.Parameterized):
                 f'''##{self.fname}: Orientation: {self.orientation}, wavelength: {self.wavelength}, power: {self.power},
                 x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}''',
                 width=1800)
-        else:
-            return pn.pane.Markdown(
+        return pn.pane.Markdown(
                 f'''##{self.fname}: Orientation: {self.orientation},wavelength: {self.wavelength}, power: {self.power}, 
                 Average across all points''',
                 width=1800)
@@ -221,7 +219,7 @@ class Grapher(param.Parameterized):
                                                  Polarization=self.polarization_dim) * line
 
     @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
-    def Polar(self, dataset="Polarization"):
+    def polar(self, dataset="Polarization"):
         """
         Generates the polar plot. If self.selected, then filter to x1,x0,y0,y1
         :param dataset: not entirely sure why this is here, but this supplies the coordinate for theta_values.
@@ -293,7 +291,7 @@ class Grapher(param.Parameterized):
                                 f"P{power}.png "
                     else:
                         title = f"{folder}/Polar_O{orientation}W{wavelength}.png"
-                    self.Polar("degrees").write_image(title)
+                    self.polar("degrees").write_image(title)
         self.nav()
         self.param["Orientation"].precedence = 1
         self.param["wavelength"].precedence = 1
@@ -314,7 +312,7 @@ class Grapher(param.Parameterized):
         Renders everything but the widgets as a view
         :return: view of graphs and title
         """
-        return pn.Column(self.title, pn.Row(self.nav, self.heat_map), pn.Row(self.Polar, self.xarray))
+        return pn.Column(self.title, pn.Row(self.nav, self.heat_map), pn.Row(self.polar, self.xarray))
 
     def widgets(self) -> pn.Column:
         """
