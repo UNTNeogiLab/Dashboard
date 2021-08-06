@@ -13,7 +13,7 @@ import plotly.express as px
 import xarray as xr
 import holoviews as hv
 import panel as pn
-from holoviews import streams, Dimension
+from holoviews import streams
 from ... import utils
 
 pn.extension('plotly')
@@ -49,7 +49,7 @@ class Grapher(param.Parameterized):
     """
     Visualizer for RASHG data
     """
-    zdim: Dimension
+    zdim: hv.Dimension
     orientation = param.Integer(default=0, bounds=(0, 1))
     wavelength = param.Selector()
     power = param.Selector()
