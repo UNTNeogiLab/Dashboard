@@ -20,7 +20,21 @@ You can also specify several optional variables
 5. datasets - dasets to write to, array. Default is ["ds1"]
 6. live - render a live view. Default is true
 7. gather - allow user to gather data. Default is true
-8. filename - default filename, recommended to use param
+8. filename - default filename, recommended to use param  
+
+If you want to capture along different dimensions for different datasets you must:
+1. Change dimensions to a dict with the keys being datasets and values being the dimensions
+2. Change cap_coords to match  
+
+For example  
+```python
+  cap_coords = {"A":["y"],"B":["z","w"]}  
+  dimensions = {"A":["x","y"],"B":["x","z","w"]} 
+  datasets = ["A","B"]
+  loop_coords=["x"]
+```
+is a valid configuration. The loop_coords does not currently support different dimensions
+
 ### Memory
 
 The program will store the data then write to file every change of the first dimension
