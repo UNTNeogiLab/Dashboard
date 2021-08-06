@@ -1,9 +1,9 @@
 """
 Module for viewing calibration files
 """
+from pathlib import Path
 import param
 import xarray as xr
-from pathlib import Path
 import holoviews as hv
 import panel as pn
 
@@ -22,9 +22,9 @@ class Grapher(param.Parameterized):
         """
         Opens selected dataset
         """
-        self.dataset = xr.open_zarr(self.filename)
-        self.param['wavelength'].objects = self.dataset["Pwr"].coords['wavelength'].values.tolist()
-        self.wavelength = self.dataset["Pwr"].coords["wavelength"].min().values
+        self.data = xr.open_zarr(self.filename)
+        self.param['wavelength'].objects = self.data["Pwr"].coords['wavelength'].values.tolist()
+        self.wavelength = self.data["Pwr"].coords["wavelength"].min().values
 
     def __init__(self, filename, client_input):
         """
@@ -42,7 +42,7 @@ class Grapher(param.Parameterized):
         Navigation graph
         :return:
         """
-        output = self.dataset[self.dataset].sel(wavelength=self.wavelength)
+        output = self.data[self.dataset].sel(wavelength=self.wavelength)
         opts = [hv.opts.Image(colorbar=True, height=600,
                               title=f"Wavelength: {self.wavelength}",
                               tools=['hover'], framewise=True, logz=True)]
