@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import holoviews as hv
+import panel as pn
 import param
 import xarray as xr
-import panel as pn
 
 DATA_TYPE = "stellarnet"
 
@@ -35,18 +35,22 @@ class Grapher(param.Parameterized):
         Maximum graph of intensity for all emission wavelength against power per wavelength
         :return:
         """
-        output = self.data["Stellarnet"].sel(wavelength=self.wavelength).max(dim="emission_wavelength")
+
+        output = self.data["Stellarnet"].sel(wavelength=self.wavelength)
+        powers = output.coords["power"].values.tolist()
+        values = [output.sel(power=power).sortby(["emission_wavelength"]).coords["emission_wavelength"].values[0] for power in
+                  powers]
+
         opts = [hv.opts.Curve(title=f"Wavelength: {self.wavelength}",
                               tools=['hover'], framewise=True)]
-        return hv.Curve(output, "power", "maximum intensity").opts(opts)
+        return hv.Curve(values, "power", "emission_wavelength for maximum intensity").opts(opts)
 
     @param.depends("wavelength")
     def integrated(self):
         output = self.data["Stellarnet"].sel(wavelength=self.wavelength).sum(dim="emission_wavelength")
-        opts = [hv.opts.Image(colorbar=True,
-                              title=f"Wavelength: {self.wavelength}",
-                              tools=['hover'], framewise=True, logz=True)]
-        return hv.Image(output).opts(opts)
+        opts = [hv.opts.Curve(title=f"Wavelength: {self.wavelength}",
+                              tools=['hover'], framewise=True)]
+        return hv.Curve(output, "power", "summed maximum intensity").opts(opts)
 
     def view(self):
         """
