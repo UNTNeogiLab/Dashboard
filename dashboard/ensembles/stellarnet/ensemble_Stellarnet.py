@@ -30,8 +30,8 @@ class Ensemble(EnsembleBase):
     pwait = param.Integer(default=1)
     type = name
     data = "stellarnet"
-    dimensions = ["wavelength", "power"]
-    cap_coords = []
+    dimensions = ["wavelength", "power", "emission_wavelength"]
+    cap_coords = ["emission_wavelength"]
     loop_coords = ["wavelength", "power"]
     debug = param.Boolean(default=False)
     live = False
@@ -75,11 +75,15 @@ class Ensemble(EnsembleBase):
     def init_vars(self):
         wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
         power = np.arange(self.pstart, self.pstop, self.pstep)
+        emission_wavelength = self.StellarNet.instrument.GetSpec()[0]
         self.coords = {
             "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
                            "values": wavelength, "function": self.wav_step},
             "power": {"name": "power", "unit": "degrees", "dimension": "power",
                       "values": power, "function": self.pow_step},
+            "emission_wavelength": {"name": "emission_wavelength", "unit": "nanometers",
+                                    "dimension": "emission_wavelength", "values": emission_wavelength,
+                                    "function": "none"}
         }
         self.pc_reverse = utils.interpolate(self.calibration_file, pwr=power)
 
