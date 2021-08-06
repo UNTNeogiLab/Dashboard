@@ -72,6 +72,9 @@ class Ensemble(EnsembleBase):
 
         self.init_vars()
 
+    def start(self):
+        self.rotator.instrument.home()
+
     def init_vars(self):
         wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
         power = np.arange(self.pstart, self.pstop, self.pstep)

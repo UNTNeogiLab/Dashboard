@@ -132,7 +132,7 @@ class Grapher(param.Parameterized):
         curvefit_coefficients = curvefit.curvefit_coefficients  # idk what to do with the covars
         return curvefit_coefficients.values
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'power')
+    @param.depends('orientation', 'wavelength', 'colorMap', 'power')
     def nav(self):
         """
         renders plot for navigation: XY for specified Orientation, wavelength, and power, averaged against polarization
@@ -178,7 +178,7 @@ class Grapher(param.Parameterized):
             self.y1 = round(data['y1'][0], 3)
             self.selected = True
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
+    @param.depends('orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def title(self):
         """
         renders the title
@@ -190,11 +190,11 @@ class Grapher(param.Parameterized):
                 x0: {self.x0},x1: {self.x1}, y0: {self.y0}, y1: {self.y1}''',
                 width=1800)
         return pn.pane.Markdown(
-                f'''##{self.fname}: Orientation: {self.orientation},wavelength: {self.wavelength}, power: {self.power}, 
+            f'''##{self.fname}: Orientation: {self.orientation},wavelength: {self.wavelength}, power: {self.power}, 
                 Average across all points''',
-                width=1800)
+            width=1800)
 
-    @param.depends('Orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
+    @param.depends('orientation', 'wavelength', 'colorMap', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def heat_map(self):
         """
         generates the heatmap Polarization x Wavelength for given orientation
@@ -218,7 +218,7 @@ class Grapher(param.Parameterized):
         return hv.Image(output).opts(opts).redim(wavelength=self.wavelength_dim,
                                                  Polarization=self.polarization_dim) * line
 
-    @param.depends('Orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
+    @param.depends('orientation', 'wavelength', 'x1', 'x0', 'y0', 'y1', 'selected', 'power')
     def polar(self, dataset="Polarization"):
         """
         Generates the polar plot. If self.selected, then filter to x1,x0,y0,y1
@@ -228,8 +228,6 @@ class Grapher(param.Parameterized):
         theta_values = self.coords[dataset].values  # units, plotly, radians and degrees are a mess.
         theta_radians = self.coords['Polarization'].values
         if self.selected:
-            title = f'''{self.fname}: Orientation: {self.orientation}, wavelength: {self.wavelength}, x0: {self.x0},x1: 
-            {self.x1}, y0: {self.y0}, y1: {self.y1} '''
             output = self.ds["ds1"].sel(Orientation=self.orientation, wavelength=self.wavelength, power=self.power,
                                         x=slice(self.x0, self.x1), y=slice(self.y0, self.y1)).mean(dim=['x', 'y'])
             data_frame = pd.DataFrame(
@@ -243,8 +241,6 @@ class Grapher(param.Parameterized):
         else:
             overall = self.ds["heatmap_all"].sel(Orientation=self.orientation, wavelength=self.wavelength,
                                                  power=self.power)
-            title = f'''{self.fname}: Orientation: {self.orientation},wavelength: {self.wavelength}, Average across 
-            all points '''
             data_frame = pd.DataFrame(np.vstack((overall, theta_values, np.tile("Raw Data, over all points", 180))).T,
                                       columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
             params = self.ds["fitted"].sel(Orientation=self.orientation, wavelength=self.wavelength,
@@ -254,7 +250,7 @@ class Grapher(param.Parameterized):
                                        columns=['Intensity', 'Polarization', 'Data'], index=theta_values)
             data_frame = data_frame.append(data_frame2)
         data_frame = data_frame.astype({'Polarization': 'float', 'Intensity': "float", "Data": "string"})
-        return px.scatter_polar(data_frame, theta="Polarization", r='Intensity', color='Data', title=title,
+        return px.scatter_polar(data_frame, theta="Polarization", r='Intensity', color='Data',
                                 start_angle=0,
                                 direction="counterclockwise",
                                 range_r=(data_frame['Intensity'].min() * 0.8, data_frame['Intensity'].max() * 1.2), )
