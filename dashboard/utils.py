@@ -47,7 +47,7 @@ def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5
     :rtype: xr.DataArray
     """
     power_calibration = xr.open_dataset(filename, engine="zarr")["Pwr"]
-    power_calibration = power_calibration.where(power_calibration.Polarization > throw)
+    power_calibration = power_calibration.where(power_calibration.Polarization > throw,drop=True)
     pc_pol = power_calibration.coords["Polarization"].values
     pc_reverse = xr.apply_ufunc(interp, power_calibration, input_core_dims=[["Polarization"]], vectorize=True,
                                 output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
