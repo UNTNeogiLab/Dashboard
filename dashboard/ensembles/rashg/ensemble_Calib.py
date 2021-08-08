@@ -37,20 +37,18 @@ class Ensemble(EnsembleBase):
         self.Photodiode = neogiinstruments.Photodiode()
 
     def wav_step(self, xs):
-        self.MaiTai.instrument.Set_Wavelength(xs[0])
         if self.debug:
             print(f'moving to {xs[0]}')
+        self.MaiTai.instrument.Set_Wavelength(xs[0])
         time.sleep(self.mai_time)
+        self.pol_step(xs)
+        if not self.debug:
+            time.sleep(10)
         self.MaiTai.instrument.Shutter(1)
         if self.debug:
             print(f'starting loop at {xs[0]}')
-        if self.debug:
-            print("Homing")
-        self.rotator.instrument.home()
         if not self.debug:
             time.sleep(5)
-        if self.debug:
-            print('Homing finished')
 
     def initialize(self):
         self.initialized = True
