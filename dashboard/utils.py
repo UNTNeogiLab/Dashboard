@@ -22,7 +22,7 @@ def inv_sin_sqr(y, mag, x_offset, y_offset):
     :param y_offset:
     :return:
     """
-    return np.mod(((180 / np.pi) * (np.arcsin(np.sqrt(np.abs((y - y_offset) / mag)))) + x_offset), 180)
+    return np.mod(-((180 / np.pi) * (np.arcsin(np.sqrt(np.abs((y - y_offset) / mag)))) + x_offset), 180)
 
 
 @vectorize([float64(float64, float64, float64, float64)])
@@ -64,9 +64,13 @@ def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5
     """
     power_calibration = xr.open_dataset(filename, engine="zarr")["Pwr"]
     power_calibration = power_calibration.where(power_calibration.Polarization > throw, drop=True)
-    pc_pol = power_calibration.coords["Polarization"].values
-    pc_reverse = xr.apply_ufunc(interp, power_calibration, input_core_dims=[["Polarization"]], vectorize=True,
-                                output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
+    fitted = power_calibration.curvefit(["Polarization"], sin_squared,
+                                        param_names=["mag", "x_offset", "y_offset"]).curvefit_coefficients.load()
+    mag, x_offset, y_offset = fitted.sel(param="mag"), fitted.sel(param="x_offset"), fitted.sel(param="y_offset")
+    power = xr.DataArray(pwr, dims=["power"], coords={"power": pwr})
+    pc_reverse = xr.apply_ufunc(inv_sin_sqr, power, mag, x_offset, y_offset, input_core_dims=[["power"], [], [], []],
+                                output_core_dims=[["power"]],
+                                vectorize=True)  # in the future someone can parallellize this pretty easily.
     pc_reverse.coords["power"] = pwr
     return pc_reverse
 
