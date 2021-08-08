@@ -1,10 +1,11 @@
-import numpy as np
 import time
 
-from ..ensemblebase import EnsembleBase
-import param
 import neogiinstruments
+import numpy as np
 import panel as pn
+import param
+
+from ..ensemblebase import EnsembleBase, Coordinate, Coordinates
 
 name = "WavelengthPoweredCalib"
 
@@ -54,17 +55,17 @@ class Ensemble(EnsembleBase):
     def initialize(self):
         self.initialized = True
         exclude = []
-        for param in self.param:
-            if not param in exclude:
-                self.param[param].constant = True
+        for parameter in self.param:
+            if parameter not in exclude:
+                self.param[parameter].constant = True
 
         self.init_vars()
-        self.coords = {
-            "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
-                           "values": self.wavelength, "function": self.wav_step},
-            "Polarization": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
-                             "values": self.Polarization, "function": self.pol_step},
-        }
+        self.coords = Coordinates(
+            [
+                Coordinate("wavelength", "nanometer", "wavelength", self.wavelength, self.wav_step),
+                Coordinate("Polarization", "degrees", "Polarization", self.Polarization, self.pol_step)
+            ]
+        )
 
     def init_vars(self):
         self.wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)

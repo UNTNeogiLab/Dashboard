@@ -1,17 +1,20 @@
 """
 houses gui class
 """
+import os
 import sys
 import time
-import os
-import xarray as xr
+
 import numpy as np
 import panel as pn
 import param
-from numba import njit
-import zarr
-from tqdm.contrib.itertools import product
 import stellarnet
+import xarray as xr
+import zarr
+from numba import njit
+from tqdm.contrib.itertools import product
+
+from .ensemblebase import EnsembleBase, Coordinates
 
 compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 
@@ -35,6 +38,8 @@ class Gui(param.Parameterized):
     Essentially the backbone of the data collection
     Loops through dimensions
     """
+    ensemble: EnsembleBase
+    coordinates: Coordinates
     c_pol = param.Number(default=0, precedence=-1)
     institution = param.String(default="University of North Texas")
     sample = param.String(default="MoS2")
@@ -47,6 +52,12 @@ class Gui(param.Parameterized):
     ensembles = param.ObjectSelector()  # Initializes a blank object selector, fills it in later
     confirmed = param.Boolean(default=False, precedence=-1)
     button2 = pn.widgets.Button(name='Confirm', button_type='primary')
+    cap_coords: dict
+    attrs: dict
+    datasets: dict
+    mask: dict
+    encoders: dict
+    data: xr.Dataset
 
     def __init__(self, ensembles):
         self.ensemble_classes = ensembles
@@ -78,6 +89,7 @@ class Gui(param.Parameterized):
             self.ensemble = self.ensemble_classes[self.ensembles].Ensemble()
         except stellarnet.NotFoundError:
             print("You can't run stellarnet without stellarnet")
+
     def initialize(self, event=None):
         """
         Initializes the GUI. Sets all parameters to constant and allows the user to start the expirement. If the live
@@ -97,7 +109,7 @@ class Gui(param.Parameterized):
             self.callback.start()
         exclude = ["c_pol", "live"]
         for parameter in self.param:
-            if not parameter in exclude:
+            if parameter not in exclude:
                 self.param[parameter].constant = True
 
     def init_vars(self):
@@ -116,11 +128,11 @@ class Gui(param.Parameterized):
             "fit_version": 0,
             "data_version": 2
         }
-        self.coords = {}
-        for coord in self.ensemble.coords:
-            values = self.ensemble.coords[coord]
-            self.attrs[coord] = values["unit"]
-            self.coords[coord] = ([values["dimension"]], values["values"])
+        self.coordinates = self.ensemble.coords
+        self.coords = {coord.name: ([coord.dimension], coord.values) for coord in self.coordinates}
+        for coord in self.coordinates:
+            self.attrs[coord.name] = coord.unit
+
         # data.date = str(datetime.date.today()) #out of date
         # create variables; in this case, the only dependent variable is 'shg',
         # which is the shg intensity along the specified dimensions
@@ -133,7 +145,7 @@ class Gui(param.Parameterized):
             self.cap_coords = {dataset: self.cap_coords for dataset in self.ensemble.datasets}
         zeros = {}
         for dataset in self.ensemble.datasets:
-            zero_array = [self.ensemble.coords[coord]["values"].size for coord in dimensions[dataset]]
+            zero_array = [self.ensemble.coords[coord].values.size for coord in dimensions[dataset]]
             zero_array[0] = 1
             zeros[dataset] = xr.DataArray(np.zeros(zero_array), dims=dimensions[dataset])
         self.datasets = {dataset: (dimensions[dataset], zeros[dataset], self.attrs) for dataset in
@@ -162,7 +174,7 @@ class Gui(param.Parameterized):
         self.button2.disabled = True
         self.live = False
         first = 0
-        ranges = [self.ensemble.coords[coord]["values"] for coord in self.ensemble.loop_coords]
+        ranges = [self.ensemble.coords[coord].values for coord in self.ensemble.loop_coords]
         self.ensemble.start()
         '''
         The infinite loop:
@@ -171,7 +183,7 @@ class Gui(param.Parameterized):
         The generator should be lazy and not overflow your memory. Theoretically.
         '''
         try:
-            self.mask = {dim: min(self.ensemble.coords[dim]["values"]) for dim in self.ensemble.loop_coords}
+            self.mask = {dim: min(self.ensemble.coords[dim].values) for dim in self.ensemble.loop_coords}
         except ValueError:
             print("Empty list or 0 pol step. Check your parameters")
             sys.exit()
@@ -192,9 +204,7 @@ class Gui(param.Parameterized):
                     attrs=self.attrs
                 )
             self.mask[dim] = coords[dim_num]
-            function = self.ensemble.coords[dim]["function"]
-            if not function == "none":
-                function(coords)
+            self.ensemble.coords[dim](coords)
             data = self.ensemble.get_frame(coords)
             for dataset in self.ensemble.datasets:
                 self.data[dataset].loc[self.mask] = xr.DataArray(data[dataset],

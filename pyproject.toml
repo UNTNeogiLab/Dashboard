@@ -29,6 +29,7 @@ neogiinstruments = "^2.4.11"
 matplotlib = "^3.4.2"
 simple-pid = "^1.0.1"
 pylint = "^2.9.6"
+mypy = "^0.910"
 [tool.poetry.extras]
 pyvcam = ["pyvcam"]
 

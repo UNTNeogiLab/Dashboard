@@ -1,11 +1,12 @@
 import time
+from array import array
 
 import neogiinstruments
 import numpy as np
 import panel as pn
 import param
 
-from ..ensemblebase import EnsembleBase
+from ..ensemblebase import EnsembleBase, Coordinate, Coordinates
 from ... import utils
 
 name = "stellarnet"
@@ -43,7 +44,7 @@ class Ensemble(EnsembleBase):
 
     def __init__(self):
         files = get_calibs()
-        if len(files) is 0:
+        if len(files) == 0:
             print("Needs calibration file ")
         self.param["calibration_file"].objects = files
         self.param["calibration_file"].default = files[0]
@@ -53,6 +54,11 @@ class Ensemble(EnsembleBase):
         self.MaiTai = neogiinstruments.MaiTai()
         self.StellarNet = neogiinstruments.StellarNet()
         self.Photodiode = neogiinstruments.Photodiode()
+        self.coords = Coordinates([
+            Coordinate("wavelength", "nanometer", "wavelength", step_function=self.wav_step),
+            Coordinate("power", "degrees", "power", step_function=self.pow_step),
+            Coordinate("emission_wavelength", "nanometers", "emission_wavelength")]
+        )
 
     def wav_step(self, xs):
         self.MaiTai.instrument.Set_Wavelength(xs[0])
@@ -83,22 +89,15 @@ class Ensemble(EnsembleBase):
         self.rotator.instrument.home()
 
     def init_vars(self):
-        wavelength = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
+        self.coords["wavelength"].values = np.arange(self.wavstart, self.wavend, self.wavstep, dtype=np.uint16)
         power = np.arange(self.pstart, self.pstop, self.pstep)
+        self.coords["power"].values = power
         emission_wavelength = self.StellarNet.instrument.GetSpec()[0]
         self.emission_length = len(emission_wavelength)
-        self.coords = {
-            "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
-                           "values": wavelength, "function": self.wav_step},
-            "power": {"name": "power", "unit": "degrees", "dimension": "power",
-                      "values": power, "function": self.pow_step},
-            "emission_wavelength": {"name": "emission_wavelength", "unit": "nanometers",
-                                    "dimension": "emission_wavelength", "values": emission_wavelength,
-                                    "function": "none"}
-        }
+        self.coords["emission_wavelength"].values = emission_wavelength
         self.pc_reverse = utils.interpolate(self.calibration_file, pwr=power)
 
-    def pow_step(self, xs):
+    def pow_step(self, xs: array):
         pow = xs[1]
         wav = xs[0]
         pol = self.pc_reverse.sel(power=pow, wavelength=wav).values

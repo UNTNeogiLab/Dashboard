@@ -1,10 +1,12 @@
 import time
+
 import holoviews as hv
 import neogiinstruments
 import numpy as np
 import panel as pn
 import param
-from ..ensemblebase import EnsembleBase
+
+from ..ensemblebase import EnsembleBase, Coordinate, Coordinates
 from ... import utils
 
 name = "RASHG"
@@ -90,22 +92,19 @@ class Ensemble(EnsembleBase):
         if self.xbin != self.ybin:
             print('X-bin and Y-bin must be equal, probably')
         self.init_vars()
-        self.coords = {
-            "wavelength": {"name": "wavelength", "unit": "nanometer", "dimension": "wavelength",
-                           "values": self.wavelength, "function": self.wav_step},
-            "power": {"name": "Power", "unit": "milliwatts", "dimension": "power", "values": self.pwr,
-                      "function": self.pow_step_func},
-            "degrees": {"name": "Polarization", "unit": "degrees", "dimension": "Polarization",
-                        "values": self.Polarization, "function": "none"},
-            "Polarization": {"name": "Polarization", "unit": "pixels", "dimension": "Polarization",
-                             "values": self.Polarization_radians, "function": "none"},
-            "x_pxls": {"name": "X", "unit": "nanometer", "dimension": "x", "values": self.x_coords, "function": "none"},
-            "x": {"name": "X", "unit": "micrometers", "dimension": "x", "values": self.x_mm, "function": "none"},
-            "y_pxls": {"name": "Y", "unit": "pixels", "dimension": "y", "values": self.y_coords, "function": "none"},
-            "y": {"name": "Y", "unit": "micrometers", "dimension": "y", "values": self.y_mm, "function": "none"},
-            "Orientation": {"name": "Orientation", "unit": "?", "dimension": "Orientation", "values": self.Orientation,
-                            "function": "none"},
-        }
+        self.coords = Coordinates(
+            [
+                Coordinate("wavelength", "nanometer", "wavelength", self.wavelength, self.wav_step),
+                Coordinate("power", "milliwatts", "power", self.pwr, self.pow_step_func),
+                Coordinate("degrees", "degrees", "Polarization", self.Polarization),
+                Coordinate("Polarization", "pixels", "Polarization", self.Polarization_radians),
+                Coordinate("x_pxls", "nanometer", "x", self.x_coords),
+                Coordinate("x", "micrometers", "x", self.x_mm),
+                Coordinate("y_pxls", "pixels", "y", self.y_coords),
+                Coordinate("y", "micrometers", "y", self.y_mm),
+                Coordinate("Orientation", "?", "Orientation", self.Orientation)
+            ]
+        )
         # self.PC, self.PCcov, self.WavPowAng, self.pc = PCFit(self.calibration_file)
 
     def init_vars(self):
@@ -128,7 +127,7 @@ class Ensemble(EnsembleBase):
 
     def get_frame(self, coords):
         o = coords[2]
-        p = coords[3]
+        p = coords[3]*180/np.pi
         if o == 1:
             sys_offset = 45
         else:
