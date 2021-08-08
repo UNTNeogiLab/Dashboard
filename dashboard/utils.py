@@ -1,16 +1,19 @@
 """
 Utilities for various components. Aims to contain any resuable functions needed elsewhere
 """
+import os
 import pathlib
 import time
-import os
 from pathlib import Path
+
 import numpy as np
 import xarray as xr
 import zarr.errors
+from numba import vectorize, float64
 from scipy.interpolate import interp1d
 
 
+@vectorize([float64(float64, float64, float64, float64)])
 def inv_sin_sqr(y, mag, x_offset, y_offset):
     """Function to transform calibration. Superseded by interpolation
     :param y:
@@ -19,7 +22,20 @@ def inv_sin_sqr(y, mag, x_offset, y_offset):
     :param y_offset:
     :return:
     """
-    return np.mod((360 / (2 * np.pi)) * (np.arcsin(np.sqrt(np.abs((y - y_offset) / mag))) + x_offset), 180)
+    return np.mod(((180 / np.pi) * (np.arcsin(np.sqrt(np.abs((y - y_offset) / mag)))) + x_offset), 180)
+
+
+@vectorize([float64(float64, float64, float64, float64)])
+def sin_squared(x, mag, x_offset, y_offset):
+    """
+    Function that squares the sin of a number
+    :param y:
+    :param mag:
+    :param x_offset:
+    :param y_offset:
+    :return:
+    """
+    return ((np.sin((x - x_offset) * np.pi / 180)) ** 2) * mag + y_offset
 
 
 def interp(old, pol, pwr) -> np.array:
@@ -47,7 +63,7 @@ def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5
     :rtype: xr.DataArray
     """
     power_calibration = xr.open_dataset(filename, engine="zarr")["Pwr"]
-    power_calibration = power_calibration.where(power_calibration.Polarization > throw,drop=True)
+    power_calibration = power_calibration.where(power_calibration.Polarization > throw, drop=True)
     pc_pol = power_calibration.coords["Polarization"].values
     pc_reverse = xr.apply_ufunc(interp, power_calibration, input_core_dims=[["Polarization"]], vectorize=True,
                                 output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})

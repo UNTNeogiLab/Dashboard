@@ -3,11 +3,12 @@ Module for viewing calibration files
 """
 from pathlib import Path, PosixPath
 
+import holoviews as hv
 import numpy as np
+import panel as pn
 import param
 import xarray as xr
-import holoviews as hv
-import panel as pn
+
 from ... import utils
 
 pn.extension('plotly')
@@ -23,6 +24,7 @@ class Grapher(param.Parameterized):
     pstart = param.Integer(default=0)
     pstop = param.Integer(default=100)
     pstep = param.Number(default=5)
+    throw = param.Number(default=0)
 
     def _update_dataset(self):
         """
@@ -33,10 +35,10 @@ class Grapher(param.Parameterized):
         self.param['wavelength'].objects = self.data["Pwr"].coords['wavelength'].values.tolist()
         self.wavelength = self.data["Pwr"].coords["wavelength"].min().values
 
-    @param.depends("pstart", "pstop", "pstep", watch=True)
+    @param.depends("pstart", "pstop", "pstep","throw", watch=True)
     def interpolate(self):
         power = np.arange(self.pstart, self.pstop, self.pstep)
-        self.pc_reverse = utils.interpolate(PosixPath(self.filename), pwr=power)
+        self.pc_reverse = utils.interpolate(PosixPath(self.filename), pwr=power,throw=self.throw)
         self.pol_dim = hv.Dimension('Polarization', soft_range=(0, 10), unit="degrees")
         self.pwr_dim = hv.Dimension("Power", range=(self.pstart, self.pstop))
 
