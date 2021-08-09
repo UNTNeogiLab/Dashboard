@@ -8,7 +8,6 @@ import time
 import numpy as np
 import panel as pn
 import param
-import stellarnet
 import xarray as xr
 import zarr
 from numba import njit
@@ -66,8 +65,6 @@ class Gui(param.Parameterized):
         while i < len(ensembles):
             try:
                 self.param["ensembles"].default = ensembles[i]
-            except stellarnet.stellarnet.NotFoundError:
-                print("Skipping stellarnet due to lack of stellarnet")
             except:
                 print(f"{ensembles[i]} failed")
             i += 1
@@ -87,8 +84,8 @@ class Gui(param.Parameterized):
         self.confirmed = False
         try:
             self.ensemble = self.ensemble_classes[self.ensembles].Ensemble()
-        except stellarnet.NotFoundError:
-            print("You can't run stellarnet without stellarnet")
+        except:
+            print("Ensemble didn't initialize")
 
     def initialize(self, event=None):
         """

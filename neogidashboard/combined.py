@@ -9,15 +9,12 @@ import sys
 import holoviews as hv
 import param
 import panel as pn
-from dask.diagnostics import ProgressBar
 from .visualizer import types, Viewer
 from .ensembles import instruments, gui
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
 
-pbar = ProgressBar()
-pbar.register()
 
 
 def is_port_in_use(port):

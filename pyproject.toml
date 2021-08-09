@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neogiDashboard"
-version = "0.1.0"
+version = "0.1.2"
 description = "Dashboard for visualizing data"
 authors = ["bageljr <aryanagarwal897@gmail.com>"]
 

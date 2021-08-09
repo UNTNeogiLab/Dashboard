@@ -5,6 +5,7 @@ import neogiinstruments
 import numpy as np
 import panel as pn
 import param
+import stellarnet
 
 from ..ensemblebase import EnsembleBase, Coordinate, Coordinates
 from ... import utils
@@ -52,7 +53,10 @@ class Ensemble(EnsembleBase):
         self.filename = "data/stellarnet.zarr"
         self.rotator = neogiinstruments.rotator("rotator")
         self.MaiTai = neogiinstruments.MaiTai()
-        self.StellarNet = neogiinstruments.StellarNet()
+        try:
+            self.StellarNet = neogiinstruments.StellarNet()
+        except stellarnet.NotFoundError:
+            raise stellarnet.NotFoundError("Can't run stellarnet without stellarnet")
         self.Photodiode = neogiinstruments.Photodiode()
         self.coords = Coordinates([
             Coordinate("wavelength", "nanometer", "wavelength", step_function=self.wav_step),
