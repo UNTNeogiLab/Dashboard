@@ -3,7 +3,8 @@ Visualization, analsyis and aqusition dashboard
 
 Originally the _holoviz_ branch of [2020SummerResearch](https://github.com/UNTNeogiLab/2020SummerResearch)
 ## Pypi installation 
-*coming soon*
+`pip install neogidashboard`  
+Does not come with several important data acquisition libraries.
 ## Development installation
 
 ### Using Poetry (requires python)

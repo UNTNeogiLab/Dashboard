@@ -5,7 +5,7 @@ import panel as pn
 import param
 import xarray as xr
 
-from dashboard import utils
+from neogidashboard import utils
 
 hv.extension("bokeh")
 DATA_TYPE = "stellarnet"

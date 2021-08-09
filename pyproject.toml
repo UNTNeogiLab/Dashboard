@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Dashboard"
+name = "neogiDashboard"
 version = "0.1.0"
 description = "Dashboard for visualizing data"
 authors = ["bageljr <aryanagarwal897@gmail.com>"]
@@ -26,8 +26,8 @@ simple-pid = "^1.0.1"
 
 
 [tool.poetry.scripts]
-dashboard = "dashboard.combined:main"
-converter = "dashboard.console_utilities:convert"
+dashboard = "neogidashboard.combined:main"
+converter = "neogidashboard.console_utilities:convert"
 clean = "dashboard.console_utilities:clean"
 [tool.poetry.dev-dependencies]
 bpytop = "^1.0.67"

@@ -6,7 +6,7 @@ from pathlib import Path
 import zarr
 import xarray as xr
 from zarr.errors import GroupNotFoundError
-from dashboard import utils
+from neogidashboard import utils
 
 compressor = zarr.Blosc(cname="zstd", clevel=3, shuffle=2)
 
