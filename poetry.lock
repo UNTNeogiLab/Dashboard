@@ -568,7 +568,7 @@ python-versions = "*"
 
 [[package]]
 name = "neogiinstruments"
-version = "2.5.7"
+version = "2.5.8"
 description = "Communication and helper functions for lab equipment"
 category = "main"
 optional = false
@@ -982,7 +982,7 @@ pyserial = "*"
 type = "git"
 url = "git@github.com:UNTNeogiLab/pyvcam.git"
 reference = "master"
-resolved_reference = "2e187c9c5fe633f7518b847970f50fc626779237"
+resolved_reference = "6ecd2f3efa7101636581efdf06d9e083a750280b"
 
 [[package]]
 name = "pyvisa"
@@ -1372,8 +1372,8 @@ pyvcam = ["pyvcam"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "~3.9"
-content-hash = "303c32ea6aee6dc2f18ed4964763c212c44271171572c2690859e301bdd2949b"
+python-versions = "~3.9.6"
+content-hash = "508720b1d071bc06738dff7c379bf232bf954e130f9c043e37b1191abe7e8b5d"
 
 [metadata.files]
 alabaster = [
@@ -1743,8 +1743,8 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 neogiinstruments = [
-    {file = "NeogiInstruments-2.5.7-py3-none-any.whl", hash = "sha256:18436b905469a49ae5cc7d22128ccc28ecac90afbcba04357b6c4565c6d7495f"},
-    {file = "NeogiInstruments-2.5.7.tar.gz", hash = "sha256:7ef4cf6f60abb075f2ed982673f18f2442511e000ab360adc4a3f7f99cb44ede"},
+    {file = "NeogiInstruments-2.5.8-py3-none-any.whl", hash = "sha256:2a8530ee6664cd5da744dcc3c3d800795440854ced46e700b4e0981b7454520d"},
+    {file = "NeogiInstruments-2.5.8.tar.gz", hash = "sha256:21edc3f1de30948dec5d5342731aa7f5e6296580885e940d5abaaee3ca0ad91d"},
 ]
 netcdf4 = [
     {file = "netCDF4-1.5.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6b0c6ae9f9a050e9878f700e87405044fb2ee9a730559d6feb87f2361b361c6"},
