@@ -27,7 +27,8 @@ class Ensemble(EnsembleBase):
     datasets = ["Pwr", "Pwrstd", "Vol", "Volstd"]
     debug = param.Boolean(default=False)
     live = False
-
+    def start(self):
+        self.rotator.home()
     def __init__(self):
         super().__init__()
         self.filename = "calib/WavelengthPowerCalib.zarr"
