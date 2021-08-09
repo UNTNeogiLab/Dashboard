@@ -8,19 +8,14 @@ authors = ["bageljr <aryanagarwal897@gmail.com>"]
 python = "~3.9"
 pandas = "^1.2.5"
 numpy = "^1.21.0"
-h5netcdf = "^0.11.0"
 panel = "^0.11.3"
 bokeh = "^2.3.2"
 xarray = "^0.18.2"
 hvplot = "^0.7.2"
-dask = {extras = ["distributed"], version = "^2021.7.0"}
+dask = { extras = ["distributed"], version = "^2021.7.0" }
 colorcet = "^2.0.6"
 plotly = "^5.0.0"
 zarr = "^2.3"
-k10cr1 = { git = 'https://github.com/QuantumQuadrate/k10cr1' }
-elliptec = { git = 'https://github.com/UNTNeogiLab/TL-rotation-control'}
-stellarnet = { git = "git@github.com:UNTNeogiLab/stellarnet.git", branch = "main"}
-pyvcam = { git ="git@github.com:UNTNeogiLab/pyvcam.git", branch = "master", optional = true}
 typing-extensions = "^3.10.0"
 scipy = "^1.7.0"
 numba = "^0.53.1"
@@ -28,10 +23,7 @@ netCDF4 = "^1.5.7"
 neogiinstruments = "^2.6.0"
 matplotlib = "^3.4.2"
 simple-pid = "^1.0.1"
-pylint = "^2.9.6"
-mypy = "^0.910"
-[tool.poetry.extras]
-pyvcam = ["pyvcam"]
+
 
 [tool.poetry.scripts]
 dashboard = "dashboard.combined:main"
@@ -41,6 +33,12 @@ clean = "dashboard.console_utilities:clean"
 bpytop = "^1.0.67"
 pip-licenses = "^3.4.0"
 Sphinx = "^4.1.1"
+k10cr1 = { git = 'https://github.com/QuantumQuadrate/k10cr1' }
+elliptec = { git = 'https://github.com/UNTNeogiLab/TL-rotation-control' }
+stellarnet = { git = "git@github.com:UNTNeogiLab/stellarnet.git", branch = "main" }
+pyvcam = { git = "git@github.com:UNTNeogiLab/pyvcam.git", branch = "master" }
+pylint = "^2.9.6"
+mypy = "^0.910"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

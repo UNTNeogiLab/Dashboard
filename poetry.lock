@@ -18,7 +18,7 @@ python-versions = "*"
 name = "astroid"
 version = "2.6.6"
 description = "An abstract syntax tree for Python with inference support."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "~=3.6"
 
@@ -210,9 +210,9 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "elliptec"
-version = "1.1.5"
+version = "1.1.6"
 description = ""
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 develop = false
@@ -225,7 +225,7 @@ pyserial = "*"
 type = "git"
 url = 'https://github.com/UNTNeogiLab/TL-rotation-control'
 reference = "master"
-resolved_reference = "0c1d75a4937fbf117d6e377b57275f957c6a0b67"
+resolved_reference = "82327a40525c76490616972d66060add6ef3d40e"
 
 [[package]]
 name = "fasteners"
@@ -270,17 +270,6 @@ description = "Clean single-source support for Python 3 and 2"
 category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-
-[[package]]
-name = "h5netcdf"
-version = "0.11.0"
-description = "netCDF4 via h5py"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-h5py = "*"
 
 [[package]]
 name = "h5py"
@@ -408,7 +397,7 @@ scipy = "*"
 name = "isort"
 version = "5.9.3"
 description = "A Python utility / library to sort Python imports."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6.1,<4.0"
 
@@ -436,7 +425,7 @@ i18n = ["Babel (>=2.7)"]
 name = "K10CR1"
 version = "1.0"
 description = ""
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 develop = false
@@ -462,7 +451,7 @@ python-versions = ">=3.6"
 name = "lazy-object-proxy"
 version = "1.6.0"
 description = "A fast and thorough lazy object proxy."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -470,8 +459,8 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 name = "libtiff"
 version = "0.4.2"
 description = "PyLibTiff: a Python tiff library."
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = "*"
 
 [[package]]
@@ -529,7 +518,7 @@ python-dateutil = ">=2.7"
 name = "mccabe"
 version = "0.6.1"
 description = "McCabe checker, plugin for flake8"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -545,7 +534,7 @@ python-versions = "*"
 name = "mypy"
 version = "0.910"
 description = "Optional static typing for Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 
@@ -562,13 +551,13 @@ python2 = ["typed-ast (>=1.4.0,<1.5.0)"]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
 [[package]]
 name = "neogiinstruments"
-version = "2.6.0"
+version = "2.6.1"
 description = "Communication and helper functions for lab equipment"
 category = "main"
 optional = false
@@ -654,8 +643,8 @@ python-versions = ">=3.7"
 name = "opencv-python"
 version = "4.5.3.56"
 description = "Wrapper package for OpenCV python bindings."
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -847,7 +836,7 @@ python-versions = ">=3.5"
 name = "pylint"
 version = "2.9.6"
 description = "python code static checker"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "~=3.6"
 
@@ -890,7 +879,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 name = "pyqt5"
 version = "5.15.4"
 description = "Python bindings for the Qt cross platform application toolkit"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -902,7 +891,7 @@ PyQt5-sip = ">=12.8,<13"
 name = "pyqt5-qt5"
 version = "5.15.2"
 description = "The subset of a Qt installation needed by PyQt5."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -910,7 +899,7 @@ python-versions = "*"
 name = "pyqt5-sip"
 version = "12.9.0"
 description = "The sip module support for PyQt5"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 
@@ -967,8 +956,8 @@ python-versions = ">=3.6.0"
 name = "pyvcam"
 version = "2.1.0"
 description = ""
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = "*"
 develop = false
 
@@ -1206,7 +1195,7 @@ test = ["pytest"]
 name = "stellarnet"
 version = "1.2.1"
 description = ""
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 develop = false
@@ -1254,7 +1243,7 @@ doc = ["reno", "sphinx", "tornado (>=4.5)"]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -1315,7 +1304,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 name = "wrapt"
 version = "1.12.1"
 description = "Module for decorators, wrappers and monkey patching."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1367,13 +1356,10 @@ python-versions = "*"
 [package.dependencies]
 heapdict = "*"
 
-[extras]
-pyvcam = ["pyvcam"]
-
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.9"
-content-hash = "303c32ea6aee6dc2f18ed4964763c212c44271171572c2690859e301bdd2949b"
+content-hash = "0aa0eba31d2f152d44158261f55d84276e75bdf9b45fbaf95433cd426cc4d160"
 
 [metadata.files]
 alabaster = [
@@ -1480,10 +1466,6 @@ fsspec = [
 ]
 future = [
     {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
-]
-h5netcdf = [
-    {file = "h5netcdf-0.11.0-py2.py3-none-any.whl", hash = "sha256:6411733d85f84d420ea0a0b482dd88a343787bcfba4e8867644e1f6d817cd6b0"},
-    {file = "h5netcdf-0.11.0.tar.gz", hash = "sha256:a3175a02d9cea4a66f22e94a30d1d4eea9a915d8a3a9024d5f968ec42b6ebc2f"},
 ]
 h5py = [
     {file = "h5py-3.3.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:f3bba8ffddd1fd2bf06127c5ff7b73f022cc1c8b7164355ddc760dc3f8570136"},
@@ -1743,8 +1725,8 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 neogiinstruments = [
-    {file = "NeogiInstruments-2.6.0-py3-none-any.whl", hash = "sha256:7d80008ce2e05822f0de7a4c13dd68075136178b723d42f1bb53093a37e1de29"},
-    {file = "NeogiInstruments-2.6.0.tar.gz", hash = "sha256:afb6d0f4fc91b9a12c09ea36e0ab5710a9de0f45bb842d5781bc32bbcd98373c"},
+    {file = "NeogiInstruments-2.6.1-py3-none-any.whl", hash = "sha256:aed282c2e50258a7e9d05e316d69d22c26a0a992b25fbdb755f689373b831887"},
+    {file = "NeogiInstruments-2.6.1.tar.gz", hash = "sha256:5e283e43251a86186c66837eda59b56c31f13acd497e99e1315f9e8e7d0e6f3f"},
 ]
 netcdf4 = [
     {file = "netCDF4-1.5.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6b0c6ae9f9a050e9878f700e87405044fb2ee9a730559d6feb87f2361b361c6"},
