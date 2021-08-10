@@ -9,6 +9,7 @@ import panel as pn
 import param
 import xarray as xr
 
+from ..visualizer_base import GrapherBase
 from ... import utils
 
 pn.extension('plotly')
@@ -17,7 +18,7 @@ hv.extension('bokeh')
 DATA_TYPE = "WavelengthPoweredCalib"
 
 
-class Grapher(param.Parameterized):
+class Grapher(GrapherBase):
     """visualizer for calibration files"""
     dataset = param.ObjectSelector(objects=["Pwr", "Pwrstd", "Vol", "Volstd"], default="Pwr")
     wavelength = param.Selector()
@@ -35,10 +36,10 @@ class Grapher(param.Parameterized):
         self.param['wavelength'].objects = self.data["Pwr"].coords['wavelength'].values.tolist()
         self.wavelength = self.data["Pwr"].coords["wavelength"].min().values
 
-    @param.depends("pstart", "pstop", "pstep","throw", watch=True)
+    @param.depends("pstart", "pstop", "pstep", "throw", watch=True)
     def interpolate(self):
         power = np.arange(self.pstart, self.pstop, self.pstep)
-        self.pc_reverse = utils.interpolate(PosixPath(self.filename), pwr=power,throw=self.throw)
+        self.pc_reverse = utils.interpolate(PosixPath(self.filename), pwr=power, throw=self.throw)
         self.pol_dim = hv.Dimension('Polarization', soft_range=(0, 10), unit="degrees")
         self.pwr_dim = hv.Dimension("Power", range=(self.pstart, self.pstop))
 
@@ -47,7 +48,7 @@ class Grapher(param.Parameterized):
         :param filename: filename to open
         :param client_input: Dask Client
         """
-        super().__init__()
+        super().__init__(filename, client_input)
         self.client = client_input
         self.filename = Path(filename)
         self._update_dataset()
@@ -85,3 +86,7 @@ class Grapher(param.Parameterized):
         """
         widgets = {"wavelength": pn.widgets.DiscreteSlider}
         return pn.Param(self.param, widgets=widgets)
+
+    def close(self):
+        self.pc_reverse.close()
+        self.data.close()

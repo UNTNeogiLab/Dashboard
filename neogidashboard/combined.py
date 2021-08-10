@@ -1,20 +1,21 @@
 """
 Wraps visualizer and ensembles to serve dashboard. Also includes command line parsing
 """
-from typing import Union, Optional
 import argparse
-import time
 import socket
 import sys
+import time
+from typing import Union, Optional
+
 import holoviews as hv
-import param
 import panel as pn
+import param
+
+from .ensembles import instruments, Gui
 from .visualizer import types, Viewer
-from .ensembles import instruments, gui
 
 pn.extension('plotly')
 hv.extension('bokeh', 'plotly')
-
 
 
 def is_port_in_use(port):
@@ -35,7 +36,7 @@ class Combined(param.Parameterized):
     """
     Combined viewer for Visualizer and Instruments
     """
-    applet: Union[gui.Gui, Viewer]
+    applet: Union[Gui, Viewer]
     applets = ["viewer", "instrumental"]
     applets = param.ObjectSelector(default="instrumental", objects=applets)
     button = pn.widgets.Button(name="STOP", button_type='primary')
@@ -46,7 +47,7 @@ class Combined(param.Parameterized):
         :rtype: None
         """
         super().__init__()
-        self.applet = gui.Gui(instruments)
+        self.applet = Gui(instruments)
 
     @param.depends('applets', watch=True)
     def load(self) -> None:
@@ -55,11 +56,11 @@ class Combined(param.Parameterized):
 
         :rtype: None
         """
+        self.applet.stop()
         if self.applets == "viewer":
             self.applet = Viewer(types)
         elif self.applets == "instrumental":
-
-            self.applet = gui.Gui(instruments)
+            self.applet = Gui(instruments)
 
     @param.depends('applets')
     def widgets(self) -> Union[pn.Row, pn.Column]:
@@ -121,8 +122,7 @@ def serve(port: int = 5006, open_browser: bool = True) -> None:
         port += 1
     view.view().show(port=port, open=open_browser)
     # if you need to change this, change this on your own or implement ports yourself. It
-        # isn't very hard
-
+    # isn't very hard
 
 
 def main() -> None:

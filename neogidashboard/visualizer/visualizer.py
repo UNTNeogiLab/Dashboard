@@ -3,11 +3,12 @@ Contains Viewer class
 """
 from typing import Union
 
-from dask.distributed import Client
-import param
 import panel as pn
+import param
+from dask.distributed import Client
 
-from .. import utils
+from neogidashboard import utils
+from .visualizer_base import GrapherBase
 
 
 class Viewer(param.Parameterized):
@@ -15,6 +16,8 @@ class Viewer(param.Parameterized):
     Allows user to select file and loads appropriate visualizer for file
     """
     filename: str = param.ObjectSelector()
+    grapher: GrapherBase
+    files: list
 
     def __init__(self, types, filename: str = None):
         self.types = types
@@ -93,4 +96,5 @@ class Viewer(param.Parameterized):
         Currently doesn't do anything
         :return:
         """
+        self.client.close()
         pass

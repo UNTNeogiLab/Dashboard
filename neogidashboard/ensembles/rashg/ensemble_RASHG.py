@@ -127,7 +127,7 @@ class Ensemble(EnsembleBase):
 
     def get_frame(self, coords):
         o = coords[2]
-        p = coords[3]*180/np.pi
+        p = coords[3] * 180 / np.pi
         if o == 1:
             sys_offset = 45
         else:

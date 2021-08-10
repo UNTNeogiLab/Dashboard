@@ -6,12 +6,13 @@ import param
 import xarray as xr
 
 from neogidashboard import utils
+from ..visualizer_base import GrapherBase
 
 hv.extension("bokeh")
 DATA_TYPE = "stellarnet"
 
 
-class Grapher(param.Parameterized):
+class Grapher(GrapherBase):
     wavelength = param.Selector()
 
     def _update_dataset(self):
@@ -28,7 +29,7 @@ class Grapher(param.Parameterized):
         :param filename: filename to open
         :param client_input: Dask Client
         """
-        super().__init__()
+        super().__init__(filename, client_input)
         self.client = client_input
         self.filename = Path(filename)
         self._update_dataset()
@@ -72,6 +73,10 @@ class Grapher(param.Parameterized):
         """
         widgets = {"wavelength": pn.widgets.DiscreteSlider}
         return pn.Param(self.param, widgets=widgets)
+
+    def close(self):
+        """Closes the dataset"""
+        self.data.close()
 
 
 if __name__ == "__main__":

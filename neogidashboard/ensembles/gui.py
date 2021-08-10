@@ -260,6 +260,7 @@ class Gui(param.Parameterized):
         Stops the server
         :return:
         """
-        if self.ensemble.live:
+        self.ensemble.stop()
+        if self.ensemble.live and self.callback.running:
             self.callback.stop()
-        print("shutting down live view")  # doesn't currently  work
+            print("shutting down live view")  # doesn't currently  work

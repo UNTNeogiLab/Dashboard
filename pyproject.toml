@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neogiDashboard"
-version = "0.1.2"
+version = "0.1.4"
 description = "Dashboard for visualizing data"
 authors = ["bageljr <aryanagarwal897@gmail.com>"]
 
@@ -23,12 +23,13 @@ netCDF4 = "^1.5.7"
 neogiinstruments = "^2.6.0"
 matplotlib = "^3.4.2"
 simple-pid = "^1.0.1"
+mypy = "^0.910"
 
 
 [tool.poetry.scripts]
 dashboard = "neogidashboard.combined:main"
 converter = "neogidashboard.console_utilities:convert"
-clean = "dashboard.console_utilities:clean"
+clean = "neogidashboard.console_utilities:clean"
 [tool.poetry.dev-dependencies]
 bpytop = "^1.0.67"
 pip-licenses = "^3.4.0"
@@ -36,7 +37,7 @@ Sphinx = "^4.1.1"
 k10cr1 = { git = 'https://github.com/QuantumQuadrate/k10cr1' }
 elliptec = { git = 'https://github.com/UNTNeogiLab/TL-rotation-control' }
 stellarnet = { git = "git@github.com:UNTNeogiLab/stellarnet.git", branch = "main" }
-pyvcam = { git = "git@github.com:UNTNeogiLab/pyvcam.git", branch = "master" }
+pyvcam = { git = "git@github.com:UNTNeogiLab/pyvcam.git", branch = "master", optional = true }
 pylint = "^2.9.6"
 mypy = "^0.910"
 

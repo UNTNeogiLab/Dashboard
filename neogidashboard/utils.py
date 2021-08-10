@@ -68,6 +68,8 @@ def interpolate(filename: pathlib.PosixPath, pwr: np.array = np.arange(0, 100, 5
     pc_reverse = xr.apply_ufunc(interp, power_calibration, input_core_dims=[["Polarization"]], vectorize=True,
                                 output_core_dims=[["power"]], kwargs={"pwr": pwr, "pol": pc_pol})
     pc_reverse.coords["power"] = pwr
+    pc_reverse.load()
+    power_calibration.close()
     return pc_reverse
 
 

@@ -460,7 +460,7 @@ name = "libtiff"
 version = "0.4.2"
 description = "PyLibTiff: a Python tiff library."
 category = "dev"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -534,7 +534,7 @@ python-versions = "*"
 name = "mypy"
 version = "0.910"
 description = "Optional static typing for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -551,13 +551,13 @@ python2 = ["typed-ast (>=1.4.0,<1.5.0)"]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
 [[package]]
 name = "neogiinstruments"
-version = "2.6.0"
+version = "2.6.1"
 description = "Communication and helper functions for lab equipment"
 category = "main"
 optional = false
@@ -644,7 +644,7 @@ name = "opencv-python"
 version = "4.5.3.56"
 description = "Wrapper package for OpenCV python bindings."
 category = "dev"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -957,7 +957,7 @@ name = "pyvcam"
 version = "2.1.0"
 description = ""
 category = "dev"
-optional = false
+optional = true
 python-versions = "*"
 develop = false
 
@@ -1243,7 +1243,7 @@ doc = ["reno", "sphinx", "tornado (>=4.5)"]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -1359,7 +1359,7 @@ heapdict = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.9.6"
-content-hash = "ee8f7fdf24365b37aec376f856f9a2e09acf5e5a1b2242d792e19bc67947e895"
+content-hash = "42379868e6a702574fd878ab8a696fb6345bb75d00ab08dbaad9181f49fe5137"
 
 [metadata.files]
 alabaster = [
@@ -1725,8 +1725,8 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 neogiinstruments = [
-    {file = "NeogiInstruments-2.6.0-py3-none-any.whl", hash = "sha256:7d80008ce2e05822f0de7a4c13dd68075136178b723d42f1bb53093a37e1de29"},
-    {file = "NeogiInstruments-2.6.0.tar.gz", hash = "sha256:afb6d0f4fc91b9a12c09ea36e0ab5710a9de0f45bb842d5781bc32bbcd98373c"},
+    {file = "NeogiInstruments-2.6.1-py3-none-any.whl", hash = "sha256:aed282c2e50258a7e9d05e316d69d22c26a0a992b25fbdb755f689373b831887"},
+    {file = "NeogiInstruments-2.6.1.tar.gz", hash = "sha256:5e283e43251a86186c66837eda59b56c31f13acd497e99e1315f9e8e7d0e6f3f"},
 ]
 netcdf4 = [
     {file = "netCDF4-1.5.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6b0c6ae9f9a050e9878f700e87405044fb2ee9a730559d6feb87f2361b361c6"},

@@ -1,19 +1,21 @@
 """
 Visualizer for RASHG data
 """
-import time
 import os
-from pathlib import Path
+import time
 from datetime import timedelta
+from pathlib import Path
+
+import holoviews as hv
 import numpy as np
-from numba import vectorize, float64
 import pandas as pd
+import panel as pn
 import param
 import plotly.express as px
 import xarray as xr
-import holoviews as hv
-import panel as pn
 from holoviews import streams
+from numba import vectorize, float64
+from ..visualizer_base import GrapherBase
 from ... import utils
 
 pn.extension('plotly')
@@ -45,7 +47,7 @@ def function(phi: float64, delta: float64, A: float64, B: float64, theta: float6
     return (A * np.cos(3 * phi - 3 * delta) + B * np.cos(phi - 3 * delta + 2 * theta)) ** 2 + C
 
 
-class Grapher(param.Parameterized):
+class Grapher(GrapherBase):
     """
     Visualizer for RASHG data
     """
@@ -62,7 +64,7 @@ class Grapher(param.Parameterized):
     button = pn.widgets.Button(name='Plot all Polar plots and save to file', button_type='primary')
 
     def __init__(self, filename, client_input):
-        super().__init__()
+        super().__init__(filename, client_input)
 
         self.ignore_overall = False
         self.client = client_input
@@ -71,7 +73,7 @@ class Grapher(param.Parameterized):
 
     def _update_dataset(self):
         self.ds = xr.open_dataset(self.filename,
-                                  chunks={'Orientation': 1, 'wavelength': 14, 'x': -1, 'y': -1, 'Polarization': -1},
+                                  chunks={'Orientation': 1, 'wavelength': -1, 'x': -1, 'y': -1, 'Polarization': -1},
                                   engine="zarr")  # chunked for heatmap selected
         try:
             fit_ver = self.ds.attrs["fit_version"]
@@ -97,6 +99,10 @@ class Grapher(param.Parameterized):
             self.ds.to_zarr(self.filename, mode="a", compute=True)
             time2 = time.time()
             print(f"finished in {str(timedelta(seconds=time2 - time1))}")
+        else:
+            self.ds["heatmap_all"].load()
+            self.ds["navigation"].load()
+            self.ds["fitted"].load()
         if data_ver == 1:
             print("fixing dataset innaccuracies")
             self.ds.attrs["data_version"] = current_data_version
@@ -322,3 +328,7 @@ class Grapher(param.Parameterized):
             widgets = {"wavelength": pn.widgets.DiscreteSlider}
             self.param["power"].precedence = -1  # effectively a 5d graph
         return pn.Column(pn.Param(self.param, widgets=widgets), self.button)
+
+    def close(self):
+        """Closes the dataset"""
+        self.ds.close()

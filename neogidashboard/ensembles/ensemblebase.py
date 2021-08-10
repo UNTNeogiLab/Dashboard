@@ -12,6 +12,9 @@ import param
 
 @dataclass
 class Coordinate:
+    """
+    Definition of a coordinate
+    """
     name: str
     unit: str
     dimension: str
@@ -30,6 +33,10 @@ class Coordinates:
     lookup_table: ClassVar[dict]
 
     def __post_init__(self):
+        """
+        just generates a lookup table
+        :return:
+        """
         self._gen_lookup_table()
 
     def append(self, coordinate: Coordinate):
@@ -37,6 +44,10 @@ class Coordinates:
         self._gen_lookup_table()
 
     def _gen_lookup_table(self):
+        """
+        Generates a lookup table. Why did I not use a dictionary?
+        :return:
+        """
         self.lookup_table = {coordinate.name: i for i, coordinate in enumerate(self.coordinates)}
 
     def __iter__(self):

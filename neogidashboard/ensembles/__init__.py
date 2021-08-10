@@ -4,7 +4,7 @@ Provides collections of ensembles for gathering data
 import os
 from pathlib import Path
 from importlib import import_module
-from . import gui
+from .gui import Gui
 instruments = {}
 for directory in os.scandir(str(Path(__file__).resolve().parent)):
     if directory.is_dir():
